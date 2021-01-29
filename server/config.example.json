@@ -1,0 +1,11 @@
+{
+    "database": "../database/cell.db",
+    "server": {
+        "port": 10000,
+        "client": "../client/build"
+    },
+    "logs": {
+        "folder": "logs",
+        "level": "debug"
+    }
+}
