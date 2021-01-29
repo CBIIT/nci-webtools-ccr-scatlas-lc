@@ -1,0 +1,8 @@
+node_modules
+*.log
+*.db
+*.db-journal
+server/config.json
+server/logs
+database/import/raw
+.DS_Store
