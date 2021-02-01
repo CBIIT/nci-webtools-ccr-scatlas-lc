@@ -8,11 +8,12 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import Plot from 'react-plotly.js';
 import groupBy from 'lodash/groupBy'
 
-import { tCellQuery } from './t-cell.state';
+import { tCellQuery, tCellCountQuery } from './t-cell.state';
 
 export default function TCells() {
 
     const tCells = useRecoilValue(tCellQuery);
+    const tCellCount = useRecoilValue(tCellCountQuery);
 
     const defaultLayout = {
         xaxis: {
