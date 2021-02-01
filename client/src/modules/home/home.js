@@ -14,12 +14,12 @@ export default function Home() {
                 </Card.Header>
                 <Card.Body>
                     <Row>
-
                         <Col md={4}>
                             <img src="images/home.png" className="img-fluid" />
                         </Col>
 
                         <Col md={8}>
+                            <h3>About SCATLAS-LC</h3>
                             <p>
                                 SCATLAS-LC (Single-Cell ATLAS in Liver Cancer) is a publicly available data portal of single-cell transcriptomic profiles of tumor cell communities in hepatocellular carcinoma and intrahepatic cholangiocarcinoma
                             </p>
