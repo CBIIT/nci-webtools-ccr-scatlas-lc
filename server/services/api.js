@@ -4,6 +4,20 @@ const sqlite = require('better-sqlite3');
 const config = require('../config');
 const logger = require('./logger');
 const { query } = require('./query');
+var mail = require('./mail');
+var fs = require('fs');
+
+
+async function readTemplate(filePath, data) {
+	const template = await fs.promises.readFile(path.resolve(filePath));
+	console.log(template)
+
+	// replace {tokens} with data values or removes them if not found
+	return String(template).replace(
+		/{[^{}]+}/g,
+		key => data[key.replace(/[{}]+/g, '')] || ''
+	);
+}
 
 const database = new sqlite(config.database, {
     verbose: message => logger.debug(message)
@@ -42,5 +56,31 @@ router.get('/query', (request, response) => {
 router.get('/contact', (request, response) => {
     response.json(true);
 });
+
+router.post('/sendMail', async function (request,response) { 
+    logger.debug('hi')
+    console.log('hi')
+    const templateData = {
+        name: request.body.name,
+        body: request.body.body,
+        email: request.body.email
+    }
+
+    logger.debug(request.body)
+
+    try{
+        await mail.sendMail(
+            request.body.email,
+            config.mail.to,
+            request.body.subject,
+            '',
+            await readTemplate(__dirname + '/templates/contact-email-template.html', templateData)
+        )
+        res.json({ status: 200, data: 'sent' });
+    } catch(e){
+        logger.debug(e)
+        res.json({ status: 400, data: 'failed' });
+    }
+})
 
 module.exports = router;
