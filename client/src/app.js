@@ -3,7 +3,7 @@ import { Route, useLocation, NavLink } from 'react-router-dom';
 import { Navbar, Nav } from 'react-bootstrap';
 import Home from './modules/home/home';
 import GeneExpression from './modules/gene-expression';
-import TCells from './modules/t-cells/t-cells';
+import TCellsIndex from './modules/t-cells/index';
 import Contact from './modules/contact/contact';
 import './styles/main.scss';
 
@@ -54,7 +54,7 @@ export default function App() {
       <main id="main" className="bg-light">
         <Route exact path="/" component={Home} />
         <Route exact path="/gene-expression" component={GeneExpression} />
-        <Route exact path="/t-cells" component={TCells} />
+        <Route exact path="/t-cells" component={TCellsIndex} />
         <Route exact path="/contact-us" component={Contact} />
       </main>
 
