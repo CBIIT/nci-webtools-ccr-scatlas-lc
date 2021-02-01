@@ -6,6 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import contactState from './contact.state';
+import { query } from '../../services/query';
 
 export default function Contact() {
     const [state, setState] = useRecoilState(contactState);
@@ -20,10 +21,19 @@ export default function Contact() {
 
     async function handleSubmit() {
 
+        const response = query('/api/sendMail',state);
+        
     }
 
     function handleReset() {
+        const reset = {
+            name: '',
+            email: '',
+            subject: '',
+            body: ''
+        }
 
+        setState(reset)
     }
 
     return (
@@ -39,7 +49,6 @@ export default function Contact() {
                         </Card.Title>
                     </Card.Header>
                     <Card.Body>
-
                         <Row>
                             <Col md={6}>
                                 <Form.Group controlId="name">
@@ -58,7 +67,7 @@ export default function Contact() {
 
                         <Form.Group controlId="subject">
                             <Form.Label>Subject</Form.Label>
-                            <Form.Control name="subject" value={state.setState} onChange={handleChange} placeholder="Enter subject" />
+                            <Form.Control name="subject" value={state.subject} onChange={handleChange} placeholder="Enter subject" />
                         </Form.Group>
 
                         <Form.Group controlId="body">
