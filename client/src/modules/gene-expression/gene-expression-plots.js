@@ -26,13 +26,11 @@ export default function GeneExpressionPlots() {
     const defaultLayout = {
         xaxis: {
             title: 't-SNE 1',
-            showticklabels: false,
             zeroline: false,
             scaleanchor: 'y',
         },
         yaxis: {
             title: 't-SNE 2',
-            showticklabels: false,
             zeroline: false,
         },
         hovermode: 'closest',
@@ -43,13 +41,10 @@ export default function GeneExpressionPlots() {
             <Row>
                 <Col xl={6}>
                     <Plot
-                        data={[getContinuousTrace(malignantCellsGeneExpression, 'value', {size, opacity})]}
+                        data={[getContinuousTrace(malignantCellsGeneExpression, 'value', {size, opacity, showscale: true})]}
                         layout={{
                             ...defaultLayout,
-                            title: `Malignant Cells: ${gene}`,
-                            legend: {
-                                title: { text: 'Case (click to toggle)', font: { size: 14 } }
-                            },
+                            title: `Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})`,
                         }}
                         useResizeHandler
                         className="w-100"
@@ -58,14 +53,10 @@ export default function GeneExpressionPlots() {
                 </Col>
                 <Col xl={6}>
                     <Plot
-                        data={[getContinuousTrace(nonmalignantCellsGeneExpression, 'value', {size, opacity})]}
+                        data={[getContinuousTrace(nonmalignantCellsGeneExpression, 'value', {size, opacity, showscale: true})]}
                         layout={{
                             ...defaultLayout,
-                            title: `Non-malignant Cells: ${gene}`,
-                            legend: {
-                                title: { text: 'Type (click to toggle)', font: { size: 14 } },
-                                showticklabels: false,
-                            },
+                            title: `Non-malignant Cells:  ${gene} (n=${nonmalignantCellsGeneExpression.records.length})`,
                         }}
                         useResizeHandler
                         className="w-100"
@@ -81,7 +72,7 @@ export default function GeneExpressionPlots() {
                         data={getGroupedTraces(malignantCells, 'type', {size, opacity})}
                         layout={{
                             ...defaultLayout,
-                            title: 'Malignant Cells',
+                            title: `Malignant Cells (n=${malignantCells.records.length})`,
                             legend: {
                                 title: { text: 'Case (click to toggle)', font: { size: 14 } }
                             },
@@ -89,6 +80,7 @@ export default function GeneExpressionPlots() {
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
+                        revision={1}
                     />
                 </Col>
                 <Col xl={6}>
@@ -96,15 +88,15 @@ export default function GeneExpressionPlots() {
                         data={getGroupedTraces(nonmalignantCells, 'type', {size, opacity})}
                         layout={{
                             ...defaultLayout,
-                            title: 'Non-malignant Cells',
+                            title: `Non-malignant Cells (n=${nonmalignantCells.records.length})`,
                             legend: {
                                 title: { text: 'Type (click to toggle)', font: { size: 14 } },
-                                showticklabels: false,
                             },
                         }}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
+                        revision={1}
                     />
                 </Col>
             </Row>
