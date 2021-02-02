@@ -1,10 +1,10 @@
 import  { Suspense } from 'react'
-import TCells from './t-cells';
+import TCellsPlots from './t-cell-plots';
 
-export default function TCellsIndex() {
+export default function TCell() {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <TCells />
+            <TCellsPlots />
         </Suspense>
     );
 }
