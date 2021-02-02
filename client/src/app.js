@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Route, useLocation, NavLink } from 'react-router-dom';
-import { Navbar, Nav } from 'react-bootstrap';
+import { Container, Navbar, Nav } from 'react-bootstrap';
 import Home from './modules/home/home';
-import GeneExpression from './modules/gene-expression';
+import GeneExpression from './modules/gene-expression/gene-expression';
 import TCellsIndex from './modules/t-cells/index';
 import Contact from './modules/contact/contact';
 import './styles/main.scss';
@@ -33,14 +33,14 @@ export default function App() {
   return (
     <>
       <Navbar bg="dark" expand="sm" className="navbar-dark py-0">
-        <div className="container">
+        <Container>
           <Navbar.Toggle aria-controls="app-navbar" />
           <Navbar.Collapse id="app-navbar">
             <Nav className="mr-auto">
               {links.map((link, index) =>
                 <NavLink
                   key={`navlink-${index}`}
-                  exact={link.route === '/'}
+                  exact
                   activeClassName="active"
                   className="nav-link px-3 text-uppercase font-weight-bold"
                   to={link.route}>
@@ -48,7 +48,7 @@ export default function App() {
                 </NavLink>)}
             </Nav>
           </Navbar.Collapse>
-        </div>
+        </Container>
       </Navbar>
 
       <main id="main" className="bg-light">
