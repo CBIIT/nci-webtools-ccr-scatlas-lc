@@ -27,7 +27,7 @@ export default function GeneExpression() {
                         Cell Counts
                     </Card.Title>
                 </Card.Header>
-                <Card.Body>
+                <Card.Body className="p-0">
                     <Suspense fallback={<div>Loading...</div>}>
                         <GeneExpressionCounts />
                     </Suspense>
