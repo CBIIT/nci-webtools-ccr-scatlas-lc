@@ -8,7 +8,7 @@ function query(database, params) {
     const isValidTable = database.prepare(
         `SELECT COUNT(*) FROM sqlite_master
         WHERE tbl_name = :table`
-    ).pluck().get({ table }) === 1;
+    ).pluck().get({ table }) > 0;
 
     if (!table || !isValidTable)
         throw new Error('Please provide a valid table to search within');
