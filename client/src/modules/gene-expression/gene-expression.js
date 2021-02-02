@@ -15,17 +15,18 @@ export default function GeneExpression() {
         <Container className="py-4">
 
             <Card className="shadow mb-4">
-                <Card.Header className="bg-primary text-white">
-                    <Card.Title className="my-0">
+                <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+                    <Card.Title className="my-1">
                         Gene Expression
                     </Card.Title>
+                    {gene && <Button variant="light" size="sm" onClick={_ => setGene('')}>
+                        Clear Gene ({gene})
+                    </Button>}
                 </Card.Header>
                 <Card.Body>
                     <GeneExpressionPlotOptions />
                     <hr />
                     <Suspense fallback={<div>Loading...</div>}>
-
-                        {gene && <Button variant="primary" onClick={_ => setGene('')}>Clear Gene ({gene})</Button>}
                         <GeneExpressionPlots />
                     </Suspense>
                 </Card.Body>
@@ -33,7 +34,7 @@ export default function GeneExpression() {
 
             <Card className="shadow mb-4">
                 <Card.Header className="bg-primary text-white">
-                    <Card.Title className="my-0">
+                    <Card.Title className="my-1">
                         Cell Counts
                     </Card.Title>
                 </Card.Header>
