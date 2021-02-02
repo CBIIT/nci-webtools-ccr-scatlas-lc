@@ -17,25 +17,25 @@ export const geneCountsQuery = selector({
 });
 
 export const geneState = atom({
-    key: 'geneExpression.gene',
+    key: 'geneExpression.geneState',
     default: '',
 });
 
 export const markerConfigState = atom({
-    key: 'geneExpression.markerConfig',
+    key: 'geneExpression.markerConfigState',
     default: { size: 4, opacity: 0.7 },
 });
 
 export const malignantCellsGeneExpressionQuery = selector({
-    key: 'geneExpression.malignantCellsExpressionQuery',
+    key: 'geneExpression.malignantCellsGeneExpressionQuery',
     get: async ({get}) => get(geneState) 
-        ? await query('/api/query', {table: `malignant_cell_gene_expression_${get(geneState)}`, raw: true}) 
+        ? await query('/api/query', {table: `v_malignant_cell_gene_expression_${get(geneState)}`, raw: true}) 
         : [],
 });
 
 export const nonmalignantCellsGeneExpressionQuery = selector({
-    key: 'geneExpression.nonmalignantCellsExpressionQuery',
+    key: 'geneExpression.nonmalignantCellsGeneExpressionQuery',
     get: async ({get}) => get(geneState) 
-        ? await query('/api/query', {table: `nonmalignant_cell_gene_expression_${get(geneState)}`, raw: true}) 
+        ? await query('/api/query', {table: `v_nonmalignant_cell_gene_expression_${get(geneState)}`, raw: true}) 
         : [],
 });
