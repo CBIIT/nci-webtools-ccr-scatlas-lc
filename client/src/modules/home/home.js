@@ -15,7 +15,7 @@ export default function Home() {
                 <Card.Body>
                     <Row>
                         <Col md={4}>
-                            <img src="images/home.png" className="img-fluid" />
+                            <img src="images/home.svg" className="img-fluid" />
                         </Col>
 
                         <Col md={8}>
