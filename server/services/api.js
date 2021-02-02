@@ -47,8 +47,8 @@ router.post('/sendMail', async (request, response) => {
     );
 
     // use lodash's template function to prevent html injection
-    const html = template(templateSource)({ name, email, body });
-    await createTransport(smtp).sendMail({ from, to, subject, html });
+    const html = template(templateSource)({ name, email,  subject, body });
+    await createTransport(smtp).sendMail({ from, to, subject: `SCATLAS-LC Contact Form: ${subject}`, html });
     response.json(true);
 });
 
