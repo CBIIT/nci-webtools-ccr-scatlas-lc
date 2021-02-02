@@ -1,6 +1,3 @@
-// const winston = require('winston');
-// winston.emitErrs = true;
-const { info } = require('console');
 const path = require('path');
 const { createLogger, format, transports } = require('winston');
 const { folder: logFolder, level: logLevel } = require('../config.json').logs;
