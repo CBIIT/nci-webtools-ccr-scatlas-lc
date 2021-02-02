@@ -16,11 +16,19 @@ export const cd8Query = selector({
     get: ({get}) => query('/api/query', {table: 'cd8_cell', raw: true}),
 });
 
-
-
 export const tCellCountQuery = selector({
     key: 'tCell.tCellCountQuery',
     get: async ({get}) => {
         await query('/api/query', {table: `t_cell_gene_count`})
     },
-})
+});
+
+export const tCellState = atom({
+    key: 'tCell.tCellState',
+    default: '',
+});
+
+export const markerConfigState = atom({
+    key: 'tCell.markerConfigState',
+    default: { size: 4, opacity: 0.7 },
+});
