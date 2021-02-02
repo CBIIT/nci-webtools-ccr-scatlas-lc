@@ -8,7 +8,9 @@ const {
     databaseFilepath, 
     malignantCellsFilepath, 
     nonmalignantCellsFilepath, 
-    tCellsFilepath 
+    tCellsFilepath,
+    cd4CellsFilepath,
+    cd8CellsFilepath,
 } = require('minimist')(
     process.argv.slice(2), 
     {
@@ -17,10 +19,14 @@ const {
             'malignant-cells-file': 'malignantCellsFilepath',
             'nonmalignant-cells-file': 'nonmalignantCellsFilepath',
             't-cells-file': 'tCellsFilepath',
-            'df': 'databaseFilepath',
-            'mcf': 'malignantCellsFilepath',
-            'ncf': 'nonmalignantCellsFilepath',
-            'tcf': 'tCellsFilepath',
+            'cd4-cells-file': 'cd4CellsFilepath',
+            'cd8-cells-file': 'cd8CellsFilepath',
+            'd': 'databaseFilepath',
+            'm': 'malignantCellsFilepath',
+            'n': 'nonmalignantCellsFilepath',
+            't': 'tCellsFilepath',
+            'cd4': 'cd4CellsFilepath',
+            'cd8': 'cd8CellsFilepath',
         }
     }
 );
@@ -29,13 +35,17 @@ if (!(
     databaseFilepath && 
     malignantCellsFilepath && 
     nonmalignantCellsFilepath && 
-    tCellsFilepath 
+    tCellsFilepath &&
+    cd4CellsFilepath &&
+    cd8CellsFilepath
 )) {
     console.log(`Usage: node import.js
-        --df  | --database-file "filepath"
-        --mcf | --malignant-cells-file "filepath"
-        --ncf | --nonmalignant-cells-file "filepath"
-        --tcf | --t-cells-file "filepath"
+        --d | --database-file "filepath"
+        --m | --malignant-cells-file "filepath"
+        --n | --nonmalignant-cells-file "filepath"
+        --t | --t-cells-file "filepath"
+        --cd4 | --cd4-cells-file "filepath"
+        --cd8 | --cd8-cells-file "filepath"
     `);
     process.exit(1);
 }
@@ -142,6 +152,52 @@ async function loadFiles({ databaseFilepath, malignantCellsFilepath, nonmalignan
                 where value > 0
             `),
         },
+        {
+            filepath: cd4CellsFilepath,
+            expectedHeaders: ['Component1', 'Component2', 'cellType'],
+            tablePrefix: 'cd4_cell',
+            insertStmt: db.prepare(`
+                insert into cd4_cell("id", "x", "y", "type") 
+                values (?, ?, ?, ?)
+            `),
+            insertTypeStmt: db.prepare(`
+                insert into cd4_cell_type("type") 
+                select distinct "type" from cd4_cell
+                order by "type"
+            `),
+            getInsertGeneExpressionStmt: ({gene}) => db.prepare(`
+                insert into "cd4_cell_gene_expression_${gene}"("id", "cd4_cell_id", "value") 
+                values (?, ?, ?)
+            `),
+            getInsertGeneCountStmt: ({gene}) => db.prepare(`
+                insert into cd4_cell_gene_count("gene", "count") 
+                select '${gene}', count(*) from "cd4_cell_gene_expression_${gene}"
+                where value > 0
+            `),
+        },
+        {
+            filepath: cd8CellsFilepath,
+            expectedHeaders: ['Component1', 'Component2', 'cellType'],
+            tablePrefix: 'cd8_cell',
+            insertStmt: db.prepare(`
+                insert into cd8_cell("id", "x", "y", "type") 
+                values (?, ?, ?, ?)
+            `),
+            insertTypeStmt: db.prepare(`
+                insert into cd8_cell_type("type") 
+                select distinct "type" from cd8_cell
+                order by "type"
+            `),
+            getInsertGeneExpressionStmt: ({gene}) => db.prepare(`
+                insert into "cd8_cell_gene_expression_${gene}"("id", "cd8_cell_id", "value") 
+                values (?, ?, ?)
+            `),
+            getInsertGeneCountStmt: ({gene}) => db.prepare(`
+                insert into cd8_cell_gene_count("gene", "count") 
+                select '${gene}', count(*) from "cd8_cell_gene_expression_${gene}"
+                where value > 0
+            `),
+        },
     ];
 
     let genes = [];
@@ -167,7 +223,7 @@ async function loadFiles({ databaseFilepath, malignantCellsFilepath, nonmalignan
 
         for await (const line of csvStream) {
             const headerValues = line.slice(0, expectedHeaders.length);
-            const geneValues = line.slice(expectedHeaders.length);
+            const geneValues = line.slice(expectedHeaders.length)//.slice(0, 100);
 
             if (id === 0) {
                 genes = geneValues;
