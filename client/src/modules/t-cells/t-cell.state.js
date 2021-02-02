@@ -3,7 +3,7 @@ import { query } from '../../services/query';
 
 export const tCellQuery = selector({
     key: 'tCell.tCellQuery',
-    get: ({get}) => query('/api/query', {table: 't_cell'}),
+    get: ({get}) => query('/api/query', {table: 't_cell', raw: true}),
 });
 
 export const tCellCountQuery = selector({
