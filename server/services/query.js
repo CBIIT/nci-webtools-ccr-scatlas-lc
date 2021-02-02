@@ -2,7 +2,7 @@ function query(database, params) {
     // enable read-only mode
     database.pragma('query_only = ON');
     const ifDefined = (value, statement) => value ? statement : '';
-    let { table, offset, limit, order, orderBy, columns, distinct, count } = params;
+    let { table, offset, limit, order, orderBy, columns, distinct, count, raw } = params;
 
     // validate provided table
     const isValidTable = database.prepare(
@@ -102,7 +102,7 @@ function query(database, params) {
             .columns()
             .map(c => c.name),
         records: statement
-            .raw()
+            .raw(Boolean(raw))
             .all({ offset, limit, ...queryParams }),
     };
 
