@@ -1,6 +1,7 @@
 import groupBy from 'lodash/groupBy';
 
 export function getGroupedTraces({ columns, records }, groupByColumn, marker) {
+    const idIndex = columns.indexOf('id');
     const xIndex = columns.indexOf('x');
     const yIndex = columns.indexOf('y');
     const groupIndex = columns.indexOf(groupByColumn);
@@ -8,6 +9,7 @@ export function getGroupedTraces({ columns, records }, groupByColumn, marker) {
 
     return Object.entries(groups).map(([key, values]) => ({
         name: key,
+        ids: values.map(v => v[idIndex]),
         x: values.map(v => v[xIndex]),
         y: values.map(v => v[yIndex]),
         mode: 'markers',
