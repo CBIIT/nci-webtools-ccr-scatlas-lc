@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';
 import GeneExpressionPlots from './gene-expression-plots';
+import GeneExpressionPlotOptions from './gene-expression-plot-options';
 import GeneExpressionCounts from './gene-expression-counts';
 
 export default function GeneExpression() {
@@ -15,6 +16,8 @@ export default function GeneExpression() {
                     </Card.Title>
                 </Card.Header>
                 <Card.Body>
+                    <GeneExpressionPlotOptions />
+                    <hr />
                     <Suspense fallback={<div>Loading...</div>}>
                         <GeneExpressionPlots />
                     </Suspense>
