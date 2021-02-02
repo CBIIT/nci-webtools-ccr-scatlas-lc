@@ -8,7 +8,19 @@ export function asQueryParams(params) {
         .join('&');
 }
 
-export function query(url, params, options) {
-    return fetch(`${url}${asQueryParams(params)}`, options)
-        .then(response => response.json());
+export async function query(url, params, options) {
+    const fetchOptions = {
+        method: 'GET',
+        headers: {'Content-Type': 'application/json'},
+        ...options
+    };
+
+    if (/get/i.test(fetchOptions.method)) {
+        url += asQueryParams(params)
+    } else {
+        fetchOptions.body = JSON.stringify(params);
+    }
+
+    const response = await fetch(url, fetchOptions);
+    return await response.json();
 }
