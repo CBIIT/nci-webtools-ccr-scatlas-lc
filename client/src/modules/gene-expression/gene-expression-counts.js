@@ -27,7 +27,7 @@ export default function GeneExpressionCounts() {
         },
         {
             dataField: 'malignant_cell_count',
-            text: 'Cells',
+            text: 'Cells Expressing',
             sort: true,
         },
     ];
