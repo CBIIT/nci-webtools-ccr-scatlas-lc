@@ -43,6 +43,7 @@ export default function TCellsPlots() {
         legend: {
             itemsizing: 'constant',
             itemwidth: 40,
+            orientation: 'h',
         },
         hovermode: 'closest',
     };
@@ -110,7 +111,12 @@ export default function TCellsPlots() {
                             title: `<b>T Cells (n=${tCells.records.length})</b>`,
                             legend: {
                                 ...defaultLayout.legend,
-                                title: { text: 'Type (click to toggle)', font: { size: 14 } },
+                                title: { 
+                                    text: 'Type (click to toggle)', 
+                                    font: { size: 14 },
+                                    side: 'top',
+                                },
+                                
                             },
                             xaxis: {
                                 ...defaultLayout.xaxis,
@@ -120,6 +126,8 @@ export default function TCellsPlots() {
                                 ...defaultLayout.yaxis,
                                 title: 't-SNE 2',
                             },
+                            hovermode: 'closest',
+                            title: `T Cells (n=${tCells.records.length})`,
                         }}
                         useResizeHandler
                         className="w-100"
@@ -134,7 +142,11 @@ export default function TCellsPlots() {
                             title: `<b>CD4+ T Cells (n=${cd4.records.length})</b>`,
                             legend: {
                                 ...defaultLayout.legend,
-                                title: { text: 'Type (click to toggle)', font: { size: 14 } },
+                                title: {
+                                    text: 'Type (click to toggle)', 
+                                    font: { size: 14 },
+                                    side: 'top',
+                                },
                             },
                         }}
                         useResizeHandler
@@ -150,7 +162,11 @@ export default function TCellsPlots() {
                             title: `<b>CD8+ T Cells (n=${cd8.records.length})</b>`,
                             legend: {
                                 ...defaultLayout.legend,
-                                title: { text: 'Type (click to toggle)', font: { size: 14 } },
+                                title: {
+                                    text: 'Type (click to toggle)', 
+                                    font: { size: 14 },
+                                    side: 'top',
+                                },
                             },
                         }}
                         useResizeHandler
