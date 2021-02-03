@@ -31,13 +31,11 @@ export default function TCellsPlots() {
     const defaultLayout = {
         xaxis: {
             title: 'Component 1',
-            showticklabels: false,
             zeroline: false,
             scaleanchor: 'y',
         },
         yaxis: {
             title: 'Component 2',
-            showticklabels: false,
             zeroline: false,
         },
         legend: {
