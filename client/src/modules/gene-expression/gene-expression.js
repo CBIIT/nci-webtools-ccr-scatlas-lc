@@ -17,7 +17,7 @@ export default function GeneExpression() {
             <Card className="shadow mb-4">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
                     <Card.Title className="my-1">
-                        Gene Expression
+                        Tumor Cell Communities
                     </Card.Title>
                     {gene && <Button variant="light" size="sm" onClick={_ => setGene('')}>
                         Clear Gene ({gene})

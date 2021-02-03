@@ -1,12 +1,8 @@
-import Container from 'react-bootstrap/Container';
-import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import Plot from 'react-plotly.js';
-import groupBy from 'lodash/groupBy'
+import merge from 'lodash/merge';
 
 import {
     getContinuousTrace,
@@ -46,27 +42,21 @@ export default function TCellsPlots() {
         hovermode: 'closest',
     };
 
-
     return gene ?
         <>
             <Row>
                 <Col xl={4}>
                     <Plot
                         data={[getContinuousTrace(tCellGeneExpression, 'value', { size, opacity, showscale: true })]}
-                        layout={{
+                        layout={merge({}, defaultLayout, {
+                            title: `<b>T Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
                             xaxis: {
                                 title: 't-SNE 1',
-                                showticklabels: false,
-                                zeroline: false,
-                                scaleanchor: 'y',
                             },
                             yaxis: {
                                 title: 't-SNE 2',
-                                showticklabels: false,
-                                zeroline: false,
                             },
-                            title: `<b>T Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
-                        }}
+                        })}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -75,10 +65,9 @@ export default function TCellsPlots() {
                 <Col xl={4}>
                     <Plot
                         data={[getContinuousTrace(cd4GeneExpression, 'value', { size, opacity, showscale: true })]}
-                        layout={{
-                            ...defaultLayout,
+                        layout={merge({}, defaultLayout, {
                             title: `<b>CD4+ T Cells:  ${gene} (n=${cd4GeneExpression.records.length})</b>`,
-                        }}
+                        })}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -87,10 +76,9 @@ export default function TCellsPlots() {
                 <Col xl={4}>
                 <Plot
                         data={[getContinuousTrace(cd8GeneExpression, 'value', { size, opacity, showscale: true })]}
-                        layout={{
-                            ...defaultLayout,
+                        layout={merge({}, defaultLayout, {
                             title: `<b>CD8+ T Cells:  ${gene} (n=${cd8GeneExpression.records.length})</b>`,
-                        }}
+                        })}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -104,28 +92,23 @@ export default function TCellsPlots() {
                 <Col xl={4}>
                     <Plot
                         data={getGroupedTraces(tCells, 'type', { size, opacity })}
-                        layout={{
-                            ...defaultLayout,
+                        layout={merge({}, defaultLayout, {
                             title: `<b>T Cells (n=${tCells.records.length})</b>`,
                             legend: {
-                                ...defaultLayout.legend,
                                 title: { 
                                     text: 'Type (click to toggle)', 
                                     font: { size: 14 },
                                     side: 'top',
                                 },
-                                
                             },
                             xaxis: {
-                                ...defaultLayout.xaxis,
                                 title: 't-SNE 1',
                             },
                             yaxis: {
-                                ...defaultLayout.yaxis,
                                 title: 't-SNE 2',
                             },
                             hovermode: 'closest',
-                        }}
+                        })}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -134,8 +117,7 @@ export default function TCellsPlots() {
                 <Col xl={4}>
                     <Plot
                         data={getGroupedTraces(cd4, 'type', { size, opacity })}
-                        layout={{
-                            ...defaultLayout,
+                        layout={merge({}, defaultLayout, {
                             title: `<b>CD4+ T Cells (n=${cd4.records.length})</b>`,
                             legend: {
                                 ...defaultLayout.legend,
@@ -145,7 +127,7 @@ export default function TCellsPlots() {
                                     side: 'top',
                                 },
                             },
-                        }}
+                        })}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -154,18 +136,16 @@ export default function TCellsPlots() {
                 <Col xl={4}>
                     <Plot
                         data={getGroupedTraces(cd8, 'type', { size, opacity })}
-                        layout={{
-                            ...defaultLayout,
+                        layout={merge({}, defaultLayout, {
                             title: `<b>CD8+ T Cells (n=${cd8.records.length})</b>`,
                             legend: {
-                                ...defaultLayout.legend,
                                 title: {
                                     text: 'Type (click to toggle)', 
                                     font: { size: 14 },
                                     side: 'top',
                                 },
                             },
-                        }}
+                        })}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
