@@ -42,7 +42,7 @@ export function RangeFilter({
     );
 }
 
-export function Table({ columns, data, options }) {
+export default function Table({ columns, data, options }) {
 
     const {
         getTableProps,
