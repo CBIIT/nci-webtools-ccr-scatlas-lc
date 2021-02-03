@@ -1,17 +1,16 @@
-import { useMemo } from 'react';
-import { useRecoilValue, useRecoilState } from 'recoil';
+import { useMemo, useCallback } from 'react';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import Button from 'react-bootstrap/Button';
 import Table, { TextFilter, RangeFilter } from '../components/table';
 import { geneCountsQuery, geneState } from './gene-expression.state';
 
 export default function GeneExpressionCounts() {
     const geneCounts = useRecoilValue(geneCountsQuery);
-    const [gene, setGene] = useRecoilState(geneState);
-
-    function updateGene(gene) {
+    const setGene = useSetRecoilState(geneState);
+    const updateGene = useCallback(gene => {
         window.scrollTo(0, 0);
         setGene(gene);
-    }
+    }, [setGene]);
 
     const columns = useMemo(_ => [
         {
@@ -31,7 +30,7 @@ export default function GeneExpressionCounts() {
             Filter: RangeFilter,
             filter: 'between',
         }
-    ], []);
+    ], [updateGene]);
 
     const data = useMemo(_ =>
         geneCounts.records,

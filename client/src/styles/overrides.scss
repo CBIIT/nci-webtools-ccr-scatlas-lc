@@ -50,6 +50,10 @@ legend {
     font-weight: 500;
 }
 
+.page-item.disabled .page-link {
+    color: #595959;
+}
+
 .navbar-dark {
     .navbar-toggler {
         border: none;
@@ -88,7 +92,7 @@ input::-webkit-outer-spin-button.no-spinner,
 
 [disabled], .disabled {
     cursor: not-allowed;
-    opacity: 0.8;
+    // opacity: 0.8;
 }
 
 .text-decoration-underline {
