@@ -21,6 +21,26 @@ export const tCellCountQuery = selector({
     get: async ({get}) => await query('/api/query', {table: `v_t_cd4_cd8_cell_gene_count`, orderBy: 't_cell_count', order: 'desc'}),
 });
 
+export const tCellGeneExpressionQuery = selector({
+    key: 'tCell.tCellGeneExpressionQuery',
+    get: async ({get}) => get(tCellState) 
+        ? await query('/api/query', {table: `v_t_cell_gene_expression_${get(tCellState)}`, raw: true}) 
+        : [],
+});
+
+export const cd4GeneExpressionQuery = selector({
+    key: 'tCell.cd4GeneExpressionQuery',
+    get: async ({get}) => get(tCellState) 
+        ? await query('/api/query', {table: `v_cd4_cell_gene_expression_${get(tCellState)}`, raw: true}) 
+        : [],
+});
+
+export const cd8GeneExpressionQuery = selector({
+    key: 'tCell.cd8GeneExpressionQuery',
+    get: async ({get}) => get(tCellState) 
+        ? await query('/api/query', {table: `v_cd8_cell_gene_expression_${get(tCellState)}`, raw: true}) 
+        : [],
+});
 export const tCellState = atom({
     key: 'tCell.tCellState',
     default: '',
