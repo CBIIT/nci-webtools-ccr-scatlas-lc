@@ -127,7 +127,6 @@ export default function TCellsPlots() {
                                 title: 't-SNE 2',
                             },
                             hovermode: 'closest',
-                            title: `T Cells (n=${tCells.records.length})`,
                         }}
                         useResizeHandler
                         className="w-100"
