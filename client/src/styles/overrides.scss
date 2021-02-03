@@ -2,11 +2,6 @@
     outline: none;
 }
 
-// higher contrast selection
-::selection { 
-    color: white;
-    background: $primary-darker;
-}
 
 body {
     min-width: 400px;
@@ -28,7 +23,7 @@ legend {
     padding: 0 .25rem;
 }
 
-.btn {
+a, .btn {
     font-weight: 500;
 }
 
