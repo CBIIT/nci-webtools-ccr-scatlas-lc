@@ -23,7 +23,7 @@ export const geneState = atom({
 
 export const markerConfigState = atom({
     key: 'geneExpression.markerConfigState',
-    default: { size: 4, opacity: 0.7 },
+    default: { size: 4, opacity: 0.8 },
 });
 
 export const malignantCellsGeneExpressionQuery = selector({
