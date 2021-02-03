@@ -20,13 +20,13 @@ export default function GeneExpressionPlotOptions() {
     return (
         <Row as={Form}>
             <Col md={3}>
-                <Form.Group>
+                <Form.Group controlId="cell-size">
                     <Form.Label>Cell Size</Form.Label>
                     <Form.Control type="number" name="size" value={markerConfig.size} onChange={handleChange} min="1" max="10" />
                 </Form.Group>
             </Col>
             <Col md={3}>
-                <Form.Group>
+                <Form.Group controlId="cell-opacity">
                     <Form.Label>Cell Opacity</Form.Label>
                     <Form.Control type="number" name="opacity" value={markerConfig.opacity} onChange={handleChange} step="0.1" max="1" min="0.1" />
                 </Form.Group>

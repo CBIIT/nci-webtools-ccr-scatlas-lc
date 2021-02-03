@@ -128,6 +128,8 @@ export default function Table({ columns, data, options }) {
                     <Form.Control
                         as="select"
                         className="mr-2"
+                        name="select-page-size"
+                        aria-label="Select page size"
                         value={pageSize}
                         onChange={e => setPageSize(Number(e.target.value))}>
                         {[10, 25, 50, 100].map(pageSize => (

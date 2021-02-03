@@ -51,12 +51,12 @@ export default function App() {
         </Container>
       </Navbar>
 
-      <main id="main" className="bg-light">
+      <div id="content" className="bg-light">
         <Route exact path="/" component={Home} />
         <Route exact path="/gene-expression" component={GeneExpression} />
         <Route exact path="/t-cells" component={TCell} />
         <Route exact path="/contact-us" component={Contact} />
-      </main>
+      </div>
 
     </>
   );
