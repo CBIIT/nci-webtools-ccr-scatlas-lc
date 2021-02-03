@@ -1,13 +1,8 @@
-
+import { useMemo } from 'react';
 import { useRecoilValue, useRecoilState } from 'recoil';
-import BootstrapTable from 'react-bootstrap-table-next';
 import Button from 'react-bootstrap/Button';
-// import filterFactory, { numberFilter, textFilter } from 'react-bootstrap-table2-filter';
-import paginationFactory from 'react-bootstrap-table2-paginator';
-import { 
-    geneCountsQuery,
-    geneState,
-} from './gene-expression.state';
+import { Table, TextFilter, RangeFilter } from '../components/table';
+import { geneCountsQuery, geneState } from './gene-expression.state';
 
 export default function GeneExpressionCounts() {
     const geneCounts = useRecoilValue(geneCountsQuery);
@@ -18,39 +13,45 @@ export default function GeneExpressionCounts() {
         setGene(gene);
     }
 
-    const columns = [
+    const columns = useMemo(_ => [
         {
-            dataField: 'gene',
-            text: 'Gene',
-            sort: true,
-            formatter: cell => <Button variant="link" className="p-0" onClick={_ => updateGene(cell)}>{cell}</Button>
+            accessor: 'gene',
+            Header: 'Gene',
+            Filter: TextFilter,
+            Cell: ({ value }) => (
+                <Button variant="link" className="p-0" onClick={_ => updateGene(value)}>
+                    {value}
+                </Button>
+            ),
+            placeholder: 'Search Genes',
         },
         {
-            dataField: 'malignant_cell_count',
-            text: 'Cells Expressing',
-            sort: true,
-        },
+            Header: 'Cells Expressing',
+            accessor: 'malignant_cell_count',
+            Filter: RangeFilter,
+            filter: 'between',
+        }
+    ], []);
+
+    const data = useMemo(_ =>
+        geneCounts.records,
+        [geneCounts]
+    );
+
+    const sortBy = [
+        { id: 'malignant_cell_count', desc: true }
     ];
 
+    const options = {
+        initialState: { sortBy },
+        defaultCanSort: true,
+    };
+
     return (
-        <BootstrapTable
-            bootstrap4
-            hover
-            bordered
-            keyField="id"
-            data={geneCounts.records}
-            columns={columns}
-            defaultSorted={[{
-                dataField: 'malignant_cell_count',
-                order: 'desc'
-            }]}
-            pagination={paginationFactory({
-                showTotal: true
-            })}
-            filterPosition="top"
+        <Table 
+            columns={columns} 
+            data={data} 
+            options={options} 
         />
-    )
-
-
-
+    );
 }
