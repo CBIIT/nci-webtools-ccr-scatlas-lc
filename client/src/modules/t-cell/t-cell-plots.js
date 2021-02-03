@@ -115,6 +115,9 @@ export default function TCellsPlots() {
                             },
                             hovermode: 'closest',
                             title: `T Cells (n=${tCells.records.length})`,
+                            legend: {
+                                orientation: 'h'
+                            }
                         }}
                         useResizeHandler
                         className="w-100"
@@ -127,6 +130,9 @@ export default function TCellsPlots() {
                         layout={{
                             ...defaultLayout,
                             title: `CD4+ T Cells (n=${cd4.records.length})`,
+                            legend: {
+                                orientation: 'h'
+                            }
 
                         }}
                         useResizeHandler
@@ -140,7 +146,9 @@ export default function TCellsPlots() {
                         layout={{
                             ...defaultLayout,
                             title: `CD8+ T Cells (n=${cd8.records.length})`,
-
+                            legend: {
+                                orientation: 'h'
+                            }
                         }}
                         useResizeHandler
                         className="w-100"
