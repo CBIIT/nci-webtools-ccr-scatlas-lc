@@ -22,13 +22,15 @@ export default function GeneExpressionCounts() {
                     {value}
                 </Button>
             ),
-            placeholder: 'Search Genes',
+            placeholder: 'Enter gene',
         },
         {
             Header: 'Cells Expressing',
             accessor: 'malignant_cell_count',
             Filter: RangeFilter,
             filter: 'between',
+            minPlaceholder: 'Enter min value',
+            maxPlaceholder: 'Enter max value',
         }
     ], [updateGene]);
 
