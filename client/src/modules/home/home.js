@@ -5,20 +5,15 @@ import Col from 'react-bootstrap/Col';
 
 export default function Home() {
     return (
-        <Container className="py-4">
+        <Container>
             <Card className="shadow">
-                <Card.Header className="bg-primary text-white">
-                    <Card.Title className="my-0">
-                        Single-Cell Atlas in Liver Cancer (SCATLAS-LC)
-                </Card.Title>
-                </Card.Header>
                 <Card.Body>
                     <Row>
-                        <Col md={4}>
+                        <Col md={8}>
                             <img src="images/home.svg" className="img-fluid" alt="Home Page Figure" />
                         </Col>
 
-                        <Col md={8}>
+                        <Col md={4}>
                             <h3>About SCATLAS-LC</h3>
                             <p>
                                 SCATLAS-LC (Single-Cell ATLAS in Liver Cancer) is a publicly available data portal of single-cell transcriptomic profiles of tumor cell communities in hepatocellular carcinoma and intrahepatic cholangiocarcinoma
