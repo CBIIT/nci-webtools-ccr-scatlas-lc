@@ -33,6 +33,10 @@ export default function GeneExpressionPlots() {
             title: 't-SNE 2',
             zeroline: false,
         },
+        legend: {
+            itemsizing: 'constant',
+            itemwidth: 40,
+        },
         hovermode: 'closest',
     };
 
@@ -44,7 +48,7 @@ export default function GeneExpressionPlots() {
                         data={[getContinuousTrace(malignantCellsGeneExpression, 'value', {size, opacity, showscale: true})]}
                         layout={{
                             ...defaultLayout,
-                            title: `Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})`,
+                            title: `<b>Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})</b>`,
                         }}
                         useResizeHandler
                         className="w-100"
@@ -56,7 +60,7 @@ export default function GeneExpressionPlots() {
                         data={[getContinuousTrace(nonmalignantCellsGeneExpression, 'value', {size, opacity, showscale: true})]}
                         layout={{
                             ...defaultLayout,
-                            title: `Non-malignant Cells:  ${gene} (n=${nonmalignantCellsGeneExpression.records.length})`,
+                            title: `<b>Non-malignant Cells:  ${gene} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
                         }}
                         useResizeHandler
                         className="w-100"
@@ -72,8 +76,12 @@ export default function GeneExpressionPlots() {
                         data={getGroupedTraces(malignantCells, 'type', {size, opacity})}
                         layout={{
                             ...defaultLayout,
-                            title: `Malignant Cells (n=${malignantCells.records.length})`,
+                            title: {
+                                ...defaultLayout.title,
+                                text: `<b>Malignant Cells (n=${malignantCells.records.length})</b>`,
+                            },
                             legend: {
+                                ...defaultLayout.legend,
                                 title: { text: 'Case (click to toggle)', font: { size: 14 } }
                             },
                         }}
@@ -88,8 +96,9 @@ export default function GeneExpressionPlots() {
                         data={getGroupedTraces(nonmalignantCells, 'type', {size, opacity})}
                         layout={{
                             ...defaultLayout,
-                            title: `Non-malignant Cells (n=${nonmalignantCells.records.length})`,
+                            title: `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
                             legend: {
+                                ...defaultLayout.legend,
                                 title: { text: 'Type (click to toggle)', font: { size: 14 } },
                             },
                         }}
