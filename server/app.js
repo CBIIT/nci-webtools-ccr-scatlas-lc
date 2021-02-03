@@ -5,8 +5,7 @@ const logger = require('./services/logger');
 const forkCluster = require('./services/cluster');
 const production = process.env.NODE_ENV === 'production';
 
-// forks a single worker process during local development
-if (forkCluster(!production && 1))
+if (forkCluster())
     return;
 
 logger.info(`[${process.pid}] Started worker process, parsing schema...`);
