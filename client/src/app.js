@@ -17,8 +17,8 @@ export default function App() {
       title: 'Home',
     },
     {
-      route: '/gene-expression',
-      title: 'Gene Expression',
+      route: '/tumor-cells',
+      title: 'Tumor Cell Communities',
     },
     {
       route: '/t-cells',
@@ -53,7 +53,7 @@ export default function App() {
 
       <div id="content" className="bg-light">
         <Route exact path="/" component={Home} />
-        <Route exact path="/gene-expression" component={GeneExpression} />
+        <Route exact path="/tumor-cells" component={GeneExpression} />
         <Route exact path="/t-cells" component={TCell} />
         <Route exact path="/contact-us" component={Contact} />
       </div>
