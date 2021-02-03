@@ -85,7 +85,7 @@ function query(database, params) {
 
     const statement = database.prepare(
         `SELECT ${ifDefined(distinct, 'DISTINCT')} ${queryColumns}
-        FROM ${table} ${conditions}
+        FROM "${table}" ${conditions}
         ${ifDefined(order && orderBy, `ORDER BY ${orderBy} ${order}`)} 
         ${ifDefined(limit, `LIMIT :limit`)}
         ${ifDefined(offset, `OFFSET :offset`)}`
@@ -110,7 +110,7 @@ function query(database, params) {
         result.count = database
             .prepare(`SELECT COUNT(*) FROM (
                 SELECT ${ifDefined(distinct, 'DISTINCT')} ${queryColumns} 
-                FROM ${table} ${conditions}
+                FROM "${table}" ${conditions}
             )`)
             .pluck()
             .get(queryParams);
