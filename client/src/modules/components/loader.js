@@ -1,5 +1,6 @@
+import Spinner from 'react-bootstrap/Spinner';
 
-export function Loader({essage}) {
+export default function Loader({message}) {
     return (
         <div className="loader">
             <Spinner variant="primary" animation="border" role="status" />

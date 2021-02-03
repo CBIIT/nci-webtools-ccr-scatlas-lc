@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import Button from 'react-bootstrap/Button';
-import { Table, TextFilter, RangeFilter } from '../components/table';
+import Table, { TextFilter, RangeFilter } from '../components/table';
 import { geneCountsQuery, geneState } from './gene-expression.state';
 
 export default function GeneExpressionCounts() {
@@ -38,9 +38,9 @@ export default function GeneExpressionCounts() {
         [geneCounts]
     );
 
-    const sortBy = [
+    const sortBy = useMemo(_ => [
         { id: 'malignant_cell_count', desc: true }
-    ];
+    ], []);
 
     const options = {
         initialState: { sortBy },
