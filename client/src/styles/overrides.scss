@@ -24,10 +24,6 @@ legend {
     background-color: $primary-darker !important;
 }
 
-.bg-primary-gradient {
-    background: linear-gradient(45deg, $primary, $primary-darker) !important;
-}
-
 .alert-dismissible .close {
     padding: 0 .25rem;
 }
@@ -50,6 +46,10 @@ legend {
     border-top: 7px solid transparent;
 }
 
+.page-link {
+    font-weight: 500;
+}
+
 .navbar-dark {
     .navbar-toggler {
         border: none;
@@ -70,26 +70,6 @@ legend {
     }
 }
 
-.card-header-tabs.nav-tabs .nav-item .nav-link {
-    border-bottom-width: 2px;
-    border-color: transparent;
-    &:hover, &:focus, &.active {
-        color: black;
-        background-color: $card-cap-bg;
-        border-bottom-color: $primary;
-    }
-}
-
-.custom-checkbox .custom-control-input:disabled:checked ~ .custom-control-label::before,
-.custom-checkbox .custom-control-input[readonly]:checked ~ .custom-control-label::before {
-    background-color: rgba(24, 83, 148, 0.5);
-}
-
-.legend {
-    font-size: 1rem;
-    white-space: nowrap;
-}
-
 input[type=number].no-spinner {
     -moz-appearance: textfield;
 }
@@ -100,33 +80,20 @@ input::-webkit-outer-spin-button.no-spinner,
     margin: 0;
 }
 
-// .react-bootstrap-table table {
-//     table-layout: auto;
-// }
-
-.react-bootstrap-table-pagination {
-    margin: 0;
-}
-
 .table.table-bordered {
     th {
         border-top: 1px solid  #dee2e6;
     }
 }
 
-.table-nowrap {
-    td, th {
-        white-space: nowrap;
-        max-width: 300px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+[disabled], .disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
 }
 
 .text-decoration-underline {
     text-decoration: underline!important;
 }
-
 
 .loader {
     z-index: 999;
