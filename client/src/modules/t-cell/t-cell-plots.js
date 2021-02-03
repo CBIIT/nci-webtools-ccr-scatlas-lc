@@ -16,7 +16,6 @@ export default function TCellsPlots() {
     const tCells = useRecoilValue(tCellQuery);
     const cd4 = useRecoilValue(cd4Query);
     const cd8 = useRecoilValue(cd8Query);
-    const tCellCount = useRecoilValue(tCellCountQuery);
     const {size, opacity} = useRecoilValue(markerConfigState);
 
     const defaultLayout = {
