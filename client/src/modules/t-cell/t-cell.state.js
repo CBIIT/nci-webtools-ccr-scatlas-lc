@@ -18,9 +18,7 @@ export const cd8Query = selector({
 
 export const tCellCountQuery = selector({
     key: 'tCell.tCellCountQuery',
-    get: async ({get}) => {
-        await query('/api/query', {table: `t_cell_gene_count`})
-    },
+    get: async ({get}) => await query('/api/query', {table: `v_t_cd4_cd8_cell_gene_count`, orderBy: 't_cell_count', order: 'desc'}),
 });
 
 export const tCellState = atom({
