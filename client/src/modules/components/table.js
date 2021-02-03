@@ -119,7 +119,7 @@ export default function Table({ columns, data, options }) {
                 </BootstrapTable>
             </div>
 
-            <div className="d-flex align-items-center justify-content-between px-3">
+            <div className="d-flex align-items-center justify-content-between p-3">
                 <div>
                     Showing rows {(1 + pageIndex * pageSize).toLocaleString()}-{Math.min(rows.length, (pageIndex + 1) * pageSize).toLocaleString()} of {rows.length.toLocaleString()}
                 </div>
@@ -139,7 +139,7 @@ export default function Table({ columns, data, options }) {
                         ))}
                     </Form.Control>
 
-                    <Pagination>
+                    <Pagination className="mb-0">
                         <Pagination.First onClick={() => gotoPage(0)} disabled={!canPreviousPage}>First</Pagination.First>
                         <Pagination.Prev onClick={() => previousPage()} disabled={!canPreviousPage}>Previous</Pagination.Prev>
                         <Pagination.Next onClick={() => nextPage()} disabled={!canNextPage}>Next</Pagination.Next>
