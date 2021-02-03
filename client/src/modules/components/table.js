@@ -18,7 +18,7 @@ export function TextFilter({
 }
 
 export function RangeFilter({
-    column: { filterValue = [], setFilter },
+    column: { filterValue = [], setFilter, minPlaceholder, maxPlaceholder },
 }) {
     const getInputValue = ev => ev.target.value 
         ? parseInt(ev.target.value, 10) 
@@ -27,13 +27,13 @@ export function RangeFilter({
     return (
         <InputGroup className="flex-nowrap">
             <Form.Control 
-                placeholder="Enter min value" 
+                placeholder={minPlaceholder || "Min value" }
                 type="number"
                 value={filterValue[0] || ''}
                 onChange={e => setFilter((old = []) => [getInputValue(e), old[1]])}
             />
             <Form.Control 
-                placeholder="Enter max value" 
+                placeholder={maxPlaceholder || "Max value" }
                 type="number"
                 value={filterValue[1] || ''}
                 onChange={e => setFilter((old = []) => [old[0], getInputValue(e)])}
