@@ -96,8 +96,11 @@ function query(database, params) {
         order,
         offset,
         limit,
-        filters: Object.fromEntries(filters.map(([key, value, type]) => 
-            [`_${key}:${type}`, value])),
+        filters: filters
+            .map(([key, value, type]) => 
+                [`_${key}:${type}`, value])
+            .reduce((acc, [key, value]) => 
+                ({...acc, [key]: value}), {}),
         columns: statement
             .columns()
             .map(c => c.name),
