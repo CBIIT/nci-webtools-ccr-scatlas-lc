@@ -14,13 +14,13 @@ export default function Home() {
                         </Col>
 
                         <Col md={6}>
-                            <h3>About SCATLAS-LC</h3>
+                            <h3>About scAtlasLC</h3>
                             <p>
-                                SCATLAS-LC (Single-Cell ATLAS in Liver Cancer) is a publicly available data portal of single-cell transcriptomic profiles of tumor cell communities in hepatocellular carcinoma and intrahepatic cholangiocarcinoma
+                                scAtlasLC (Single-cell ATLAS in Liver Cancer) is a publicly available data portal of single-cell transcriptomic profiles of tumor cell communities in hepatocellular carcinoma and intrahepatic cholangiocarcinoma
                             </p>
 
                             <p>
-                                SCATLAS-LC can be used to evaluate gene expression in malignant cells and various non-malignant cells in liver cancer. It can be further used to determine gene expression in different subtypes of stromal cells and immune cells.
+                                scAtlasLC can be used to evaluate gene expression in malignant cells and various non-malignant cells in liver cancer. It can be further used to determine gene expression in different subtypes of stromal cells and immune cells.
                             </p>
                         </Col>
 
