@@ -1,5 +1,7 @@
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Tabs from 'react-bootstrap/Tabs'
+import Tab from 'react-bootstrap/Tab'
 import { useRecoilValue } from 'recoil';
 import Plot from 'react-plotly.js';
 import merge from 'lodash/merge';
@@ -38,14 +40,27 @@ export default function TCellsPlots() {
             itemsizing: 'constant',
             itemwidth: 40,
             orientation: 'h',
+            traceorder: 'normal'
         },
-        hovermode: 'closest',
+        hovermode: 'closest'
     };
+
+    const sortData = (data) => {
+        return (data.sort(function (a, b) {
+
+            var first = a.name
+            var second = b.name
+
+            return first.localeCompare(second)
+        }))
+
+
+    }
 
     return gene ?
         <>
-            <Row>
-                <Col xl={4}>
+            <Tabs defaultActiveKey="tcell" id="tcellTabs">
+                <Tab eventKey="tcell" title="T Cell">
                     <Plot
                         data={[getContinuousTrace(tCellGeneExpression, 'value', { size, opacity, showscale: true })]}
                         layout={merge({}, defaultLayout, {
@@ -56,47 +71,54 @@ export default function TCellsPlots() {
                             yaxis: {
                                 title: 't-SNE 2',
                             },
+
                         })}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
                     />
-                </Col>
-                <Col xl={4}>
-                    <Plot
-                        data={[getContinuousTrace(cd4GeneExpression, 'value', { size, opacity, showscale: true })]}
-                        layout={merge({}, defaultLayout, {
-                            title: `<b>CD4+ T Cells:  ${gene} (n=${cd4GeneExpression.records.length})</b>`,
-                        })}
-                        useResizeHandler
-                        className="w-100"
-                        style={{ height: '800px' }}
-                    />
-                </Col>
-                <Col xl={4}>
-                <Plot
-                        data={[getContinuousTrace(cd8GeneExpression, 'value', { size, opacity, showscale: true })]}
-                        layout={merge({}, defaultLayout, {
-                            title: `<b>CD8+ T Cells:  ${gene} (n=${cd8GeneExpression.records.length})</b>`,
-                        })}
-                        useResizeHandler
-                        className="w-100"
-                        style={{ height: '800px' }}
-                    />
-                </Col>
-            </Row>
+                </Tab>
+
+                <Tab eventKey="cd4/8" title="CD4/CD8">
+                    <Row>
+                        <Col xl={6}>
+                            <Plot
+                                data={[getContinuousTrace(cd4GeneExpression, 'value', { size, opacity, showscale: true })]}
+                                layout={merge({}, defaultLayout, {
+                                    title: `<b>CD4+ T Cells:  ${gene}</b>`,
+                                })}
+                                useResizeHandler
+                                className="w-100"
+                                style={{ height: '800px' }}
+                            />
+                        </Col>
+                        <Col xl={6}>
+                            <Plot
+                                data={[getContinuousTrace(cd8GeneExpression, 'value', { size, opacity, showscale: true })]}
+                                layout={merge({}, defaultLayout, {
+                                    title: `<b>CD8+ T Cells:  ${gene}</b>`,
+                                })}
+                                useResizeHandler
+                                className="w-100"
+                                style={{ height: '800px' }}
+                            />
+                        </Col>
+                    </Row>
+                </Tab>
+            </Tabs>
+
         </>
         :
         <>
-            <Row>
-                <Col xl={4}>
+            <Tabs defaultActiveKey="tcell" id="tcellTabs">
+                <Tab eventKey="tcell" title="T Cell">
                     <Plot
-                        data={getGroupedTraces(tCells, 'type', { size, opacity })}
+                        data={sortData(getGroupedTraces(tCells, 'type', { size, opacity }))}
                         layout={merge({}, defaultLayout, {
                             title: `<b>T Cells (n=${tCells.records.length})</b>`,
                             legend: {
-                                title: { 
-                                    text: 'Type (click to toggle)', 
+                                title: {
+                                    text: 'Type (click to toggle)',
                                     font: { size: 14 },
                                     side: 'top',
                                 },
@@ -113,44 +135,51 @@ export default function TCellsPlots() {
                         className="w-100"
                         style={{ height: '800px' }}
                     />
-                </Col>
-                <Col xl={4}>
-                    <Plot
-                        data={getGroupedTraces(cd4, 'type', { size, opacity })}
-                        layout={merge({}, defaultLayout, {
-                            title: `<b>CD4+ T Cells (n=${cd4.records.length})</b>`,
-                            legend: {
-                                ...defaultLayout.legend,
-                                title: {
-                                    text: 'Type (click to toggle)', 
-                                    font: { size: 14 },
-                                    side: 'top',
-                                },
-                            },
-                        })}
-                        useResizeHandler
-                        className="w-100"
-                        style={{ height: '800px' }}
-                    />
-                </Col>
-                <Col xl={4}>
-                    <Plot
-                        data={getGroupedTraces(cd8, 'type', { size, opacity })}
-                        layout={merge({}, defaultLayout, {
-                            title: `<b>CD8+ T Cells (n=${cd8.records.length})</b>`,
-                            legend: {
-                                title: {
-                                    text: 'Type (click to toggle)', 
-                                    font: { size: 14 },
-                                    side: 'top',
-                                },
-                            },
-                        })}
-                        useResizeHandler
-                        className="w-100"
-                        style={{ height: '800px' }}
-                    />
-                </Col>
-            </Row>
+                </Tab>
+
+                <Tab eventKey="cd4/8" title="CD4/CD8">
+                    <Row>
+                        <Col xl={6}>
+                            <Plot
+                                data={sortData(getGroupedTraces(cd4, 'type', { size, opacity }))}
+                                layout={merge({}, defaultLayout, {
+                                    title: `<b>CD4+ T Cells</b>`,
+                                    legend: {
+                                        ...defaultLayout.legend,
+                                        title: {
+                                            text: 'Type (click to toggle)',
+                                            font: { size: 14 },
+                                            side: 'top',
+                                        },
+                                    },
+                                })}
+                                useResizeHandler
+                                className="w-100"
+                                style={{ height: '800px' }}
+                            />
+                        </Col>
+                        <Col xl={6}>
+                            <Plot
+                                data={sortData(getGroupedTraces(cd8, 'type', { size, opacity }))}
+                                layout={merge({}, defaultLayout, {
+                                    title: `<b>CD8+ T Cells</b>`,
+                                    legend: {
+                                        title: {
+                                            text: 'Type (click to toggle)',
+                                            font: { size: 14 },
+                                            side: 'top',
+                                        },
+                                    },
+                                })}
+                                useResizeHandler
+                                className="w-100"
+                                style={{ height: '800px' }}
+                            />
+                        </Col>
+                    </Row>
+
+                </Tab>
+            </Tabs>
+
         </>
 }
