@@ -13,9 +13,9 @@ import {
     nonmalignantCellsQuery,
     malignantCellsGeneExpressionQuery,
     nonmalignantCellsGeneExpressionQuery,
-} from './gene-expression.state';
+} from './tumor-cell.state';
 
-export default function GeneExpressionPlots() {
+export default function TumorCellPlots() {
     const gene = useRecoilValue(geneState);
     const malignantCells = useRecoilValue(malignantCellsQuery);
     const nonmalignantCells = useRecoilValue(nonmalignantCellsQuery);

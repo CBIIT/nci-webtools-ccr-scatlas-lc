@@ -14,7 +14,6 @@ export default function TCell() {
 
     return (
         <Container className="py-4">
-
             <Card className="shadow mb-4">
                 <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
                     <Card.Title className="my-1">
@@ -24,7 +23,7 @@ export default function TCell() {
                         Clear Gene ({tCell})
                     </Button>}
                 </Card.Header>
-                <Card.Body>
+                <Card.Body className="position-relative">
                     <TCellPlotOptions />
                     <hr />
                     <div style={{ minHeight: '800px' }}>

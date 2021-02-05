@@ -2,9 +2,9 @@ import { useRecoilState } from 'recoil';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { markerConfigState } from './gene-expression.state';
+import { markerConfigState } from './tumor-cell.state';
 
-export default function GeneExpressionPlotOptions() {
+export default function TumorCellPlotOptions() {
     const [markerConfig, setMarkerConfig] = useRecoilState(markerConfigState);
 
     function handleChange(event) {
