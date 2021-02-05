@@ -171,6 +171,35 @@ export default function TCellsPlots() {
                                             side: 'top',
                                         },
                                     },
+                                    annotations:[
+                                        {
+                                            x: -11,
+                                            y: 3,
+                                            text: '<b>Cytotoxic</b>',
+                                            showarrow: false,
+                                            font:{
+                                                size: 16
+                                            }
+                                        },
+                                        {
+                                            x: 4,
+                                            y: 10,
+                                            text: '<b>Exhausted</b>',
+                                            showarrow: false,
+                                            font:{
+                                                size: 16
+                                            }
+                                        },
+                                        {
+                                            x: 8,
+                                            y: -4,
+                                            text: '<b>Naive</b>',
+                                            showarrow: false,
+                                            font:{
+                                                size: 16
+                                            }
+                                        }
+                                    ]
                                 })}
                                 useResizeHandler
                                 className="w-100"
@@ -189,6 +218,35 @@ export default function TCellsPlots() {
                                             side: 'top',
                                         },
                                     },
+                                    annotations:[
+                                        {
+                                            x: -11,
+                                            y: -1,
+                                            text: '<b>Cytotoxic</b>',
+                                            showarrow: false,
+                                            font:{
+                                                size: 16
+                                            }
+                                        },
+                                        {
+                                            x: 2,
+                                            y: -12,
+                                            text: '<b>Exhausted</b>',
+                                            showarrow: false,
+                                            font:{
+                                                size: 16
+                                            }
+                                        },
+                                        {
+                                            x: 6,
+                                            y: 5,
+                                            text: '<b>Naive</b>',
+                                            showarrow: false,
+                                            font:{
+                                                size: 16
+                                            }
+                                        }
+                                    ]
                                 })}
                                 useResizeHandler
                                 className="w-100"
