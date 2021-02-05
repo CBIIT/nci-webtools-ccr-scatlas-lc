@@ -5,13 +5,20 @@ import Tab from 'react-bootstrap/Tab'
 import { useRecoilValue } from 'recoil';
 import Plot from 'react-plotly.js';
 import merge from 'lodash/merge';
-
 import {
     getContinuousTrace,
     getGroupedTraces
 } from '../../services/plot';
-
-import { tCellQuery, cd4Query, cd8Query, markerConfigState, tCellState, tCellGeneExpressionQuery, cd4GeneExpressionQuery, cd8GeneExpressionQuery } from './t-cell.state';
+import { 
+    tCellQuery, 
+    cd4Query, 
+    cd8Query, 
+    markerConfigState, 
+    geneState, 
+    tCellGeneExpressionQuery, 
+    cd4GeneExpressionQuery, 
+    cd8GeneExpressionQuery 
+} from './t-cell.state';
 
 export default function TCellsPlots() {
 
@@ -20,7 +27,7 @@ export default function TCellsPlots() {
     const cd4 = useRecoilValue(cd4Query);
     const cd8 = useRecoilValue(cd8Query);
     const { size, opacity } = useRecoilValue(markerConfigState);
-    const gene = useRecoilValue(tCellState);
+    const gene = useRecoilValue(geneState);
 
     const tCellGeneExpression = useRecoilValue(tCellGeneExpressionQuery);
     const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery);
@@ -31,6 +38,8 @@ export default function TCellsPlots() {
             title: 'Component 1',
             zeroline: false,
             scaleanchor: 'y',
+            scaleratio: 1,
+            constrain: 'domain',
         },
         yaxis: {
             title: 'Component 2',
@@ -43,17 +52,34 @@ export default function TCellsPlots() {
         hovermode: 'closest'
     };
 
+    const defaultConfig = {
+        toImageButtonOptions: {
+            format: 'svg',
+            filename: 'plot_export',
+            height: 1000,
+            width: 1000,
+            scale: 1
+        }
+    }
+
+    // since plots are not initially visible, we need to trigger a resize event as we enter the tab
+    function handleSelect(key) {
+        const event = document.createEvent('Event');
+        event.initEvent('resize', true, true);
+        window.dispatchEvent(event);
+    }
+
     const sortData = (data) => {
 
-        const cd4  = data.filter(t => t.name.substring(0,3) === 'CD4')
-        const cd8 = data.filter(t => t.name.substring(0,3) === 'CD8')
+        const cd4 = data.filter(t => t.name.substring(0, 3) === 'CD4')
+        const cd8 = data.filter(t => t.name.substring(0, 3) === 'CD8')
 
         cd4.sort(function (a, b) {
 
             var first = a.name.split('-')[1]
             var second = b.name.split('-')[1]
 
-            return first.localeCompare(second, 'en', {numeric: true})
+            return first.localeCompare(second, 'en', { numeric: true })
         })
 
         cd8.sort(function (a, b) {
@@ -61,7 +87,7 @@ export default function TCellsPlots() {
             var first = a.name.split('-')[1]
             var second = b.name.split('-')[1]
 
-            return first.localeCompare(second,'en', {numeric: true})
+            return first.localeCompare(second, 'en', { numeric: true })
         })
 
         return cd4.concat(cd8)
@@ -69,7 +95,7 @@ export default function TCellsPlots() {
 
     return gene ?
         <>
-            <Tabs defaultActiveKey="tcell" id="tcellTabs">
+            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
                 <Tab eventKey="tcell" title="T Cell">
                     <Row>
                         <Col xl={12}>
@@ -85,9 +111,10 @@ export default function TCellsPlots() {
                                     },
 
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
-                                className="w-100"
-                                style={{ height: '800px' }}
+                                className="mw-100"
+                                style={{ height: '800px', width: '1000px' }}
                             />
                         </Col>
                     </Row>
@@ -101,6 +128,7 @@ export default function TCellsPlots() {
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD4+ T Cells:  ${gene}</b>`,
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}
@@ -112,6 +140,7 @@ export default function TCellsPlots() {
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD8+ T Cells:  ${gene}</b>`,
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}
@@ -124,19 +153,18 @@ export default function TCellsPlots() {
         </>
         :
         <>
-            <Tabs defaultActiveKey="tcell" id="tcellTabs">
+            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
                 <Tab eventKey="tcell" title="T Cell">
                     <Row>
-                        <Col xl={12}>
+                        <Col xl={12} className="d-flex justify-content-center">
                             <Plot
                                 data={sortData(getGroupedTraces(tCells, 'type', { size, opacity }))}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>T Cells (n=${tCells.records.length})</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type (click to toggle)',
+                                            text: 'Type',
                                             font: { size: 14 },
-                                            side: 'top',
                                         },
                                     },
                                     xaxis: {
@@ -147,9 +175,10 @@ export default function TCellsPlots() {
                                     },
                                     hovermode: 'closest',
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
-                                className="w-100"
-                                style={{ height: '800px' }}
+                                className="mw-100"
+                                style={{ height: '800px', width: '1000px' }}
                             />
                         </Col>
                     </Row>
@@ -164,20 +193,18 @@ export default function TCellsPlots() {
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD4+ T Cells</b>`,
                                     legend: {
-                                        ...defaultLayout.legend,
                                         title: {
-                                            text: 'Type (click to toggle)',
+                                            text: 'Type',
                                             font: { size: 14 },
-                                            side: 'top',
                                         },
                                     },
-                                    annotations:[
+                                    annotations: [
                                         {
                                             x: -11,
                                             y: 3,
                                             text: '<b>Cytotoxic</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         },
@@ -186,7 +213,7 @@ export default function TCellsPlots() {
                                             y: 10,
                                             text: '<b>Exhausted</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         },
@@ -195,12 +222,13 @@ export default function TCellsPlots() {
                                             y: -4,
                                             text: '<b>Naive</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         }
                                     ]
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}
@@ -213,18 +241,17 @@ export default function TCellsPlots() {
                                     title: `<b>CD8+ T Cells</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type (click to toggle)',
+                                            text: 'Type',
                                             font: { size: 14 },
-                                            side: 'top',
                                         },
                                     },
-                                    annotations:[
+                                    annotations: [
                                         {
                                             x: -11,
                                             y: -1,
                                             text: '<b>Cytotoxic</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         },
@@ -233,7 +260,7 @@ export default function TCellsPlots() {
                                             y: -12,
                                             text: '<b>Exhausted</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         },
@@ -242,12 +269,13 @@ export default function TCellsPlots() {
                                             y: 5,
                                             text: '<b>Naive</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         }
                                     ]
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}

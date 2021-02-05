@@ -2,11 +2,11 @@ import { useMemo, useCallback } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import Button from 'react-bootstrap/Button';
 import Table, { TextFilter, RangeFilter } from '../components/table';
-import { tCellCountQuery , tCellState } from './t-cell.state';
+import { tCellCountQuery , geneState } from './t-cell.state';
 
 export default function TCellCounts() {
     const geneCounts = useRecoilValue(tCellCountQuery);
-    const setGene = useSetRecoilState(tCellState);
+    const setGene = useSetRecoilState(geneState);
     const updateGene = useCallback(gene => {
         window.scrollTo(0, 0);
         setGene(gene);

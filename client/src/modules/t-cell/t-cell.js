@@ -5,17 +5,17 @@ import Card from 'react-bootstrap/Card';
 import Loader from '../components/loader';
 import TCellsPlots from './t-cell-plots';
 import TCellPlotOptions from './t-cell-plot-options';
-import { tCellState } from './t-cell.state';
+import { geneState } from './t-cell.state';
 import TCellCounts from './t-cell-counts';
 
 export default function TCell() {
+
     return (
         <Container className="py-4">
 
             <Card className="shadow mb-4">
-                <Card.Body>
+                <Card.Body className="position-relative">
                     <TCellPlotOptions />
-                    <hr />
                     <div style={{ minHeight: '800px' }}>
                         <Suspense fallback={<Loader message="Loading Plots" />}>
                             <TCellsPlots />
