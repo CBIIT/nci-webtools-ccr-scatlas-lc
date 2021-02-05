@@ -4,11 +4,11 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button'
 import { markerConfigState } from './t-cell.state';
-import { tCellState } from './t-cell.state';
+import { geneState } from './t-cell.state';
 
 export default function TCellPlotOptions() {
     const [markerConfig, setMarkerConfig] = useRecoilState(markerConfigState);
-    const [tCell, settCell] = useRecoilState(tCellState);
+    const [tCell, settCell] = useRecoilState(geneState);
 
     function handleChange(event) {
         const { name, value } = event.target;
