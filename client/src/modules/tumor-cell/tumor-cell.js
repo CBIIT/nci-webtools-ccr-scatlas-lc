@@ -4,12 +4,12 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Loader from '../components/loader';
-import GeneExpressionPlots from './gene-expression-plots';
-import GeneExpressionPlotOptions from './gene-expression-plot-options';
-import GeneExpressionCounts from './gene-expression-counts';
-import { geneState } from './gene-expression.state';
+import TumorCellPlots from './tumor-cell-plots';
+import TumorCellPlotOptions from './tumor-cell-plot-options';
+import TumorCellCounts from './tumor-cell-counts';
+import { geneState } from './tumor-cell.state';
 
-export default function GeneExpression() {
+export default function TumorCell() {
     const [gene, setGene] = useRecoilState(geneState);
 
     return (
@@ -24,12 +24,12 @@ export default function GeneExpression() {
                     </Button>}
                 </Card.Header>
                 <Card.Body className="position-relative">
-                    <GeneExpressionPlotOptions />
+                    <TumorCellPlotOptions />
                     <hr />
                     
                     <div style={{minHeight: '800px'}}>
                         <Suspense fallback={<Loader message="Loading Plots" />}>
-                            <GeneExpressionPlots />
+                            <TumorCellPlots />
                         </Suspense>
                     </div>
                 </Card.Body>
@@ -43,7 +43,7 @@ export default function GeneExpression() {
                 </Card.Header>
                 <Card.Body className="p-0 position-relative" style={{minHeight: '600px'}}>
                     <Suspense fallback={<Loader message="Loading Cell Counts" />}>
-                        <GeneExpressionCounts />
+                        <TumorCellCounts />
                     </Suspense>
                 </Card.Body>
             </Card>
