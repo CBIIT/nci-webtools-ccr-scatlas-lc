@@ -19,7 +19,7 @@ export default function TCell() {
                     <Card.Title className="my-1">
                         T Cells
                     </Card.Title>
-                    {tCell && <Button variant="light" size="sm" onClick={_ => setGene('')}>
+                    {gene && <Button variant="light" size="sm" onClick={_ => setGene('')}>
                         Clear Gene ({gene})
                     </Button>}
                 </Card.Header>
