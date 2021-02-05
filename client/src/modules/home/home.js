@@ -5,8 +5,8 @@ import Col from 'react-bootstrap/Col';
 
 export default function Home() {
     return (
-        <Container>
-            <Card className="shadow">
+        <Container className="h-100">
+            <Card className="h-100 shadow rounded-0">
                 <Card.Body>
                     <Row>
                         <Col md={6}>

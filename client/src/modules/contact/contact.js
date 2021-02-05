@@ -53,7 +53,7 @@ export default function Contact() {
                 onReset={handleReset}>
                 <Card className="shadow">
                     <Card.Header className="bg-primary text-white">
-                        <Card.Title className="my-0">
+                        <Card.Title className="my-1">
                             Contact Us
                         </Card.Title>
                     </Card.Header>
