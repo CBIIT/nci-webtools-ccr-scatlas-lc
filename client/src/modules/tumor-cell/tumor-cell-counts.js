@@ -2,9 +2,9 @@ import { useMemo, useCallback } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import Button from 'react-bootstrap/Button';
 import Table, { TextFilter, RangeFilter } from '../components/table';
-import { geneCountsQuery, geneState } from './gene-expression.state';
+import { geneCountsQuery, geneState } from './tumor-cell.state';
 
-export default function GeneExpressionCounts() {
+export default function TumorCellCounts() {
     const geneCounts = useRecoilValue(geneCountsQuery);
     const setGene = useSetRecoilState(geneState);
     const updateGene = useCallback(gene => {
