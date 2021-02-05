@@ -32,7 +32,7 @@ export default function App() {
 
   return (
     <>
-      <Navbar bg="dark" expand="sm" className="navbar-dark py-0">
+      <Navbar bg="dark" expand="sm" className="navbar-dark py-0 flex-none-auto">
         <Container>
           <Navbar.Toggle aria-controls="app-navbar" />
           <Navbar.Collapse id="app-navbar">
@@ -51,7 +51,7 @@ export default function App() {
         </Container>
       </Navbar>
 
-      <div id="content" className="bg-light">
+      <div id="content" className="bg-light flex-grow-auto">
         <Route exact path="/" component={Home} />
         <Route exact path="/tumor-cells" component={TumorCell} />
         <Route exact path="/t-cells" component={TCell} />
