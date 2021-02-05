@@ -58,7 +58,7 @@ export default function TCellsPlots() {
             filename: 'plot_export',
             height: 1000,
             width: 1000,
-            scale: 2
+            scale: 1
         }
     }
 
@@ -113,8 +113,8 @@ export default function TCellsPlots() {
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
-                                className="w-100"
-                                style={{ height: '800px' }}
+                                className="mw-100"
+                                style={{ height: '800px', width: '1000px' }}
                             />
                         </Col>
                     </Row>
@@ -156,7 +156,7 @@ export default function TCellsPlots() {
             <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
                 <Tab eventKey="tcell" title="T Cell">
                     <Row>
-                        <Col xl={12}>
+                        <Col xl={12} className="d-flex justify-content-center">
                             <Plot
                                 data={sortData(getGroupedTraces(tCells, 'type', { size, opacity }))}
                                 layout={merge({}, defaultLayout, {
@@ -177,8 +177,8 @@ export default function TCellsPlots() {
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
-                                className="w-100"
-                                style={{ height: '800px' }}
+                                className="mw-100"
+                                style={{ height: '800px', width: '1000px' }}
                             />
                         </Col>
                     </Row>
