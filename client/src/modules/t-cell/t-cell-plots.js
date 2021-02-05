@@ -38,6 +38,8 @@ export default function TCellsPlots() {
             title: 'Component 1',
             zeroline: false,
             scaleanchor: 'y',
+            scaleratio: 1,
+            constrain: 'domain',
         },
         yaxis: {
             title: 'Component 2',
@@ -163,7 +165,6 @@ export default function TCellsPlots() {
                                         title: {
                                             text: 'Type',
                                             font: { size: 14 },
-                                            side: 'top',
                                         },
                                     },
                                     xaxis: {
@@ -192,11 +193,9 @@ export default function TCellsPlots() {
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD4+ T Cells</b>`,
                                     legend: {
-                                        ...defaultLayout.legend,
                                         title: {
                                             text: 'Type',
                                             font: { size: 14 },
-                                            side: 'top',
                                         },
                                     },
                                     annotations: [
@@ -244,7 +243,6 @@ export default function TCellsPlots() {
                                         title: {
                                             text: 'Type',
                                             font: { size: 14 },
-                                            side: 'top',
                                         },
                                     },
                                     annotations: [

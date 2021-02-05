@@ -29,6 +29,8 @@ export default function TumorCellPlots() {
             title: 't-SNE 1',
             zeroline: false,
             scaleanchor: 'y',
+            scaleratio: 1,
+            constrain: 'domain',
         },
         yaxis: {
             title: 't-SNE 2',
