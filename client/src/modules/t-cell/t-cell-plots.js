@@ -53,6 +53,13 @@ export default function TCellsPlots() {
         }
     }
 
+    // since plots are not initially visible, we need to trigger a resize event as we enter the tab
+    function handleSelect(key) {
+        const event = document.createEvent('Event');
+        event.initEvent('resize', true, true);
+        window.dispatchEvent(event);
+    }
+
     const sortData = (data) => {
 
         const cd4  = data.filter(t => t.name.substring(0,3) === 'CD4')
@@ -79,7 +86,7 @@ export default function TCellsPlots() {
 
     return gene ?
         <>
-            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom">
+            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
                 <Tab eventKey="tcell" title="T Cell">
                     <Row>
                         <Col xl={12}>
@@ -137,7 +144,7 @@ export default function TCellsPlots() {
         </>
         :
         <>
-            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom">
+            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
                 <Tab eventKey="tcell" title="T Cell">
                     <Row>
                         <Col xl={12}>
