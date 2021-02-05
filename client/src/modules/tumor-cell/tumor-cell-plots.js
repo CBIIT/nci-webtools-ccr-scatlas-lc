@@ -2,9 +2,10 @@ import { useRecoilValue } from 'recoil';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Plot from 'react-plotly.js';
-import { 
-    getContinuousTrace, 
-    getGroupedTraces 
+import merge from 'lodash/merge';
+import {
+    getContinuousTrace,
+    getGroupedTraces
 } from '../../services/plot';
 import {
     geneState,
@@ -21,13 +22,15 @@ export default function TumorCellPlots() {
     const nonmalignantCells = useRecoilValue(nonmalignantCellsQuery);
     const malignantCellsGeneExpression = useRecoilValue(malignantCellsGeneExpressionQuery);
     const nonmalignantCellsGeneExpression = useRecoilValue(nonmalignantCellsGeneExpressionQuery);
-    const {size, opacity} = useRecoilValue(markerConfigState);
+    const { size, opacity } = useRecoilValue(markerConfigState);
 
     const defaultLayout = {
         xaxis: {
             title: 't-SNE 1',
             zeroline: false,
             scaleanchor: 'y',
+            scaleratio: 1,
+            constrain: 'domain',
         },
         yaxis: {
             title: 't-SNE 2',
@@ -40,16 +43,26 @@ export default function TumorCellPlots() {
         hovermode: 'closest',
     };
 
+    const defaultConfig = {
+        toImageButtonOptions: {
+            format: 'svg',
+            filename: 'plot_export',
+            height: 1000,
+            width: 1000,
+            scale: 1
+        }
+    }
+
     return gene
         ? <>
             <Row>
                 <Col xl={6}>
                     <Plot
-                        data={[getContinuousTrace(malignantCellsGeneExpression, 'value', {size, opacity, showscale: true})]}
-                        layout={{
-                            ...defaultLayout,
+                        data={[getContinuousTrace(malignantCellsGeneExpression, 'value', { size, opacity, showscale: true })]}
+                        layout={merge({}, defaultLayout, {
                             title: `<b>Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})</b>`,
-                        }}
+                        })}
+                        config={defaultConfig}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -57,11 +70,11 @@ export default function TumorCellPlots() {
                 </Col>
                 <Col xl={6}>
                     <Plot
-                        data={[getContinuousTrace(nonmalignantCellsGeneExpression, 'value', {size, opacity, showscale: true})]}
-                        layout={{
-                            ...defaultLayout,
+                        data={[getContinuousTrace(nonmalignantCellsGeneExpression, 'value', { size, opacity, showscale: true })]}
+                        layout={merge({}, defaultLayout, {
                             title: `<b>Non-malignant Cells:  ${gene} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
-                        }}
+                        })}
+                        config={defaultConfig}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -73,18 +86,16 @@ export default function TumorCellPlots() {
             <Row>
                 <Col xl={6}>
                     <Plot
-                        data={getGroupedTraces(malignantCells, 'type', {size, opacity})}
-                        layout={{
-                            ...defaultLayout,
+                        data={getGroupedTraces(malignantCells, 'type', { size, opacity })}
+                        layout={merge({}, defaultLayout, {
                             title: {
-                                ...defaultLayout.title,
                                 text: `<b>Malignant Cells (n=${malignantCells.records.length})</b>`,
                             },
                             legend: {
-                                ...defaultLayout.legend,
-                                title: { text: 'Case (click to toggle)', font: { size: 14 } }
+                                title: { text: 'Case', font: { size: 14 } }
                             },
-                        }}
+                        })}
+                        config={defaultConfig}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -93,15 +104,14 @@ export default function TumorCellPlots() {
                 </Col>
                 <Col xl={6}>
                     <Plot
-                        data={getGroupedTraces(nonmalignantCells, 'type', {size, opacity})}
-                        layout={{
-                            ...defaultLayout,
+                        data={getGroupedTraces(nonmalignantCells, 'type', { size, opacity })}
+                        layout={merge({}, defaultLayout, {
                             title: `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
                             legend: {
-                                ...defaultLayout.legend,
-                                title: { text: 'Type (click to toggle)', font: { size: 14 } },
+                                title: { text: 'Type', font: { size: 14 } },
                             },
-                        }}
+                        })}
+                        config={defaultConfig}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
