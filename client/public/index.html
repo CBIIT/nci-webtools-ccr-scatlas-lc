@@ -11,9 +11,9 @@
 
 </head>
 
-<body>
+<body class="d-flex flex-column vh-100">
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <header>
+  <header class="flex-none-auto">
     <div class="container">
       <a href="https://ccr.cancer.gov/" class="h5 mb-1">
         <img src="images/logo.svg" class="img-fluid my-3" alt="National Cancer Institute" style="height: 56px; max-width: 100%;">
@@ -25,13 +25,13 @@
       </div>
     </div>
   </header>
-  <main id="root" class="position-relative">
-    <div className="loader">
+  <main id="root" class="position-relative flex-grow-auto d-flex align-items-stretch d-flex flex-column">
+    <div class="loader">
         <div class="spinner-border text-primary" role="status"></div>
         <div>Loading</div>
     </div>
   </main>
-  <footer>
+  <footer class="flex-none-auto">
     <div class="bg-primary text-light py-3">
       <div class="container"> 
         <p class="h6">Citing scAtlasLC </p>
