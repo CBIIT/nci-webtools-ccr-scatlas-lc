@@ -49,7 +49,7 @@ export default function TumorCellPlots() {
             filename: 'plot_export',
             height: 1000,
             width: 1000,
-            scale: 2
+            scale: 1
         }
     }
 
