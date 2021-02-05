@@ -81,6 +81,21 @@ a, .btn {
     }
 }
 
+.nav-tabs.nav-tabs-custom {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 0; 
+
+    .nav-link {
+        border: 0;
+    }
+
+    .nav-link.active {
+        border-bottom: 2px solid $primary;
+    }
+
+    // .nav-tabs.nav-tabs-custom .nav-link.active, .nav-tabs .nav-item.show .nav-link
+}
+
 input[type=number].no-spinner {
     -moz-appearance: textfield;
 }

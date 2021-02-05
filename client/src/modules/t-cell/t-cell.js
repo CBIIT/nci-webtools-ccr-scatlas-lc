@@ -25,7 +25,6 @@ export default function TCell() {
                 </Card.Header>
                 <Card.Body className="position-relative">
                     <TCellPlotOptions />
-                    <hr />
                     <div style={{ minHeight: '800px' }}>
                         <Suspense fallback={<Loader message="Loading Plots" />}>
                             <TCellsPlots />

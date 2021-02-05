@@ -79,7 +79,7 @@ export default function TCellsPlots() {
 
     return gene ?
         <>
-            <Tabs defaultActiveKey="tcell" id="tcellTabs">
+            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom">
                 <Tab eventKey="tcell" title="T Cell">
                     <Row>
                         <Col xl={12}>
@@ -137,7 +137,7 @@ export default function TCellsPlots() {
         </>
         :
         <>
-            <Tabs defaultActiveKey="tcell" id="tcellTabs">
+            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom">
                 <Tab eventKey="tcell" title="T Cell">
                     <Row>
                         <Col xl={12}>
