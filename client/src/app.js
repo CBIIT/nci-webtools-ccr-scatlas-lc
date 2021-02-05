@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Route, useLocation, NavLink } from 'react-router-dom';
 import { Container, Navbar, Nav } from 'react-bootstrap';
 import Home from './modules/home/home';
-import GeneExpression from './modules/gene-expression/gene-expression';
+import TumorCell from './modules/tumor-cell/tumor-cell';
 import TCell from './modules/t-cell/t-cell';
 import Contact from './modules/contact/contact';
 import './styles/main.scss';
@@ -18,7 +18,7 @@ export default function App() {
     },
     {
       route: '/tumor-cells',
-      title: 'Tumor Cell Communities',
+      title: 'Tumor Cell Community',
     },
     {
       route: '/t-cells',
@@ -53,7 +53,7 @@ export default function App() {
 
       <div id="content" className="bg-light">
         <Route exact path="/" component={Home} />
-        <Route exact path="/tumor-cells" component={GeneExpression} />
+        <Route exact path="/tumor-cells" component={TumorCell} />
         <Route exact path="/t-cells" component={TCell} />
         <Route exact path="/contact-us" component={Contact} />
       </div>
