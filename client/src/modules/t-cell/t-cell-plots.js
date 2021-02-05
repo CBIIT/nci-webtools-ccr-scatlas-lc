@@ -5,13 +5,20 @@ import Tab from 'react-bootstrap/Tab'
 import { useRecoilValue } from 'recoil';
 import Plot from 'react-plotly.js';
 import merge from 'lodash/merge';
-
 import {
     getContinuousTrace,
     getGroupedTraces
 } from '../../services/plot';
-
-import { tCellQuery, cd4Query, cd8Query, markerConfigState, tCellState, tCellGeneExpressionQuery, cd4GeneExpressionQuery, cd8GeneExpressionQuery } from './t-cell.state';
+import { 
+    tCellQuery, 
+    cd4Query, 
+    cd8Query, 
+    markerConfigState, 
+    geneState, 
+    tCellGeneExpressionQuery, 
+    cd4GeneExpressionQuery, 
+    cd8GeneExpressionQuery 
+} from './t-cell.state';
 
 export default function TCellsPlots() {
 
@@ -20,7 +27,7 @@ export default function TCellsPlots() {
     const cd4 = useRecoilValue(cd4Query);
     const cd8 = useRecoilValue(cd8Query);
     const { size, opacity } = useRecoilValue(markerConfigState);
-    const gene = useRecoilValue(tCellState);
+    const gene = useRecoilValue(geneState);
 
     const tCellGeneExpression = useRecoilValue(tCellGeneExpressionQuery);
     const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery);
@@ -62,15 +69,15 @@ export default function TCellsPlots() {
 
     const sortData = (data) => {
 
-        const cd4  = data.filter(t => t.name.substring(0,3) === 'CD4')
-        const cd8 = data.filter(t => t.name.substring(0,3) === 'CD8')
+        const cd4 = data.filter(t => t.name.substring(0, 3) === 'CD4')
+        const cd8 = data.filter(t => t.name.substring(0, 3) === 'CD8')
 
         cd4.sort(function (a, b) {
 
             var first = a.name.split('-')[1]
             var second = b.name.split('-')[1]
 
-            return first.localeCompare(second, 'en', {numeric: true})
+            return first.localeCompare(second, 'en', { numeric: true })
         })
 
         cd8.sort(function (a, b) {
@@ -78,7 +85,7 @@ export default function TCellsPlots() {
             var first = a.name.split('-')[1]
             var second = b.name.split('-')[1]
 
-            return first.localeCompare(second,'en', {numeric: true})
+            return first.localeCompare(second, 'en', { numeric: true })
         })
 
         return cd4.concat(cd8)
@@ -198,7 +205,7 @@ export default function TCellsPlots() {
                                             y: 3,
                                             text: '<b>Cytotoxic</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         },
@@ -207,7 +214,7 @@ export default function TCellsPlots() {
                                             y: 10,
                                             text: '<b>Exhausted</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         },
@@ -216,7 +223,7 @@ export default function TCellsPlots() {
                                             y: -4,
                                             text: '<b>Naive</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         }
@@ -240,13 +247,13 @@ export default function TCellsPlots() {
                                             side: 'top',
                                         },
                                     },
-                                    annotations:[
+                                    annotations: [
                                         {
                                             x: -11,
                                             y: -1,
                                             text: '<b>Cytotoxic</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         },
@@ -255,7 +262,7 @@ export default function TCellsPlots() {
                                             y: -12,
                                             text: '<b>Exhausted</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         },
@@ -264,7 +271,7 @@ export default function TCellsPlots() {
                                             y: 5,
                                             text: '<b>Naive</b>',
                                             showarrow: false,
-                                            font:{
+                                            font: {
                                                 size: 16
                                             }
                                         }

@@ -6,11 +6,11 @@ import Card from 'react-bootstrap/Card';
 import Loader from '../components/loader';
 import TCellsPlots from './t-cell-plots';
 import TCellPlotOptions from './t-cell-plot-options';
-import { tCellState } from './t-cell.state';
+import { geneState } from './t-cell.state';
 import TCellCounts from './t-cell-counts';
 
 export default function TCell() {
-    const [tCell, settCell] = useRecoilState(tCellState);
+    const [gene, setGene] = useRecoilState(geneState);
 
     return (
         <Container className="py-4">
@@ -19,8 +19,8 @@ export default function TCell() {
                     <Card.Title className="my-1">
                         T Cells
                     </Card.Title>
-                    {tCell && <Button variant="light" size="sm" onClick={_ => settCell('')}>
-                        Clear Gene ({tCell})
+                    {tCell && <Button variant="light" size="sm" onClick={_ => setGene('')}>
+                        Clear Gene ({gene})
                     </Button>}
                 </Card.Header>
                 <Card.Body className="position-relative">

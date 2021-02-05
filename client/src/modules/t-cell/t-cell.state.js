@@ -23,30 +23,30 @@ export const tCellCountQuery = selector({
 
 export const tCellGeneExpressionQuery = selector({
     key: 'tCell.tCellGeneExpressionQuery',
-    get: async ({get}) => get(tCellState) 
-        ? await query('/api/query', {table: `v_t_cell_gene_expression_${get(tCellState)}`, raw: true}) 
+    get: async ({get}) => get(geneState) 
+        ? await query('/api/query', {table: `v_t_cell_gene_expression_${get(geneState)}`, raw: true}) 
         : [],
 });
 
 export const cd4GeneExpressionQuery = selector({
     key: 'tCell.cd4GeneExpressionQuery',
-    get: async ({get}) => get(tCellState) 
-        ? await query('/api/query', {table: `v_cd4_cell_gene_expression_${get(tCellState)}`, raw: true}) 
+    get: async ({get}) => get(geneState) 
+        ? await query('/api/query', {table: `v_cd4_cell_gene_expression_${get(geneState)}`, raw: true}) 
         : [],
 });
 
 export const cd8GeneExpressionQuery = selector({
     key: 'tCell.cd8GeneExpressionQuery',
-    get: async ({get}) => get(tCellState) 
-        ? await query('/api/query', {table: `v_cd8_cell_gene_expression_${get(tCellState)}`, raw: true}) 
+    get: async ({get}) => get(geneState) 
+        ? await query('/api/query', {table: `v_cd8_cell_gene_expression_${get(geneState)}`, raw: true}) 
         : [],
 });
-export const tCellState = atom({
-    key: 'tCell.tCellState',
+export const geneState = atom({
+    key: 'tCell.geneState',
     default: '',
 });
 
 export const markerConfigState = atom({
     key: 'tCell.markerConfigState',
-    default: { size: 4, opacity: 0.7 },
+    default: { size: 4, opacity: 0.8 },
 });
