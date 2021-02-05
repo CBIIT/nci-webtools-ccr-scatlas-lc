@@ -43,6 +43,16 @@ export default function TCellsPlots() {
         hovermode: 'closest'
     };
 
+    const defaultConfig = {
+        toImageButtonOptions: {
+            format: 'svg',
+            filename: 'plot_export',
+            height: 1000,
+            width: 1000,
+            scale: 2
+        }
+    }
+
     const sortData = (data) => {
 
         const cd4  = data.filter(t => t.name.substring(0,3) === 'CD4')
@@ -85,6 +95,7 @@ export default function TCellsPlots() {
                                     },
 
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}
@@ -101,6 +112,7 @@ export default function TCellsPlots() {
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD4+ T Cells:  ${gene}</b>`,
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}
@@ -112,6 +124,7 @@ export default function TCellsPlots() {
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD8+ T Cells:  ${gene}</b>`,
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}
@@ -134,7 +147,7 @@ export default function TCellsPlots() {
                                     title: `<b>T Cells (n=${tCells.records.length})</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type (click to toggle)',
+                                            text: 'Type',
                                             font: { size: 14 },
                                             side: 'top',
                                         },
@@ -147,6 +160,7 @@ export default function TCellsPlots() {
                                     },
                                     hovermode: 'closest',
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}
@@ -166,12 +180,12 @@ export default function TCellsPlots() {
                                     legend: {
                                         ...defaultLayout.legend,
                                         title: {
-                                            text: 'Type (click to toggle)',
+                                            text: 'Type',
                                             font: { size: 14 },
                                             side: 'top',
                                         },
                                     },
-                                    annotations:[
+                                    annotations: [
                                         {
                                             x: -11,
                                             y: 3,
@@ -201,6 +215,7 @@ export default function TCellsPlots() {
                                         }
                                     ]
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}
@@ -213,7 +228,7 @@ export default function TCellsPlots() {
                                     title: `<b>CD8+ T Cells</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type (click to toggle)',
+                                            text: 'Type',
                                             font: { size: 14 },
                                             side: 'top',
                                         },
@@ -248,6 +263,7 @@ export default function TCellsPlots() {
                                         }
                                     ]
                                 })}
+                                config={defaultConfig}
                                 useResizeHandler
                                 className="w-100"
                                 style={{ height: '800px' }}

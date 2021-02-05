@@ -40,6 +40,16 @@ export default function TumorCellPlots() {
         hovermode: 'closest',
     };
 
+    const defaultConfig = {
+        toImageButtonOptions: {
+            format: 'svg',
+            filename: 'plot_export',
+            height: 1000,
+            width: 1000,
+            scale: 2
+        }
+    }
+
     return gene
         ? <>
             <Row>
@@ -50,6 +60,7 @@ export default function TumorCellPlots() {
                             ...defaultLayout,
                             title: `<b>Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})</b>`,
                         }}
+                        config={defaultConfig}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -62,6 +73,7 @@ export default function TumorCellPlots() {
                             ...defaultLayout,
                             title: `<b>Non-malignant Cells:  ${gene} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
                         }}
+                        config={defaultConfig}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -82,9 +94,10 @@ export default function TumorCellPlots() {
                             },
                             legend: {
                                 ...defaultLayout.legend,
-                                title: { text: 'Case (click to toggle)', font: { size: 14 } }
+                                title: { text: 'Case', font: { size: 14 } }
                             },
                         }}
+                        config={defaultConfig}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
@@ -99,9 +112,10 @@ export default function TumorCellPlots() {
                             title: `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
                             legend: {
                                 ...defaultLayout.legend,
-                                title: { text: 'Type (click to toggle)', font: { size: 14 } },
+                                title: { text: 'Type', font: { size: 14 } },
                             },
                         }}
+                        config={defaultConfig}
                         useResizeHandler
                         className="w-100"
                         style={{ height: '800px' }}
