@@ -98,7 +98,7 @@ export default function Contact() {
                     </Card.Body>
 
                     <Card.Footer className="text-right bg-light">
-                        <Button type="reset" variant="outline-dark" className="mr-1" outline>Cancel</Button>
+                        <Button type="reset" variant="outline-dark" className="mr-1">Cancel</Button>
                         <Button type="submit" variant="primary">Submit</Button>
                     </Card.Footer>
                 </Card>
