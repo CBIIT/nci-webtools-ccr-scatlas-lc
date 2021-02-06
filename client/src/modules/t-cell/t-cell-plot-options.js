@@ -2,10 +2,13 @@ import { useRecoilState } from 'recoil';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button'
 import { markerConfigState } from './t-cell.state';
+import { geneState } from './t-cell.state';
 
 export default function TCellPlotOptions() {
     const [markerConfig, setMarkerConfig] = useRecoilState(markerConfigState);
+    const [tCell, settCell] = useRecoilState(geneState);
 
     function handleChange(event) {
         const { name, value } = event.target;
@@ -30,6 +33,14 @@ export default function TCellPlotOptions() {
                     <Form.Label>Cell Opacity</Form.Label>
                     <Form.Control type="number" name="opacity" value={markerConfig.opacity} onChange={handleChange} step="0.1" max="1" min="0.1" />
                 </Form.Group>
+            </Col>
+            <Col md={6}>
+                <div className='float-right'>
+                    <span>&nbsp;</span>
+                    {tCell && <Button variant="primary form-control mt-2" size="sm" onClick={_ => settCell('')}>
+                        Clear Gene ({tCell})
+                </Button>}
+                </div>
             </Col>
         </Row>
     );

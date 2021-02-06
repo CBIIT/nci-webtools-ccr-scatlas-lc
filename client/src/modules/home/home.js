@@ -23,7 +23,6 @@ export default function Home() {
                                 scAtlasLC can be used to evaluate gene expression in malignant cells and various non-malignant cells in liver cancer. It can be further used to determine gene expression in different subtypes of stromal cells and immune cells.
                             </p>
                         </Col>
-
                     </Row>
                 </Card.Body>
             </Card>
