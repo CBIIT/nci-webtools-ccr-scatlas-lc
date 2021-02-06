@@ -98,7 +98,7 @@ export default function TCellsPlots() {
             <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
                 <Tab eventKey="tcell" title="T Cell">
                     <Row>
-                        <Col xl={12}>
+                        <Col xl={12} className="d-flex justify-content-center">
                             <Plot
                                 data={[getContinuousTrace(tCellGeneExpression, 'value', { size, opacity, showscale: true })]}
                                 layout={merge({}, defaultLayout, {
@@ -158,7 +158,7 @@ export default function TCellsPlots() {
                     <Row>
                         <Col xl={12} className="d-flex justify-content-center">
                             <Plot
-                                data={sortData(getGroupedTraces(tCells, 'type', { size, opacity }))}
+                                data={getGroupedTraces(tCells, 'type', { size, opacity })}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>T Cells (n=${tCells.records.length})</b>`,
                                     legend: {
@@ -189,7 +189,7 @@ export default function TCellsPlots() {
                     <Row>
                         <Col xl={6}>
                             <Plot
-                                data={sortData(getGroupedTraces(cd4, 'type', { size, opacity }))}
+                                data={getGroupedTraces(cd4, 'type', { size, opacity })}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD4+ T Cells</b>`,
                                     legend: {
@@ -236,7 +236,7 @@ export default function TCellsPlots() {
                         </Col>
                         <Col xl={6}>
                             <Plot
-                                data={sortData(getGroupedTraces(cd8, 'type', { size, opacity }))}
+                                data={getGroupedTraces(cd8, 'type', { size, opacity })}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD8+ T Cells</b>`,
                                     legend: {
