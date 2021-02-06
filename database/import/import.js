@@ -94,7 +94,6 @@ async function loadFiles({ databaseFilepath, malignantCellsFilepath, nonmalignan
             insertTypeStmt: db.prepare(`
                 insert into malignant_cell_type("type") 
                 select distinct "type" from malignant_cell
-                order by "type"
             `),
             getInsertGeneExpressionStmt: ({gene}) => db.prepare(`
                 insert into "malignant_cell_gene_expression_${gene}"("id", "malignant_cell_id", "value") 
@@ -117,7 +116,6 @@ async function loadFiles({ databaseFilepath, malignantCellsFilepath, nonmalignan
             insertTypeStmt: db.prepare(`
                 insert into nonmalignant_cell_type("type") 
                 select distinct "type" from nonmalignant_cell
-                order by "type"
             `),
             getInsertGeneExpressionStmt: ({gene}) => db.prepare(`
                 insert into "nonmalignant_cell_gene_expression_${gene}"("id", "nonmalignant_cell_id", "value") 
@@ -140,7 +138,6 @@ async function loadFiles({ databaseFilepath, malignantCellsFilepath, nonmalignan
             insertTypeStmt: db.prepare(`
                 insert into t_cell_type("type") 
                 select distinct "type" from t_cell
-                order by "type"
             `),
             getInsertGeneExpressionStmt: ({gene}) => db.prepare(`
                 insert into "t_cell_gene_expression_${gene}"("id", "t_cell_id", "value") 
@@ -163,7 +160,6 @@ async function loadFiles({ databaseFilepath, malignantCellsFilepath, nonmalignan
             insertTypeStmt: db.prepare(`
                 insert into cd4_cell_type("type") 
                 select distinct "type" from cd4_cell
-                order by "type"
             `),
             getInsertGeneExpressionStmt: ({gene}) => db.prepare(`
                 insert into "cd4_cell_gene_expression_${gene}"("id", "cd4_cell_id", "value") 
@@ -186,7 +182,6 @@ async function loadFiles({ databaseFilepath, malignantCellsFilepath, nonmalignan
             insertTypeStmt: db.prepare(`
                 insert into cd8_cell_type("type") 
                 select distinct "type" from cd8_cell
-                order by "type"
             `),
             getInsertGeneExpressionStmt: ({gene}) => db.prepare(`
                 insert into "cd8_cell_gene_expression_${gene}"("id", "cd8_cell_id", "value") 
