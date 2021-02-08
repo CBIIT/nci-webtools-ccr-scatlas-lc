@@ -25,7 +25,7 @@ export default function TCellCounts() {
             placeholder: 'Enter gene',
         },
         {
-            Header: 'T Cells Expressing',
+            Header: 'T-Cells Expressing',
             accessor: 't_cell_count',
             Filter: RangeFilter,
             filter: 'between',
@@ -33,7 +33,7 @@ export default function TCellCounts() {
             maxPlaceholder: 'Enter max value',
         },
         {
-            Header: 'CD4+ T Cells Expressing',
+            Header: 'CD4+ T-Cells Expressing',
             accessor: 'cd4_cell_count',
             Filter: RangeFilter,
             filter: 'between',
@@ -41,7 +41,7 @@ export default function TCellCounts() {
             maxPlaceholder: 'Enter max value',
         },
         {
-            Header: 'CD8+ T Cells Expressing',
+            Header: 'CD8+ T-Cells Expressing',
             accessor: 'cd8_cell_count',
             Filter: RangeFilter,
             filter: 'between',

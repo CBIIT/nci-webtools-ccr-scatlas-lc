@@ -30,7 +30,7 @@ export default function TCell() {
             <Card className="shadow mb-4">
                 <Card.Header className="bg-primary text-white">
                     <Card.Title className="my-1">
-                        T Cell Counts
+                        T-Cell Counts
                     </Card.Title>
                 </Card.Header>
                 <Card.Body className="p-0 position-relative" style={{minHeight: '600px'}}>
