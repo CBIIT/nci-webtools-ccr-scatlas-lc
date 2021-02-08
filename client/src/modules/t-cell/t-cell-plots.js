@@ -9,15 +9,15 @@ import {
     getContinuousTrace,
     getGroupedTraces
 } from '../../services/plot';
-import { 
-    tCellQuery, 
-    cd4Query, 
-    cd8Query, 
-    markerConfigState, 
-    geneState, 
-    tCellGeneExpressionQuery, 
-    cd4GeneExpressionQuery, 
-    cd8GeneExpressionQuery 
+import {
+    tCellQuery,
+    cd4Query,
+    cd8Query,
+    markerConfigState,
+    geneState,
+    tCellGeneExpressionQuery,
+    cd4GeneExpressionQuery,
+    cd8GeneExpressionQuery
 } from './t-cell.state';
 
 export default function TCellsPlots() {
@@ -87,6 +87,7 @@ export default function TCellsPlots() {
                                         title: 't-SNE 2',
                                     },
 
+
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
@@ -104,6 +105,35 @@ export default function TCellsPlots() {
                                 data={[getContinuousTrace(cd4GeneExpression, 'value', { size, opacity, showscale: true })]}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD4+ T-Cells:  ${gene}</b>`,
+                                    annotations: [
+                                        {
+                                            x: -11,
+                                            y: 3,
+                                            text: '<b>Cytotoxic</b>',
+                                            showarrow: false,
+                                            font: {
+                                                size: 16
+                                            }
+                                        },
+                                        {
+                                            x: 4,
+                                            y: 10,
+                                            text: '<b>Exhausted</b>',
+                                            showarrow: false,
+                                            font: {
+                                                size: 16
+                                            }
+                                        },
+                                        {
+                                            x: 8,
+                                            y: -4,
+                                            text: '<b>Naive</b>',
+                                            showarrow: false,
+                                            font: {
+                                                size: 16
+                                            }
+                                        }
+                                    ]
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
@@ -116,6 +146,35 @@ export default function TCellsPlots() {
                                 data={[getContinuousTrace(cd8GeneExpression, 'value', { size, opacity, showscale: true })]}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD8+ T-Cells:  ${gene}</b>`,
+                                    annotations: [
+                                        {
+                                            x: -11,
+                                            y: -1,
+                                            text: '<b>Cytotoxic</b>',
+                                            showarrow: false,
+                                            font: {
+                                                size: 16
+                                            }
+                                        },
+                                        {
+                                            x: 2,
+                                            y: -12,
+                                            text: '<b>Exhausted</b>',
+                                            showarrow: false,
+                                            font: {
+                                                size: 16
+                                            }
+                                        },
+                                        {
+                                            x: 6,
+                                            y: 5,
+                                            text: '<b>Naive</b>',
+                                            showarrow: false,
+                                            font: {
+                                                size: 16
+                                            }
+                                        }
+                                    ]
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
