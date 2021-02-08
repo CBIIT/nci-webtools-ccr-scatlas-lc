@@ -14,7 +14,7 @@ const database = new sqlite(config.database, {
 });
 
 const lookup = {
-    gene: database.prepare('select id, gene from gene').pluck().all(),
+    gene: database.prepare('select gene from gene order by gene').pluck().all(),
 };
 
 const router = express.Router();
