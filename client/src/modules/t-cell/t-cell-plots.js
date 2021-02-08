@@ -73,13 +73,13 @@ export default function TCellsPlots() {
     return gene ?
         <>
             <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
-                <Tab eventKey="tcell" title="T Cell">
+                <Tab eventKey="tcell" title="T-Cell">
                     <Row>
                         <Col xl={12} className="d-flex justify-content-center">
                             <Plot
                                 data={[getContinuousTrace(tCellGeneExpression, 'value', { size, opacity, showscale: true })]}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>T Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
+                                    title: `<b>T-Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
                                     xaxis: {
                                         title: 't-SNE 1',
                                     },
@@ -103,7 +103,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={[getContinuousTrace(cd4GeneExpression, 'value', { size, opacity, showscale: true })]}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD4+ T Cells:  ${gene}</b>`,
+                                    title: `<b>CD4+ T-Cells:  ${gene}</b>`,
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
@@ -115,7 +115,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={[getContinuousTrace(cd8GeneExpression, 'value', { size, opacity, showscale: true })]}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD8+ T Cells:  ${gene}</b>`,
+                                    title: `<b>CD8+ T-Cells:  ${gene}</b>`,
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
@@ -131,13 +131,13 @@ export default function TCellsPlots() {
         :
         <>
             <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
-                <Tab eventKey="tcell" title="T Cell">
+                <Tab eventKey="tcell" title="T-Cell">
                     <Row>
                         <Col xl={12} className="d-flex justify-content-center">
                             <Plot
                                 data={getGroupedTraces(tCells, 'type', { size, opacity })}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>T Cells (n=${tCells.records.length})</b>`,
+                                    title: `<b>T-Cells (n=${tCells.records.length})</b>`,
                                     legend: {
                                         title: {
                                             text: 'Type',
@@ -168,7 +168,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getGroupedTraces(cd4, 'type', { size, opacity })}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD4+ T Cells</b>`,
+                                    title: `<b>CD4+ T-Cells</b>`,
                                     legend: {
                                         title: {
                                             text: 'Type',
@@ -215,7 +215,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getGroupedTraces(cd8, 'type', { size, opacity })}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD8+ T Cells</b>`,
+                                    title: `<b>CD8+ T-Cells</b>`,
                                     legend: {
                                         title: {
                                             text: 'Type',

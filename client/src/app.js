@@ -22,7 +22,7 @@ export default function App() {
     },
     {
       route: '/t-cells',
-      title: 'T Cell',
+      title: 'T-Cell',
     },
     {
       route: '/contact-us',
