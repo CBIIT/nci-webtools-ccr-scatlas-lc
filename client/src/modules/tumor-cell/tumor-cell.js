@@ -13,19 +13,17 @@ export default function TumorCell() {
     return (
         <Container className="py-4">
             <Card className="shadow mb-4">
-                <Card.Body className="position-relative">
-                    <TumorCellPlotOptions />
-                    <div style={{ minHeight: '800px' }}>
-                        <ErrorBoundary fallback={
-                            <Alert variant="danger">
-                                An internal error prevented plots from loading. Please contact the website administrator if this problem persists.
-                                </Alert>}>
-                            <Suspense fallback={<Loader message="Loading Plots" />}>
-                                <hr />
-                                <TumorCellPlots />
-                            </Suspense>
-                        </ErrorBoundary>
-                    </div>
+                <Card.Body className="position-relative" style={{ minHeight: '800px' }}>
+                    <ErrorBoundary fallback={
+                        <Alert variant="danger">
+                            An internal error prevented plots from loading. Please contact the website administrator if this problem persists.
+                        </Alert>}>
+                        <Suspense fallback={<Loader message="Loading Plots" />}>
+                            <TumorCellPlotOptions />
+                            <hr />
+                            <TumorCellPlots />
+                        </Suspense>
+                    </ErrorBoundary>
                 </Card.Body>
             </Card>
 
@@ -39,7 +37,7 @@ export default function TumorCell() {
                     <ErrorBoundary fallback={
                         <Alert variant="danger" className="m-3">
                             An internal error prevented cell counts from loading. Please contact the website administrator if this problem persists.
-                                </Alert>}>
+                        </Alert>}>
                         <Suspense fallback={<Loader message="Loading Cell Counts" />}>
                             <TumorCellCounts />
                         </Suspense>
