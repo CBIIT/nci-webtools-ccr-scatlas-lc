@@ -69,29 +69,6 @@ export default function TCellsPlots() {
         window.dispatchEvent(event);
     }
 
-    const sortData = (data) => {
-
-        const cd4 = data.filter(t => t.name.substring(0, 3) === 'CD4')
-        const cd8 = data.filter(t => t.name.substring(0, 3) === 'CD8')
-
-        cd4.sort(function (a, b) {
-
-            var first = a.name.split('-')[1]
-            var second = b.name.split('-')[1]
-
-            return first.localeCompare(second, 'en', { numeric: true })
-        })
-
-        cd8.sort(function (a, b) {
-
-            var first = a.name.split('-')[1]
-            var second = b.name.split('-')[1]
-
-            return first.localeCompare(second, 'en', { numeric: true })
-        })
-
-        return cd4.concat(cd8)
-    }
 
     return gene ?
         <>
