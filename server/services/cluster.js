@@ -1,7 +1,7 @@
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 
-function forkCluster(numProcesses) {
+function forkCluster(numProcesses, restartOnExit) {
     if (!cluster.isMaster)
         return false;
 
@@ -11,9 +11,10 @@ function forkCluster(numProcesses) {
     for (let i = 0; i < numProcesses; i++)
         cluster.fork();
 
-    cluster.on('exit', (worker, code, signal) => {
-        cluster.fork();
-    });
+    if (restartOnExit)
+        cluster.on('exit', (worker, code, signal) => {
+            cluster.fork();
+        });
 
     return true;
 }
