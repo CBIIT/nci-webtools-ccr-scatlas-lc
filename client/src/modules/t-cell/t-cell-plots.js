@@ -5,10 +5,7 @@ import Tab from 'react-bootstrap/Tab'
 import { useRecoilValue } from 'recoil';
 import Plot from 'react-plotly.js';
 import merge from 'lodash/merge';
-import {
-    getContinuousTrace,
-    getGroupedTraces
-} from '../../services/plot';
+import { getTraces } from '../../services/plot';
 import {
     tCellQuery,
     cd4Query,
@@ -33,26 +30,28 @@ export default function TCellsPlots() {
     const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery);
     const cd8GeneExpression = useRecoilValue(cd8GeneExpressionQuery);
 
+
     const defaultLayout = {
         xaxis: {
-            title: 'Component 1',
+            title: 't-SNE 1',
             zeroline: false,
             scaleanchor: 'y',
             scaleratio: 1,
             constrain: 'domain',
         },
         yaxis: {
-            title: 'Component 2',
+            title: 't-SNE 2',
             zeroline: false,
         },
         legend: {
             itemsizing: 'constant',
             itemwidth: 40,
         },
-        hovermode: 'closest'
+        hovermode: 'closest',
     };
 
     const defaultConfig = {
+        displayModeBar: true,
         toImageButtonOptions: {
             format: 'svg',
             filename: 'plot_export',
@@ -60,9 +59,36 @@ export default function TCellsPlots() {
             width: 1000,
             scale: 1
         }
-    }
+    };
+
+    const traceColumns = {
+        groupColumn: 'type',
+        valueColumn: gene && 'value',
+    };
+
+    const traceConfig = {
+        showlegend: !gene,
+        hoverinfo: !gene 
+            ? 'name'
+            : 'text+name',
+        hoverlabel: {
+            namelength: -1,
+        },
+        marker: {
+            size,
+            opacity,
+            colorbar: { 
+                thickness: 20
+            },
+            ...!gene && {
+                color: false,
+                showscale: false,
+            }
+        },
+    };
 
     // since plots are not initially visible, we need to trigger a resize event as we enter the tab
+    // store tab state
     function handleSelect(key) {
         const event = document.createEvent('Event');
         event.initEvent('resize', true, true);
@@ -77,7 +103,7 @@ export default function TCellsPlots() {
                     <Row>
                         <Col xl={12} className="d-flex justify-content-center">
                             <Plot
-                                data={[getContinuousTrace(tCellGeneExpression, 'value', { size, opacity, showscale: true })]}
+                                data={getTraces(tCellGeneExpression, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>T-Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
                                     xaxis: {
@@ -102,7 +128,7 @@ export default function TCellsPlots() {
                     <Row>
                         <Col xl={6}>
                             <Plot
-                                data={[getContinuousTrace(cd4GeneExpression, 'value', { size, opacity, showscale: true })]}
+                                data={getTraces(cd4GeneExpression, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD4+ T-Cells:  ${gene}</b>`,
                                     annotations: [
@@ -143,7 +169,7 @@ export default function TCellsPlots() {
                         </Col>
                         <Col xl={6}>
                             <Plot
-                                data={[getContinuousTrace(cd8GeneExpression, 'value', { size, opacity, showscale: true })]}
+                                data={getTraces(cd8GeneExpression, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD8+ T-Cells:  ${gene}</b>`,
                                     annotations: [
@@ -194,7 +220,7 @@ export default function TCellsPlots() {
                     <Row>
                         <Col xl={12} className="d-flex justify-content-center">
                             <Plot
-                                data={getGroupedTraces(tCells, 'type', { size, opacity })}
+                                data={getTraces(tCells, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>T-Cells (n=${tCells.records.length})</b>`,
                                     legend: {
@@ -225,7 +251,7 @@ export default function TCellsPlots() {
                     <Row>
                         <Col xl={6}>
                             <Plot
-                                data={getGroupedTraces(cd4, 'type', { size, opacity })}
+                                data={getTraces(cd4, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD4+ T-Cells</b>`,
                                     legend: {
@@ -272,7 +298,7 @@ export default function TCellsPlots() {
                         </Col>
                         <Col xl={6}>
                             <Plot
-                                data={getGroupedTraces(cd8, 'type', { size, opacity })}
+                                data={getTraces(cd8, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD8+ T-Cells</b>`,
                                     legend: {

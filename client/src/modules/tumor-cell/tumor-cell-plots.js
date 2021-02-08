@@ -3,10 +3,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Plot from 'react-plotly.js';
 import merge from 'lodash/merge';
-import {
-    getContinuousTrace,
-    getGroupedTraces
-} from '../../services/plot';
+import { getTraces } from '../../services/plot';
 import {
     geneState,
     markerConfigState,
@@ -44,6 +41,7 @@ export default function TumorCellPlots() {
     };
 
     const defaultConfig = {
+        displayModeBar: true,
         toImageButtonOptions: {
             format: 'svg',
             filename: 'plot_export',
@@ -51,14 +49,40 @@ export default function TumorCellPlots() {
             width: 1000,
             scale: 1
         }
-    }
+    };
+
+    const traceColumns = {
+        groupColumn: 'type',
+        valueColumn: gene && 'value',
+    };
+
+    const traceConfig = {
+        showlegend: !gene,
+        hoverinfo: !gene 
+            ? 'name'
+            : 'text+name',
+        hoverlabel: {
+            namelength: -1,
+        },
+        marker: {
+            size,
+            opacity,
+            colorbar: { 
+                thickness: 20
+            },
+            ...!gene && {
+                color: false,
+                showscale: false,
+            }
+        },
+    };
 
     return gene
         ? <>
             <Row>
                 <Col xl={6}>
                     <Plot
-                        data={[getContinuousTrace(malignantCellsGeneExpression, 'value', { size, opacity, showscale: true })]}
+                        data={getTraces(malignantCellsGeneExpression, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
                             title: `<b>Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})</b>`,
                         })}
@@ -70,7 +94,7 @@ export default function TumorCellPlots() {
                 </Col>
                 <Col xl={6}>
                     <Plot
-                        data={[getContinuousTrace(nonmalignantCellsGeneExpression, 'value', { size, opacity, showscale: true })]}
+                        data={getTraces(nonmalignantCellsGeneExpression, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
                             title: `<b>Non-malignant Cells:  ${gene} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
                         })}
@@ -86,7 +110,7 @@ export default function TumorCellPlots() {
             <Row>
                 <Col xl={6}>
                     <Plot
-                        data={getGroupedTraces(malignantCells, 'type', { size, opacity })}
+                        data={getTraces(malignantCells, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
                             title: {
                                 text: `<b>Malignant Cells (n=${malignantCells.records.length})</b>`,
@@ -104,7 +128,7 @@ export default function TumorCellPlots() {
                 </Col>
                 <Col xl={6}>
                     <Plot
-                        data={getGroupedTraces(nonmalignantCells, 'type', { size, opacity })}
+                        data={getTraces(nonmalignantCells, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
                             title: `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
                             legend: {
