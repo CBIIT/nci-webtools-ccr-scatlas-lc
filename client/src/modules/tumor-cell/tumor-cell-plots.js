@@ -5,8 +5,7 @@ import Plot from 'react-plotly.js';
 import merge from 'lodash/merge';
 import { getTraces } from '../../services/plot';
 import {
-    geneState,
-    markerConfigState,
+    plotOptionsState,
     malignantCellsQuery,
     nonmalignantCellsQuery,
     malignantCellsGeneExpressionQuery,
@@ -14,12 +13,12 @@ import {
 } from './tumor-cell.state';
 
 export default function TumorCellPlots() {
-    const gene = useRecoilValue(geneState);
     const malignantCells = useRecoilValue(malignantCellsQuery);
     const nonmalignantCells = useRecoilValue(nonmalignantCellsQuery);
-    const malignantCellsGeneExpression = useRecoilValue(malignantCellsGeneExpressionQuery);
-    const nonmalignantCellsGeneExpression = useRecoilValue(nonmalignantCellsGeneExpressionQuery);
-    const { size, opacity } = useRecoilValue(markerConfigState);
+    const { size, opacity, gene } = useRecoilValue(plotOptionsState);
+    const geneSelected = gene && gene.filter(Boolean).length > 0;
+    const malignantCellsGeneExpression = useRecoilValue(malignantCellsGeneExpressionQuery(gene && gene[0]));
+    const nonmalignantCellsGeneExpression = useRecoilValue(nonmalignantCellsGeneExpressionQuery(gene && gene[0]));
 
     const defaultLayout = {
         xaxis: {
@@ -53,12 +52,12 @@ export default function TumorCellPlots() {
 
     const traceColumns = {
         groupColumn: 'type',
-        valueColumn: gene && 'value',
+        valueColumn: geneSelected && 'value',
     };
 
     const traceConfig = {
-        showlegend: !gene,
-        hoverinfo: !gene 
+        showlegend: !geneSelected,
+        hoverinfo: !geneSelected 
             ? 'name'
             : 'text+name',
         hoverlabel: {
@@ -70,21 +69,21 @@ export default function TumorCellPlots() {
             colorbar: { 
                 thickness: 20
             },
-            ...!gene && {
+            ...!geneSelected && {
                 color: false,
                 showscale: false,
             }
         },
     };
 
-    return gene
+    return geneSelected
         ? <>
             <Row>
                 <Col xl={6}>
                     <Plot
                         data={getTraces(malignantCellsGeneExpression, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
-                            title: `<b>Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})</b>`,
+                            title: `<b>Malignant Cells: ${gene[0]} (n=${malignantCellsGeneExpression.records.length})</b>`,
                         })}
                         config={defaultConfig}
                         useResizeHandler
@@ -96,7 +95,7 @@ export default function TumorCellPlots() {
                     <Plot
                         data={getTraces(nonmalignantCellsGeneExpression, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
-                            title: `<b>Non-malignant Cells:  ${gene} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
+                            title: `<b>Non-malignant Cells:  ${gene[0]} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
                         })}
                         config={defaultConfig}
                         useResizeHandler
