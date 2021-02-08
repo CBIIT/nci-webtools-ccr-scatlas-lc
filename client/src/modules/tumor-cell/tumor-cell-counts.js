@@ -1,16 +1,16 @@
 import { useMemo, useCallback } from 'react';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilValue, useRecoilState } from 'recoil';
 import Button from 'react-bootstrap/Button';
 import Table, { TextFilter, RangeFilter } from '../components/table';
-import { geneCountsQuery, geneState } from './tumor-cell.state';
+import { geneCountsQuery, plotOptionsState } from './tumor-cell.state';
 
 export default function TumorCellCounts() {
     const geneCounts = useRecoilValue(geneCountsQuery);
-    const setGene = useSetRecoilState(geneState);
-    const updateGene = useCallback(gene => {
+    const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
+    const setGene = useCallback(gene => {
         window.scrollTo(0, 0);
-        setGene(gene);
-    }, [setGene]);
+        setPlotOptions({...plotOptions, gene: [gene]})
+    }, [plotOptions, setPlotOptions]);
 
     const columns = useMemo(_ => [
         {
@@ -18,7 +18,7 @@ export default function TumorCellCounts() {
             Header: 'Gene',
             Filter: TextFilter,
             Cell: ({ value }) => (
-                <Button variant="link" className="p-0" onClick={_ => updateGene(value)}>
+                <Button variant="link" className="p-0" onClick={_ => setGene(value)}>
                     {value}
                 </Button>
             ),
@@ -32,7 +32,7 @@ export default function TumorCellCounts() {
             minPlaceholder: 'Enter min value',
             maxPlaceholder: 'Enter max value',
         }
-    ], [updateGene]);
+    ], [setGene]);
 
     const data = useMemo(_ =>
         geneCounts.records,
