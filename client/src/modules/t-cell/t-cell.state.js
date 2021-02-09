@@ -55,3 +55,8 @@ export const plotOptionsState = atom({
     key: 'tCell.plotOptionsState',
     default: { size: 4, opacity: 0.8, gene: null },
 });
+
+export const tabState = atom({
+    key: 'tCell.tabState',
+    default: 'tcell'
+})
