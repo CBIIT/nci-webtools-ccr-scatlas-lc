@@ -13,18 +13,16 @@ export default function TCell() {
     return (
         <Container className="py-4">
             <Card className="shadow mb-4">
-                <Card.Body className="position-relative">
-                    <TCellPlotOptions />
-                    <div style={{ minHeight: '800px' }}>
-                        <ErrorBoundary fallback={
-                            <Alert variant="danger">
-                                An internal error prevented plots from loading. Please contact the website administrator if this problem persists.
-                            </Alert>}>
-                            <Suspense fallback={<Loader message="Loading Plots" />}>
-                                <TCellsPlots />
-                            </Suspense>
-                        </ErrorBoundary>
-                    </div>
+                <Card.Body className="position-relative" style={{ minHeight: '800px' }}>
+                    <ErrorBoundary fallback={
+                        <Alert variant="danger">
+                            An internal error prevented plots from loading. Please contact the website administrator if this problem persists.
+                        </Alert>}>
+                        <Suspense fallback={<Loader message="Loading Plots" />}>
+                            <TCellPlotOptions />
+                            <TCellsPlots />
+                        </Suspense>
+                    </ErrorBoundary>
                 </Card.Body>
             </Card>
             <Card className="shadow mb-4">
@@ -33,7 +31,7 @@ export default function TCell() {
                         T-Cell Counts
                     </Card.Title>
                 </Card.Header>
-                <Card.Body className="p-0 position-relative" style={{minHeight: '600px'}}>
+                <Card.Body className="p-0 position-relative" style={{ minHeight: '600px' }}>
                     <ErrorBoundary fallback={
                         <Alert variant="danger" className="m-3">
                             An internal error prevented cell counts from loading. Please contact the website administrator if this problem persists.
