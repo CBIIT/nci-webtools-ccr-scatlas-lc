@@ -23,7 +23,7 @@ export const lookupQuery = selector({
 
 export const plotOptionsState = atom({
     key: 'tumorCell.plotOptions',
-    default: { size: 4, opacity: 0.8, gene: []}
+    default: { size: 4, opacity: 0.8, gene: null}
 });
 
 export const malignantCellsGeneExpressionQuery = selectorFamily({

@@ -9,7 +9,7 @@ export default function TumorCellCounts() {
     const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
     const setGene = useCallback(gene => {
         window.scrollTo(0, 0);
-        setPlotOptions({...plotOptions, gene: [gene]})
+        setPlotOptions({...plotOptions, gene});
     }, [plotOptions, setPlotOptions]);
 
     const columns = useMemo(_ => [

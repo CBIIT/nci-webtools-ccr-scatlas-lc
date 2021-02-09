@@ -16,9 +16,8 @@ export default function TumorCellPlots() {
     const malignantCells = useRecoilValue(malignantCellsQuery);
     const nonmalignantCells = useRecoilValue(nonmalignantCellsQuery);
     const { size, opacity, gene } = useRecoilValue(plotOptionsState);
-    const geneSelected = gene && gene.filter(Boolean).length > 0;
-    const malignantCellsGeneExpression = useRecoilValue(malignantCellsGeneExpressionQuery(gene && gene[0]));
-    const nonmalignantCellsGeneExpression = useRecoilValue(nonmalignantCellsGeneExpressionQuery(gene && gene[0]));
+    const malignantCellsGeneExpression = useRecoilValue(malignantCellsGeneExpressionQuery(gene));
+    const nonmalignantCellsGeneExpression = useRecoilValue(nonmalignantCellsGeneExpressionQuery(gene));
 
     const defaultLayout = {
         xaxis: {
@@ -52,12 +51,12 @@ export default function TumorCellPlots() {
 
     const traceColumns = {
         groupColumn: 'type',
-        valueColumn: geneSelected && 'value',
+        valueColumn: gene && 'value',
     };
 
     const traceConfig = {
-        showlegend: !geneSelected,
-        hoverinfo: !geneSelected 
+        showlegend: !gene,
+        hoverinfo: !gene 
             ? 'name'
             : 'text+name',
         hoverlabel: {
@@ -69,14 +68,14 @@ export default function TumorCellPlots() {
             colorbar: { 
                 thickness: 20
             },
-            ...!geneSelected && {
+            ...!gene && {
                 color: false,
                 showscale: false,
             }
         },
     };
 
-    return geneSelected
+    return gene
         ? <>
             <Row>
                 <Col xl={6}>
