@@ -2,6 +2,9 @@
     outline: none;
 }
 
+[react-cloak] {
+    display: none !important;
+}
 
 body {
     min-width: 400px;
