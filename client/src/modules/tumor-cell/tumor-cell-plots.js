@@ -82,7 +82,7 @@ export default function TumorCellPlots() {
                     <Plot
                         data={getTraces(malignantCellsGeneExpression, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
-                            title: `<b>Malignant Cells: ${gene[0]} (n=${malignantCellsGeneExpression.records.length})</b>`,
+                            title: `<b>Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})</b>`,
                         })}
                         config={defaultConfig}
                         useResizeHandler
@@ -94,7 +94,7 @@ export default function TumorCellPlots() {
                     <Plot
                         data={getTraces(nonmalignantCellsGeneExpression, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
-                            title: `<b>Non-malignant Cells:  ${gene[0]} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
+                            title: `<b>Non-malignant Cells: ${gene} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
                         })}
                         config={defaultConfig}
                         useResizeHandler
