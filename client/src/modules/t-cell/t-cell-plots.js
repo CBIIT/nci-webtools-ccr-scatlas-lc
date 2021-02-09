@@ -10,7 +10,7 @@ import {
     tCellQuery,
     cd4Query,
     cd8Query,
-    markerConfigState,
+    plotOptionsState,
     geneState,
     tCellGeneExpressionQuery,
     cd4GeneExpressionQuery,
@@ -23,12 +23,11 @@ export default function TCellsPlots() {
     const tCells = useRecoilValue(tCellQuery);
     const cd4 = useRecoilValue(cd4Query);
     const cd8 = useRecoilValue(cd8Query);
-    const { size, opacity } = useRecoilValue(markerConfigState);
-    const gene = useRecoilValue(geneState);
+    const { size, opacity, gene } = useRecoilValue(plotOptionsState);
 
-    const tCellGeneExpression = useRecoilValue(tCellGeneExpressionQuery);
-    const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery);
-    const cd8GeneExpression = useRecoilValue(cd8GeneExpressionQuery);
+    const tCellGeneExpression = useRecoilValue(tCellGeneExpressionQuery(gene));
+    const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery(gene));
+    const cd8GeneExpression = useRecoilValue(cd8GeneExpressionQuery(gene));
 
 
     const defaultLayout = {
