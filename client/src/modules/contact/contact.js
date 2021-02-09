@@ -86,8 +86,8 @@ export default function Contact() {
                         </Row>
 
                         <Form.Group controlId="subject">
-                            <Form.Label>Subject</Form.Label>
-                            <Form.Control name="subject" value={form.subject} onChange={handleChange} placeholder="Enter subject" required />
+                            <Form.Label>Affiliation</Form.Label>
+                            <Form.Control name="subject" value={form.subject} onChange={handleChange} placeholder="Enter affiliation" required />
                         </Form.Group>
 
                         <Form.Group controlId="body">

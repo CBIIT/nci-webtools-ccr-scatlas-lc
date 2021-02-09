@@ -104,7 +104,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(tCellGeneExpression, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>T-Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
+                                    title: `<b>T Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
                                     xaxis: {
                                         title: 't-SNE 1',
                                     },
@@ -129,7 +129,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(cd4GeneExpression, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD4+ T-Cells:  ${gene}</b>`,
+                                    title: `<b>CD4+ T Cells:  ${gene}</b>`,
                                     annotations: [
                                         {
                                             x: -11,
@@ -170,7 +170,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(cd8GeneExpression, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD8+ T-Cells:  ${gene}</b>`,
+                                    title: `<b>CD8+ T Cells:  ${gene}</b>`,
                                     annotations: [
                                         {
                                             x: -11,
@@ -221,7 +221,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(tCells, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>T-Cells (n=${tCells.records.length})</b>`,
+                                    title: `<b>T Cells (n=${tCells.records.length})</b>`,
                                     legend: {
                                         title: {
                                             text: 'Type',
@@ -252,7 +252,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(cd4, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD4+ T-Cells</b>`,
+                                    title: `<b>CD4+ T Cells</b>`,
                                     legend: {
                                         title: {
                                             text: 'Type',
@@ -299,7 +299,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(cd8, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD8+ T-Cells</b>`,
+                                    title: `<b>CD8+ T Cells</b>`,
                                     legend: {
                                         title: {
                                             text: 'Type',
