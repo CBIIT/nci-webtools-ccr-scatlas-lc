@@ -1,16 +1,16 @@
 import { useMemo, useCallback } from 'react';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilValue, useRecoilState } from 'recoil';
 import Button from 'react-bootstrap/Button';
 import Table, { TextFilter, RangeFilter } from '../components/table';
-import { tCellCountQuery , geneState } from './t-cell.state';
+import { tCellCountQuery, plotOptionsState } from './t-cell.state';
 
 export default function TCellCounts() {
     const geneCounts = useRecoilValue(tCellCountQuery);
-    const setGene = useSetRecoilState(geneState);
-    const updateGene = useCallback(gene => {
+    const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
+    const setGene = useCallback(gene => {
         window.scrollTo(0, 0);
-        setGene(gene);
-    }, [setGene]);
+        setPlotOptions({...plotOptions, gene});
+    }, [plotOptions, setPlotOptions]);
 
     const columns = useMemo(_ => [
         {
@@ -18,7 +18,7 @@ export default function TCellCounts() {
             Header: 'Gene',
             Filter: TextFilter,
             Cell: ({ value }) => (
-                <Button variant="link" className="p-0" onClick={_ => updateGene(value)}>
+                <Button variant="link" className="p-0" onClick={_ => setGene(value)}>
                     {value}
                 </Button>
             ),
@@ -48,7 +48,7 @@ export default function TCellCounts() {
             minPlaceholder: 'Enter min value',
             maxPlaceholder: 'Enter max value',
         }
-    ], [updateGene]);
+    ], [setGene]);
 
     const data = useMemo(_ =>
         geneCounts.records,
