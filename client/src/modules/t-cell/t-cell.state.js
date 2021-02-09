@@ -1,4 +1,4 @@
-import { atom, selector } from 'recoil';
+import { atom, selector, selectorFamily } from 'recoil';
 import { query } from '../../services/query';
 
 export const tCellQuery = selector({
@@ -21,24 +21,29 @@ export const tCellCountQuery = selector({
     get: async ({get}) => await query('/api/query', {table: `v_t_cd4_cd8_cell_gene_count`, orderBy: 't_cell_count', order: 'desc'}),
 });
 
-export const tCellGeneExpressionQuery = selector({
+export const lookupQuery = selector({
+    key: 'tumorCell.lookupQuery',
+    get: async ({get}) => await query('/api/lookup'),
+});
+
+export const tCellGeneExpressionQuery = selectorFamily({
     key: 'tCell.tCellGeneExpressionQuery',
-    get: async ({get}) => get(geneState) 
-        ? await query('/api/query', {table: `v_t_cell_gene_expression_${get(geneState)}`, raw: true}) 
+    get: gene => async _ => gene
+        ? await query('/api/query', {table: `v_t_cell_gene_expression_${gene}`, raw: true}) 
         : [],
 });
 
-export const cd4GeneExpressionQuery = selector({
+export const cd4GeneExpressionQuery = selectorFamily({
     key: 'tCell.cd4GeneExpressionQuery',
-    get: async ({get}) => get(geneState) 
-        ? await query('/api/query', {table: `v_cd4_cell_gene_expression_${get(geneState)}`, raw: true}) 
+    get: gene => async _ => gene
+        ? await query('/api/query', {table: `v_cd4_cell_gene_expression_${gene}`, raw: true}) 
         : [],
 });
 
-export const cd8GeneExpressionQuery = selector({
+export const cd8GeneExpressionQuery = selectorFamily({
     key: 'tCell.cd8GeneExpressionQuery',
-    get: async ({get}) => get(geneState) 
-        ? await query('/api/query', {table: `v_cd8_cell_gene_expression_${get(geneState)}`, raw: true}) 
+    get: gene => async _ => gene
+        ? await query('/api/query', {table: `v_cd8_cell_gene_expression_${gene}`, raw: true}) 
         : [],
 });
 export const geneState = atom({
@@ -46,7 +51,7 @@ export const geneState = atom({
     default: '',
 });
 
-export const markerConfigState = atom({
-    key: 'tCell.markerConfigState',
-    default: { size: 4, opacity: 0.8 },
+export const plotOptionsState = atom({
+    key: 'tCell.plotOptionsState',
+    default: { size: 4, opacity: 0.8, gene: null },
 });
