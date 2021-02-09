@@ -22,7 +22,7 @@ export const tCellCountQuery = selector({
 });
 
 export const lookupQuery = selector({
-    key: 'tumorCell.lookupQuery',
+    key: 'tCell.lookupQuery',
     get: async ({get}) => await query('/api/lookup'),
 });
 
