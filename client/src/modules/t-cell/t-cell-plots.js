@@ -2,7 +2,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useRecoilState } from 'recoil';
 import Plot from 'react-plotly.js';
 import merge from 'lodash/merge';
 import { getTraces } from '../../services/plot';
@@ -11,19 +11,18 @@ import {
     cd4Query,
     cd8Query,
     plotOptionsState,
-    geneState,
+    tabState,
     tCellGeneExpressionQuery,
     cd4GeneExpressionQuery,
-    cd8GeneExpressionQuery
+    cd8GeneExpressionQuery,
 } from './t-cell.state';
 
 export default function TCellsPlots() {
-
-
     const tCells = useRecoilValue(tCellQuery);
     const cd4 = useRecoilValue(cd4Query);
     const cd8 = useRecoilValue(cd8Query);
     const { size, opacity, gene } = useRecoilValue(plotOptionsState);
+    const [tab, setTab] = useRecoilState(tabState);
 
     const tCellGeneExpression = useRecoilValue(tCellGeneExpressionQuery(gene));
     const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery(gene));
@@ -89,6 +88,7 @@ export default function TCellsPlots() {
     // since plots are not initially visible, we need to trigger a resize event as we enter the tab
     // store tab state
     function handleSelect(key) {
+        setTab(key);
         const event = document.createEvent('Event');
         event.initEvent('resize', true, true);
         window.dispatchEvent(event);
@@ -97,7 +97,7 @@ export default function TCellsPlots() {
 
     return gene ?
         <>
-            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
+            <Tabs defaultActiveKey="tcell" activeKey={tab} id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
                 <Tab eventKey="tcell" title="T-Cell">
                     <Row>
                         <Col xl={12} className="d-flex justify-content-center">
@@ -214,7 +214,7 @@ export default function TCellsPlots() {
         </>
         :
         <>
-            <Tabs defaultActiveKey="tcell" id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
+            <Tabs defaultActiveKey="tcell" activeKey={tab} id="tcellTabs" className="nav-tabs-custom" onSelect={handleSelect}>
                 <Tab eventKey="tcell" title="T-Cell">
                     <Row>
                         <Col xl={12} className="d-flex justify-content-center">
