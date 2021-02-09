@@ -10,30 +10,20 @@ import { plotOptionsState, lookupQuery } from './tumor-cell.state';
 
 export default function TumorCellPlotOptions() {
     const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
-    const [_plotOptions, _setPlotOptions] = useState(plotOptions);
+    const [formValues, setFormValues] = useState(plotOptions);
     const lookup = useRecoilValue(lookupQuery);
+    const mergePlotOptions = obj => setPlotOptions({...plotOptions, ...obj});
+    const mergeFormValues = obj => setFormValues({...formValues, ...obj});
 
     function handleChange(event) {
-        const { name, value } = event.target;
-
-        console.log(event.target.min);
-
-        const [min, max] = {
-            size: [1, 10],
-            opacity: [0.1, 1],
-        }[name];
-        const clampedValue = Math.min(max, Math.max(min, value));
-        setPlotOptions({ ...plotOptions, [name]: clampedValue });
-        _setPlotOptions({ ..._plotOptions, [name]: value });
+        const { name, value, min, max } = event.target;
+        const clampedValue = Math.min(+max, Math.max(+min, value));
+        mergePlotOptions({[name]: clampedValue});
+        mergeFormValues({[name]: value});
     }
 
     function handleBlur() {
-        _setPlotOptions(plotOptions);
-    }
-
-    function setGene(gene) {
-        console.log(plotOptions);
-        setPlotOptions({ ...plotOptions, gene })
+        mergeFormValues(plotOptions);
     }
 
     return (
@@ -41,13 +31,28 @@ export default function TumorCellPlotOptions() {
             <Col md={3}>
                 <Form.Group controlId="cell-size">
                     <Form.Label>Cell Size</Form.Label>
-                    <Form.Control type="number" name="size" value={_plotOptions.size} onChange={handleChange} onBlur={handleBlur} min="1" max="10" />
+                    <Form.Control 
+                        type="number" 
+                        name="size" 
+                        value={formValues.size} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        min="1" 
+                        max="10" />
                 </Form.Group>
             </Col>
             <Col md={3}>
                 <Form.Group controlId="cell-opacity">
                     <Form.Label>Cell Opacity</Form.Label>
-                    <Form.Control type="number" name="opacity" value={_plotOptions.opacity} onChange={handleChange} onBlur={handleBlur} step="0.1" max="1" min="0.1" />
+                    <Form.Control 
+                        type="number" 
+                        name="opacity" 
+                        value={formValues.opacity} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        step="0.1" 
+                        min="0.1" 
+                        max="1" />
                 </Form.Group>
             </Col>
             <Col md={3}>
@@ -56,15 +61,17 @@ export default function TumorCellPlotOptions() {
                     <InputGroup className="flex-nowrap">
                         <Typeahead
                             id="plot-gene"
-                            labelKey="name"
-                            onChange={setGene}
+                            className="w-100"
+                            onChange={([gene]) => mergePlotOptions({gene})}
                             options={lookup.gene}
                             placeholder="Select a gene"
-                            selected={plotOptions.gene}
-                            className="w-100"
+                            selected={[plotOptions.gene].filter(Boolean)}
                         />
                         <InputGroup.Append>
-                            <Button variant="primary" disabled={!plotOptions.gene.length} onClick={_ => setGene([])}>
+                            <Button 
+                                variant="primary" 
+                                disabled={!plotOptions.gene} 
+                                onClick={_ => mergePlotOptions({gene: null})}>
                                 Clear
                             </Button>
                         </InputGroup.Append>
