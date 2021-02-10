@@ -61,7 +61,7 @@ export default function TCellPlotOptions() {
                                 variant="primary" 
                                 disabled={!plotOptions.gene} 
                                 onClick={_ => mergePlotOptions({gene: null})}>
-                                Clear
+                                Reset
                             </Button>
                         </InputGroup.Append>
                     </InputGroup>
