@@ -23,6 +23,7 @@ export default function TumorCellCounts() {
                 </Button>
             ),
             placeholder: 'Enter gene',
+            aria: 'Tumor Cell Gene'
         },
         {
             Header: 'Cells Expressing',
@@ -31,6 +32,7 @@ export default function TumorCellCounts() {
             filter: 'between',
             minPlaceholder: 'Enter min value',
             maxPlaceholder: 'Enter max value',
+            aria: 'Tumor Cell Expressing'
         }
     ], [setGene]);
 

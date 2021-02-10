@@ -6,19 +6,20 @@ import Pagination from 'react-bootstrap/Pagination';
 import { useTable, useFilters, usePagination, useSortBy } from 'react-table';
 
 export function TextFilter({
-    column: { filterValue, setFilter, placeholder }
+    column: { filterValue, setFilter, placeholder, aria }
 }) {
     return (
         <Form.Control
             value={filterValue || ''}
             onChange={e => setFilter(e.target.value || undefined)}
             placeholder={placeholder || `Search...`}
+            aria-label={aria}
         />
     );
 }
 
 export function RangeFilter({
-    column: { filterValue = [], setFilter, minPlaceholder, maxPlaceholder },
+    column: { filterValue = [], setFilter, minPlaceholder, maxPlaceholder, aria },
 }) {
     const getInputValue = ev => ev.target.value 
         ? parseInt(ev.target.value, 10) 
@@ -31,12 +32,14 @@ export function RangeFilter({
                 type="number"
                 value={filterValue[0] || ''}
                 onChange={e => setFilter((old = []) => [getInputValue(e), old[1]])}
+                aria-label={aria + ' Min'}
             />
             <Form.Control 
                 placeholder={maxPlaceholder || "Max value" }
                 type="number"
                 value={filterValue[1] || ''}
                 onChange={e => setFilter((old = []) => [old[0], getInputValue(e)])}
+                aria-label={aria + ' Max'}
             />
         </InputGroup>
     );
@@ -94,9 +97,9 @@ export default function Table({ columns, data, options }) {
                         {headerGroups.map(headerGroup => (
                             <tr {...headerGroup.getHeaderGroupProps()}>
                                 {headerGroup.headers.map(column => (
-                                    <th {...column.getHeaderProps()}>
+                                    <td {...column.getHeaderProps()}>
                                         <div>{column.canFilter ? column.render('Filter') : null}</div>
-                                    </th>
+                                    </td>
                                 ))}
                             </tr>
                         ))}

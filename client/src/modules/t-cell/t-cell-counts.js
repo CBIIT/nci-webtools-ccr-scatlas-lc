@@ -23,6 +23,7 @@ export default function TCellCounts() {
                 </Button>
             ),
             placeholder: 'Enter gene',
+            aria: 'T Cell Gene'
         },
         {
             Header: 'T Cells Expressing',
@@ -31,6 +32,7 @@ export default function TCellCounts() {
             filter: 'between',
             minPlaceholder: 'Enter min value',
             maxPlaceholder: 'Enter max value',
+            aria: 'T Cell Expressing'
         },
         {
             Header: 'CD4+ T Cells Expressing',
@@ -39,6 +41,7 @@ export default function TCellCounts() {
             filter: 'between',
             minPlaceholder: 'Enter min value',
             maxPlaceholder: 'Enter max value',
+            aria: 'CD4+ Expressing'
         },
         {
             Header: 'CD8+ T Cells Expressing',
@@ -47,6 +50,7 @@ export default function TCellCounts() {
             filter: 'between',
             minPlaceholder: 'Enter min value',
             maxPlaceholder: 'Enter max value',
+            aria: 'CD8+ Expressing'
         }
     ], [setGene]);
 
