@@ -10,7 +10,10 @@ export default function Home() {
                 <Card.Body>
                     <Row>
                         <Col md={6}>
-                            <img src="images/home.svg" className="img-fluid" alt="Home Page Figure" />
+                            <figure class="figure">
+                                <img src="images/home.svg" className="img-fluid" alt="Home Page Figure" />
+                                <figurecaption class="figure-caption">CAFs, cancer-associated fbroblasts; TAMs, tumor-associated macorphages; TECs, tumor-associated endothelial cells.</figurecaption>
+                            </figure>
                         </Col>
 
                         <Col md={6}>
@@ -22,11 +25,6 @@ export default function Home() {
                             <p>
                                 scAtlasLC can be used to evaluate gene expression in malignant cells and various non-malignant cells in liver cancer. It can be further used to determine gene expression in different subtypes of stromal cells and immune cells.
                             </p>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={6} >
-                            CAFs, cancer-associated fbroblasts; TAMs, tumor-associated macorphages; TECs, tumor-associated endothelial cells.
                         </Col>
                     </Row>
                 </Card.Body>
