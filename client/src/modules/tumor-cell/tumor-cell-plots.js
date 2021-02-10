@@ -114,7 +114,7 @@ export default function TumorCellPlots() {
                                 text: `<b>Malignant Cells (n=${malignantCells.records.length})</b>`,
                             },
                             legend: {
-                                title: { text: 'Case', font: { size: 14 } }
+                                title: { text: 'Case (Click legend to show/hide)', font: { size: 14 } }
                             },
                         })}
                         config={defaultConfig}
@@ -130,7 +130,7 @@ export default function TumorCellPlots() {
                         layout={merge({}, defaultLayout, {
                             title: `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
                             legend: {
-                                title: { text: 'Type', font: { size: 14 } },
+                                title: { text: 'Type (Click legend to show/hide)', font: { size: 14 } },
                             },
                         })}
                         config={defaultConfig}

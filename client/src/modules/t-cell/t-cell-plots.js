@@ -224,7 +224,7 @@ export default function TCellsPlots() {
                                     title: `<b>T Cells (n=${tCells.records.length})</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type',
+                                            text: 'Type (Click legend to show/hide)',
                                             font: { size: 14 },
                                         },
                                     },
@@ -255,7 +255,7 @@ export default function TCellsPlots() {
                                     title: `<b>CD4+ T Cells</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type',
+                                            text: 'Type (Click legend to show/hide)',
                                             font: { size: 14 },
                                         },
                                     },
@@ -302,7 +302,7 @@ export default function TCellsPlots() {
                                     title: `<b>CD8+ T Cells</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type',
+                                            text: 'Type (Click legend to show/hide)',
                                             font: { size: 14 },
                                         },
                                     },
