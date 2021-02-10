@@ -64,7 +64,7 @@ export default function TumorCellPlotOptions() {
                             className="w-100"
                             onChange={([gene]) => mergePlotOptions({gene})}
                             options={lookup.gene}
-                            placeholder="Select a gene"
+                            placeholder="All genes"
                             selected={[plotOptions.gene].filter(Boolean)}
                         />
                         <InputGroup.Append>

@@ -24,6 +24,11 @@ export default function Home() {
                             </p>
                         </Col>
                     </Row>
+                    <Row>
+                        <Col md={6} >
+                            CAFs, cancer-associated fbroblasts; TAMs, tumor-associated macorphages; TECs, tumor-associated endothelial cells.
+                        </Col>
+                    </Row>
                 </Card.Body>
             </Card>
         </Container>
