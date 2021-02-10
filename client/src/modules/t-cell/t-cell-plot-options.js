@@ -52,6 +52,9 @@ export default function TCellPlotOptions() {
                             options={lookup.gene}
                             placeholder="All genes"
                             selected={[plotOptions.gene].filter(Boolean)}
+                            inputProps={{
+                                'aria-label': 'Gene Search'
+                            }}
                         />
                         <InputGroup.Append>
                             <Button 
