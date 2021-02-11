@@ -46,7 +46,9 @@ export default function TumorCellPlots() {
             height: 1000,
             width: 1000,
             scale: 1
-        }
+        },
+        displaylogo: false,
+        modeBarButtonsToRemove: ['hoverCompareCartesian','hoverClosestCartesian']
     };
 
     const traceColumns = {
