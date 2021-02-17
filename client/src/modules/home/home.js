@@ -12,7 +12,7 @@ export default function Home() {
                         <Col md={6}>
                             <figure class="figure">
                                 <img src="images/home.svg" className="img-fluid" alt="Home Page Figure" />
-                                <figurecaption class="figure-caption">CAFs, cancer-associated fbroblasts; TAMs, tumor-associated macorphages; TECs, tumor-associated endothelial cells.</figurecaption>
+                                <figurecaption class="figure-caption">CAFs, cancer-associated fibroblasts; TAMs, tumor-associated macrophages; TECs, tumor-associated endothelial cells.</figurecaption>
                             </figure>
                         </Col>
 
@@ -27,7 +27,7 @@ export default function Home() {
                             </p>
 
                             <p>
-                                The single-cell data used for scAtlasLC can be downloaded from Gene Expression Omnibus: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530" target="_blank">GSE151530</a>
+                                The single-cell data used for scAtlasLC can be downloaded from Gene Expression Omnibus: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530" target="_blank" rel="noopener noreferrer">GSE151530</a>
                             </p>
                         </Col>
                     </Row>
