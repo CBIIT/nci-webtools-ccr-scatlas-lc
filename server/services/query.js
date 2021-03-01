@@ -45,7 +45,7 @@ function query(database, params) {
     console.log(filters);
 
     // columns, table, order, and orderBy must be sanitized/validated
-    // since thbey can not be bound parameters
+    // since they can not be bound parameters
     columns = !columns
         ? columnNames
         : columns.split(',')
