@@ -9,9 +9,14 @@
   <title>Single-cell Atlas in Liver Cancer</title>
   <meta name="description" content="scAtlasLC (single-cell Atlas in Liver Cancer) is publicly available data portal of single-cell transcriptomic profile of tumor cell communities in liver cancer">
   <meta name="keywords" content="Single cell atlas, Liver cancer, T cells, Tumor heterogenity, Tumor microenvironments, Single cell landscape, Single cell database, Hepatocellular carcinoma, Cholangiocarcinoma">
+  <script src="https://assets.adobedtm.com/f1bfa9f7170c81b1a9a9ecdcc6c5215ee0b03c84/satelliteLib-4b219b82c4737db0e1797b6c511cf10c802c95cb.js"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-62346354-27"></script>
-  <script async src="https://assets.adobedtm.com/f1bfa9f7170c81b1a9a9ecdcc6c5215ee0b03c84/satelliteLib-4b219b82c4737db0e1797b6c511cf10c802c95cb.js"></script>
-  <script src="%PUBLIC_URL%/analytics.js"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-62346354-27');
+  </script>
 </head>
 
 <body class="d-flex flex-column vh-100" react-cloak>
@@ -83,6 +88,7 @@
   </footer>
   <script nomodule src="https://cdn.jsdelivr.net/npm/babel-polyfill@6.26.0/dist/polyfill.min.js" integrity="sha256-WRc/eG3R84AverJv0zmqxAmdwQxstUpqkiE+avJ3WSo=" crossorigin="anonymous"></script>
   <script nomodule src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.4.0/dist/fetch.umd.js" integrity="sha256-17sG19PAt2IccZKY2F4xmrujlvGGvjxB0bxuxPuycMw=" crossorigin="anonymous"></script>
+  <script>_satellite.pageBottom()</script>
 </body>
 
 </html>
