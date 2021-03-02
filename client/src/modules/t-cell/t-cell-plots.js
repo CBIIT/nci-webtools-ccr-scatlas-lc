@@ -44,7 +44,7 @@ export default function TCellsPlots() {
         legend: {
             itemsizing: 'constant',
             itemwidth: 40,
-            
+
         },
         hovermode: 'closest',
     };
@@ -59,7 +59,7 @@ export default function TCellsPlots() {
             scale: 1
         },
         displaylogo: false,
-        modeBarButtonsToRemove: ['select2d','lasso2d','hoverCompareCartesian','hoverClosestCartesian']
+        modeBarButtonsToRemove: ['select2d', 'lasso2d', 'hoverCompareCartesian', 'hoverClosestCartesian']
     };
 
     const traceColumns = {
@@ -69,7 +69,7 @@ export default function TCellsPlots() {
 
     const traceConfig = {
         showlegend: !gene,
-        hoverinfo: !gene 
+        hoverinfo: !gene
             ? 'name'
             : 'text+name',
         hoverlabel: {
@@ -78,7 +78,7 @@ export default function TCellsPlots() {
         marker: {
             size,
             opacity,
-            colorbar: { 
+            colorbar: {
                 thickness: 20
             },
             ...!gene && {
@@ -173,7 +173,7 @@ export default function TCellsPlots() {
                                 data={getTraces(cd8GeneExpression, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD8+ T Cells:  ${gene}</b>`,
-                                        
+
                                     annotations: [
                                         {
                                             x: -11,
@@ -239,11 +239,14 @@ export default function TCellsPlots() {
                                     },
                                     hovermode: 'closest',
                                     annotations: [{
-                                        text: 'Click legend to show/hide',
+                                        text: 'Click legend to show/hide type',
+                                        font: { color: 'grey' },
+                                        borderwidth: 1,
+                                        bordercolor: 'lightgrey',
                                         showarrow: false,
                                         xref: 'paper',
                                         yref: 'paper',
-                                        x: 1,
+                                        x: 0.5,
                                         y: 1,
                                     }]
                                 })}
@@ -272,11 +275,14 @@ export default function TCellsPlots() {
                                     },
                                     annotations: [
                                         {
-                                            text: 'Click legend to show/hide',
+                                            text: 'Click legend to show/hide type',
+                                            font: { color: 'grey' },
+                                            borderwidth: 1,
+                                            bordercolor: 'lightgrey',
                                             showarrow: false,
                                             xref: 'paper',
                                             yref: 'paper',
-                                            x: 1,
+                                            x: 0.5,
                                             y: 1,
                                         },
                                         {
@@ -327,11 +333,14 @@ export default function TCellsPlots() {
                                     },
                                     annotations: [
                                         {
-                                            text: 'Click legend to show/hide',
+                                            text: 'Click legend to show/hide type',
+                                            font: { color: 'grey' },
+                                            borderwidth: 1,
+                                            bordercolor: 'lightgrey',
                                             showarrow: false,
                                             xref: 'paper',
                                             yref: 'paper',
-                                            x: 1,
+                                            x: 0.5,
                                             y: 1,
                                         },
                                         {
