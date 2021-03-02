@@ -121,11 +121,14 @@ export default function TumorCellPlots() {
                                 title: { text: 'Case', font: { size: 14 } }
                             },
                             annotations: [{
-                                text: 'Click legend to show/hide',
+                                text: 'Click legend to show/hide cases',
+                                font: {color: 'grey'},
+                                borderwidth: 1,
+                                bordercolor: 'lightgrey',
                                 showarrow: false,
                                 xref: 'paper',
                                 yref: 'paper',
-                                x: 1,
+                                x: 0.5,
                                 y: 1,
                             }]
                         })}
@@ -145,11 +148,14 @@ export default function TumorCellPlots() {
                                 title: { text: 'Type', font: { size: 14 } },
                             },
                             annotations: [{
-                                text: 'Click legend to show/hide',
+                                text: 'Click legend to show/hide types',
+                                font: {color: 'grey'},
+                                borderwidth: 1,
+                                bordercolor: 'lightgrey',
                                 showarrow: false,
                                 xref: 'paper',
                                 yref: 'paper',
-                                x: 1,
+                                x: 0.5,
                                 y: 1,
                             }]
                         })}
