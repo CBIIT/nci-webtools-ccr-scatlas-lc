@@ -36,6 +36,7 @@ export default function TumorCellPlots() {
             itemwidth: 40,
         },
         hovermode: 'closest',
+        
     };
 
     const defaultConfig = {
@@ -48,7 +49,8 @@ export default function TumorCellPlots() {
             scale: 1
         },
         displaylogo: false,
-        modeBarButtonsToRemove: ['hoverCompareCartesian','hoverClosestCartesian']
+        modeBarButtonsToRemove: ['select2d','lasso2d','hoverCompareCartesian','hoverClosestCartesian'],
+        
     };
 
     const traceColumns = {
@@ -116,8 +118,16 @@ export default function TumorCellPlots() {
                                 text: `<b>Malignant Cells (n=${malignantCells.records.length})</b>`,
                             },
                             legend: {
-                                title: { text: 'Case (Click legend to show/hide)', font: { size: 14 } }
+                                title: { text: 'Case', font: { size: 14 } }
                             },
+                            annotations: [{
+                                text: 'Click legend to show/hide',
+                                showarrow: false,
+                                xref: 'paper',
+                                yref: 'paper',
+                                x: 1,
+                                y: 1,
+                            }]
                         })}
                         config={defaultConfig}
                         useResizeHandler
@@ -132,8 +142,16 @@ export default function TumorCellPlots() {
                         layout={merge({}, defaultLayout, {
                             title: `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
                             legend: {
-                                title: { text: 'Type (Click legend to show/hide)', font: { size: 14 } },
+                                title: { text: 'Type', font: { size: 14 } },
                             },
+                            annotations: [{
+                                text: 'Click legend to show/hide',
+                                showarrow: false,
+                                xref: 'paper',
+                                yref: 'paper',
+                                x: 1,
+                                y: 1,
+                            }]
                         })}
                         config={defaultConfig}
                         useResizeHandler

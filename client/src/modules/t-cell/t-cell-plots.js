@@ -44,6 +44,7 @@ export default function TCellsPlots() {
         legend: {
             itemsizing: 'constant',
             itemwidth: 40,
+            
         },
         hovermode: 'closest',
     };
@@ -58,7 +59,7 @@ export default function TCellsPlots() {
             scale: 1
         },
         displaylogo: false,
-        modeBarButtonsToRemove: ['hoverCompareCartesian','hoverClosestCartesian']
+        modeBarButtonsToRemove: ['select2d','lasso2d','hoverCompareCartesian','hoverClosestCartesian']
     };
 
     const traceColumns = {
@@ -113,7 +114,6 @@ export default function TCellsPlots() {
                                     yaxis: {
                                         title: 't-SNE 2',
                                     },
-
 
                                 })}
                                 config={defaultConfig}
@@ -173,6 +173,7 @@ export default function TCellsPlots() {
                                 data={getTraces(cd8GeneExpression, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
                                     title: `<b>CD8+ T Cells:  ${gene}</b>`,
+                                        
                                     annotations: [
                                         {
                                             x: -11,
@@ -226,7 +227,7 @@ export default function TCellsPlots() {
                                     title: `<b>T Cells (n=${tCells.records.length})</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type (Click legend to show/hide)',
+                                            text: 'Type',
                                             font: { size: 14 },
                                         },
                                     },
@@ -237,6 +238,14 @@ export default function TCellsPlots() {
                                         title: 't-SNE 2',
                                     },
                                     hovermode: 'closest',
+                                    annotations: [{
+                                        text: 'Click legend to show/hide',
+                                        showarrow: false,
+                                        xref: 'paper',
+                                        yref: 'paper',
+                                        x: 1,
+                                        y: 1,
+                                    }]
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
@@ -257,11 +266,19 @@ export default function TCellsPlots() {
                                     title: `<b>CD4+ T Cells</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type (Click legend to show/hide)',
+                                            text: 'Type',
                                             font: { size: 14 },
                                         },
                                     },
                                     annotations: [
+                                        {
+                                            text: 'Click legend to show/hide',
+                                            showarrow: false,
+                                            xref: 'paper',
+                                            yref: 'paper',
+                                            x: 1,
+                                            y: 1,
+                                        },
                                         {
                                             x: -11,
                                             y: 3,
@@ -304,11 +321,19 @@ export default function TCellsPlots() {
                                     title: `<b>CD8+ T Cells</b>`,
                                     legend: {
                                         title: {
-                                            text: 'Type (Click legend to show/hide)',
+                                            text: 'Type',
                                             font: { size: 14 },
                                         },
                                     },
                                     annotations: [
+                                        {
+                                            text: 'Click legend to show/hide',
+                                            showarrow: false,
+                                            xref: 'paper',
+                                            yref: 'paper',
+                                            x: 1,
+                                            y: 1,
+                                        },
                                         {
                                             x: -11,
                                             y: -1,
