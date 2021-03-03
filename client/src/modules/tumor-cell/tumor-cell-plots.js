@@ -115,22 +115,11 @@ export default function TumorCellPlots() {
                         data={getTraces(malignantCells, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
                             title: {
-                                text: `<b>Malignant Cells (n=${malignantCells.records.length})</b>`,
+                                text: `<b>Malignant Cells (n=${malignantCells.records.length})</b>` + '<br>' + '<span style="font-size: 12px;color: grey;border: 1px;">Click legend to show/hide cases</span>',
                             },
                             legend: {
                                 title: { text: 'Case', font: { size: 14 } }
                             },
-                            annotations: [{
-                                text: 'Click legend to show/hide cases',
-                                font: {color: 'grey'},
-                                borderwidth: 1,
-                                bordercolor: 'lightgrey',
-                                showarrow: false,
-                                xref: 'paper',
-                                yref: 'paper',
-                                x: 0.5,
-                                y: 1,
-                            }]
                         })}
                         config={defaultConfig}
                         useResizeHandler
@@ -143,21 +132,10 @@ export default function TumorCellPlots() {
                     <Plot
                         data={getTraces(nonmalignantCells, traceColumns, traceConfig)}
                         layout={merge({}, defaultLayout, {
-                            title: `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
+                            title: `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>` + '<br>' + '<span style="font-size: 12px;color: grey;border: 1px;">Click legend to show/hide types</span>',
                             legend: {
                                 title: { text: 'Type', font: { size: 14 } },
                             },
-                            annotations: [{
-                                text: 'Click legend to show/hide types',
-                                font: {color: 'grey'},
-                                borderwidth: 1,
-                                bordercolor: 'lightgrey',
-                                showarrow: false,
-                                xref: 'paper',
-                                yref: 'paper',
-                                x: 0.5,
-                                y: 1,
-                            }]
                         })}
                         config={defaultConfig}
                         useResizeHandler
