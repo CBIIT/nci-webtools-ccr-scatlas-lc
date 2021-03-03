@@ -224,7 +224,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(tCells, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>T Cells (n=${tCells.records.length})</b>`,
+                                    title: `<b>T Cells (n=${tCells.records.length})</b>` + '<br>' + '<span style="font-size: 12px;color: grey;border: 1px;">Click legend to show/hide types</span>',
                                     legend: {
                                         title: {
                                             text: 'Type',
@@ -238,17 +238,6 @@ export default function TCellsPlots() {
                                         title: 't-SNE 2',
                                     },
                                     hovermode: 'closest',
-                                    annotations: [{
-                                        text: 'Click legend to show/hide type',
-                                        font: { color: 'grey' },
-                                        borderwidth: 1,
-                                        bordercolor: 'lightgrey',
-                                        showarrow: false,
-                                        xref: 'paper',
-                                        yref: 'paper',
-                                        x: 0.5,
-                                        y: 1,
-                                    }]
                                 })}
                                 config={defaultConfig}
                                 useResizeHandler
@@ -266,7 +255,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(cd4, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD4+ T Cells</b>`,
+                                    title: `<b>CD4+ T Cells</b>` + '<br>' + '<span style="font-size: 12px;color: grey;border: 1px;">Click legend to show/hide types</span>',
                                     legend: {
                                         title: {
                                             text: 'Type',
@@ -274,17 +263,6 @@ export default function TCellsPlots() {
                                         },
                                     },
                                     annotations: [
-                                        {
-                                            text: 'Click legend to show/hide type',
-                                            font: { color: 'grey' },
-                                            borderwidth: 1,
-                                            bordercolor: 'lightgrey',
-                                            showarrow: false,
-                                            xref: 'paper',
-                                            yref: 'paper',
-                                            x: 0.5,
-                                            y: 1,
-                                        },
                                         {
                                             x: -11,
                                             y: 3,
@@ -324,7 +302,7 @@ export default function TCellsPlots() {
                             <Plot
                                 data={getTraces(cd8, traceColumns, traceConfig)}
                                 layout={merge({}, defaultLayout, {
-                                    title: `<b>CD8+ T Cells</b>`,
+                                    title: `<b>CD8+ T Cells</b>` + '<br>' + '<span style="font-size: 12px;color: grey;border: 1px;">Click legend to show/hide types</span>',
                                     legend: {
                                         title: {
                                             text: 'Type',
@@ -332,17 +310,6 @@ export default function TCellsPlots() {
                                         },
                                     },
                                     annotations: [
-                                        {
-                                            text: 'Click legend to show/hide type',
-                                            font: { color: 'grey' },
-                                            borderwidth: 1,
-                                            bordercolor: 'lightgrey',
-                                            showarrow: false,
-                                            xref: 'paper',
-                                            yref: 'paper',
-                                            x: 0.5,
-                                            y: 1,
-                                        },
                                         {
                                             x: -11,
                                             y: -1,
