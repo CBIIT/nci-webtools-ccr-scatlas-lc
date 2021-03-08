@@ -1,5 +1,4 @@
-# scAtlasLC
-
+# [scAtlasLC](https://scatlaslc.ccr.cancer.gov/)
 
 scAtlasLC (single-cell Atlas in Liver Cancer) is a publicly available data portal of single-cell transcriptomic profiles of tumor cell communities in hepatocellular carcinoma and intrahepatic cholangiocarcinoma.
 
