@@ -6,17 +6,21 @@ import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
+import Loader from "../components/loader";
 import { query } from "../../services/query";
 import {
   formState,
-  defaultFormState,
   messagesState,
+  loadingState,
+  defaultFormState,
   defaultMessagesState,
+  defaultLoadingState,
 } from "./contact.state";
 
 export default function Contact() {
   const [form, setForm] = useRecoilState(formState);
   const [messages, setMessages] = useRecoilState(messagesState);
+  const [loading, setLoading] = useRecoilState(loadingState);
 
   function removeMessage(index) {
     setMessages(messages.filter((_, i) => i !== index));
@@ -30,6 +34,7 @@ export default function Contact() {
   async function handleSubmit(event) {
     event.preventDefault();
     try {
+      setLoading(true);
       await query("/api/sendMail", form, { method: "POST" });
       setMessages([
         {
@@ -45,14 +50,16 @@ export default function Contact() {
             "There was an error sending your email. Please try again later.",
         },
       ]);
+    } finally {
+      setLoading(false);
     }
-    return false;
   }
 
   function handleReset(event) {
     event.preventDefault();
     setForm(defaultFormState);
     setMessages(defaultMessagesState);
+    setLoading(defaultLoadingState);
     return false;
   }
 
@@ -63,7 +70,8 @@ export default function Contact() {
           <Card.Header className="bg-primary text-white">
             <Card.Title className="my-1">Contact Us</Card.Title>
           </Card.Header>
-          <Card.Body>
+          <Card.Body className="position-relative">
+            {loading && <Loader message="Sending email" />}
             {messages.map(({ type, content }, i) => (
               <Alert
                 key={`message-${i}`}
@@ -125,16 +133,16 @@ export default function Contact() {
                 required
               />
             </Form.Group>
-          </Card.Body>
 
-          <Card.Footer className="text-end bg-light">
-            <Button type="reset" variant="outline-dark" className="me-1">
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary">
-              Submit
-            </Button>
-          </Card.Footer>
+            <div className="text-end bg-light">
+              <Button type="reset" variant="outline-dark" className="me-1">
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary">
+                Submit
+              </Button>
+            </div>
+          </Card.Body>
         </Card>
       </Form>
     </Container>

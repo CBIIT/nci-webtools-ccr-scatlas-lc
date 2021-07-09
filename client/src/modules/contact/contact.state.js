@@ -18,3 +18,10 @@ export const messagesState = atom({
   key: "contact.messagesState",
   default: defaultMessagesState,
 });
+
+export const defaultLoadingState = false;
+
+export const loadingState = atom({
+  key: "contact.loadingState",
+  default: defaultLoadingState,
+});
