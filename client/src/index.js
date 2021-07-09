@@ -1,8 +1,8 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { RecoilRoot } from 'recoil';
-import { HashRouter as Router } from 'react-router-dom';
-import App from './app';
+import React from "react";
+import ReactDOM from "react-dom";
+import { RecoilRoot } from "recoil";
+import { HashRouter as Router } from "react-router-dom";
+import App from "./app";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -12,9 +12,7 @@ ReactDOM.render(
       </Router>
     </RecoilRoot>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root"),
 );
 
-document
-  .querySelector('body')
-  .removeAttribute('react-cloak');
+document.querySelector("body").removeAttribute("react-cloak");

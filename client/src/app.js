@@ -1,32 +1,32 @@
-import { useEffect } from 'react';
-import { Route, useLocation, NavLink } from 'react-router-dom';
-import { Container, Navbar, Nav } from 'react-bootstrap';
-import Home from './modules/home/home';
-import TumorCell from './modules/tumor-cell/tumor-cell';
-import TCell from './modules/t-cell/t-cell';
-import Contact from './modules/contact/contact';
-import './styles/main.scss';
+import { useEffect } from "react";
+import { Route, useLocation, NavLink } from "react-router-dom";
+import { Container, Navbar, Nav } from "react-bootstrap";
+import Home from "./modules/home/home";
+import TumorCell from "./modules/tumor-cell/tumor-cell";
+import TCell from "./modules/t-cell/t-cell";
+import Contact from "./modules/contact/contact";
+import "./styles/main.scss";
 
 export default function App() {
   const { pathname } = useLocation();
-  useEffect(_ => window.scrollTo(0, 0), [pathname]);
+  useEffect((_) => window.scrollTo(0, 0), [pathname]);
 
   const links = [
     {
-      route: '/',
-      title: 'Home',
+      route: "/",
+      title: "Home",
     },
     {
-      route: '/tumor-cells',
-      title: 'Tumor Cell Community',
+      route: "/tumor-cells",
+      title: "Tumor Cell Community",
     },
     {
-      route: '/t-cells',
-      title: 'T-Cell',
+      route: "/t-cells",
+      title: "T-Cell",
     },
     {
-      route: '/contact-us',
-      title: 'Contact Us',
+      route: "/contact-us",
+      title: "Contact Us",
     },
   ];
 
@@ -37,7 +37,7 @@ export default function App() {
           <Navbar.Toggle aria-controls="app-navbar" />
           <Navbar.Collapse id="app-navbar">
             <Nav className="mr-auto">
-              {links.map((link, index) =>
+              {links.map((link, index) => (
                 <NavLink
                   key={`navlink-${index}`}
                   exact
@@ -45,7 +45,8 @@ export default function App() {
                   className="nav-link px-3 text-uppercase font-weight-bold"
                   to={link.route}>
                   {link.title}
-                </NavLink>)}
+                </NavLink>
+              ))}
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -57,8 +58,6 @@ export default function App() {
         <Route exact path="/t-cells" component={TCell} />
         <Route exact path="/contact-us" component={Contact} />
       </div>
-
     </>
   );
 }
-
