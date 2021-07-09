@@ -1,9 +1,3 @@
-*,
-::after,
-::before {
-  outline: none;
-}
-
 [react-cloak] {
   display: none !important;
 }
@@ -13,11 +7,19 @@ body {
 }
 
 hr {
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid #ccc;
 }
 
-legend {
-  width: inherit;
+[disabled],
+.disabled {
+  cursor: not-allowed;
+}
+
+a,
+.btn,
+.form-label,
+.page-link {
+  font-weight: 500;
 }
 
 .flex-none-auto {
@@ -26,10 +28,6 @@ legend {
 
 .flex-grow-auto {
   flex: 1 0 auto;
-}
-
-.mw-100 {
-  max-width: 100%;
 }
 
 .vh-100 {
@@ -44,47 +42,9 @@ legend {
   padding: 0 0.25rem;
 }
 
-a,
-.btn {
-  font-weight: 500;
-}
-
-mark,
-.mark {
-  padding: 0;
-  background-color: transparent;
-  font-weight: 500;
-}
-
-.btn-link {
-  text-decoration: underline;
-}
-
-.form-label {
-  font-weight: 500;
-}
-
-.figure-caption {
-  color: #595959;
-}
-
 .nav-link {
-  // font-weight: 500;
   border-bottom: 7px solid transparent;
   border-top: 7px solid transparent;
-}
-
-.page-link {
-  font-weight: 500;
-}
-
-.page-item.disabled .page-link {
-  color: #595959;
-}
-
-.dropdown-item.focus {
-  color: #1e2125;
-  background-color: #e9ecef;
 }
 
 .navbar-dark {
@@ -93,6 +53,7 @@ mark,
   }
 
   .navbar-nav .nav-link {
+    font-weight: 700;
     color: white;
     transition: all 0.1s;
     &.active {
@@ -112,55 +73,13 @@ mark,
   margin-bottom: 0;
 
   .nav-link {
-    border: 0;
+    font-weight: 500;
     color: black;
+    border: 0;
   }
 
   .nav-link.active {
     border-bottom: 4px solid #14819b;
     color: $primary;
   }
-
-  // .nav-tabs.nav-tabs-custom .nav-link.active, .nav-tabs .nav-item.show .nav-link
-}
-
-input[type="number"].no-spinner {
-  -moz-appearance: textfield;
-}
-
-input::-webkit-outer-spin-button.no-spinner,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.table.table-bordered {
-  th {
-    border-top: 1px solid #dee2e6;
-  }
-}
-
-[disabled],
-.disabled {
-  cursor: not-allowed;
-  // opacity: 0.8;
-}
-
-.text-decoration-underline {
-  text-decoration: underline !important;
-}
-
-.overlay-center {
-  z-index: 999;
-  opacity: 0.7;
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background-color: white;
-  width: 100%;
-  height: 100%;
 }
