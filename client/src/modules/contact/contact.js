@@ -134,7 +134,7 @@ export default function Contact() {
               />
             </Form.Group>
 
-            <div className="text-end bg-light">
+            <div className="text-end">
               <Button type="reset" variant="outline-dark" className="me-1">
                 Cancel
               </Button>
