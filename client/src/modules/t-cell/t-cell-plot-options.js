@@ -30,7 +30,7 @@ export default function TCellPlotOptions() {
   return (
     <Row as={Form}>
       <Col md={3}>
-        <Form.Group controlId="cell-size">
+        <Form.Group controlId="cell-size" className="mb-3">
           <Form.Label>Cell Size</Form.Label>
           <Form.Control
             type="number"
@@ -44,7 +44,7 @@ export default function TCellPlotOptions() {
         </Form.Group>
       </Col>
       <Col md={3}>
-        <Form.Group controlId="cell-opacity">
+        <Form.Group controlId="cell-opacity" className="mb-3">
           <Form.Label>Cell Opacity</Form.Label>
           <Form.Control
             type="number"
@@ -60,7 +60,7 @@ export default function TCellPlotOptions() {
       </Col>
 
       <Col md={3}>
-        <Form.Group controlId="plot-gene">
+        <Form.Group controlId="plot-gene" className="mb-3">
           <Form.Label>Gene</Form.Label>
           <InputGroup className="flex-nowrap">
             <Select
