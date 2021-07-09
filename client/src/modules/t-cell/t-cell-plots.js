@@ -194,7 +194,7 @@ export default function TCellsPlots() {
             <Plot
               data={getTraces(cd4GeneExpression, traceColumns, traceConfig)}
               layout={merge({}, defaultLayout, {
-                title: `<b>CD4+ T Cells:  ${gene}</b>`,
+                title: `<b>CD4+ T Cells: ${gene}</b>`,
                 annotations: cd4Annotations,
               })}
               config={defaultConfig}
@@ -220,95 +220,93 @@ export default function TCellsPlots() {
       </Tab>
     </Tabs>
   ) : (
-    <>
-      <Tabs
-        defaultActiveKey="tcell"
-        activeKey={tab}
-        id="tcellTabs"
-        className="nav-tabs-custom"
-        onSelect={handleSelect}>
-        <Tab eventKey="tcell" title="T-Cell">
-          <Row>
-            <Col xl={12} className="d-flex justify-content-center">
-              <Plot
-                data={getTraces(tCells, traceColumns, traceConfig)}
-                layout={merge({}, defaultLayout, {
-                  title: [
-                    `<b>T Cells (n=${tCells.records.length})</b>`,
-                    `<span style="font-size: 12px; color: grey; ">Click legend to show/hide types</span>`,
-                  ].join("<br>"),
-                  legend: {
-                    title: {
-                      text: "Type",
-                      font: { size: 14 },
-                    },
+    <Tabs
+      defaultActiveKey="tcell"
+      activeKey={tab}
+      id="tcellTabs"
+      className="nav-tabs-custom"
+      onSelect={handleSelect}>
+      <Tab eventKey="tcell" title="T-Cell">
+        <Row>
+          <Col xl={12} className="d-flex justify-content-center">
+            <Plot
+              data={getTraces(tCells, traceColumns, traceConfig)}
+              layout={merge({}, defaultLayout, {
+                title: [
+                  `<b>T Cells (n=${tCells.records.length})</b>`,
+                  `<span style="font-size: 12px; color: grey; ">Click legend to show/hide types</span>`,
+                ].join("<br>"),
+                legend: {
+                  title: {
+                    text: "Type",
+                    font: { size: 14 },
                   },
-                  xaxis: {
-                    title: "t-SNE 1",
-                  },
-                  yaxis: {
-                    title: "t-SNE 2",
-                  },
-                  hovermode: "closest",
-                })}
-                config={defaultConfig}
-                useResizeHandler
-                className="mw-100"
-                style={{ height: "800px", width: "1000px" }}
-              />
-            </Col>
-          </Row>
-        </Tab>
+                },
+                xaxis: {
+                  title: "t-SNE 1",
+                },
+                yaxis: {
+                  title: "t-SNE 2",
+                },
+                hovermode: "closest",
+              })}
+              config={defaultConfig}
+              useResizeHandler
+              className="mw-100"
+              style={{ height: "800px", width: "1000px" }}
+            />
+          </Col>
+        </Row>
+      </Tab>
 
-        <Tab eventKey="cd4/8" title="CD4/CD8">
-          <Row>
-            <Col xl={6}>
-              <Plot
-                data={getTraces(cd4, traceColumns, traceConfig)}
-                layout={merge({}, defaultLayout, {
-                  title: [
-                    `<b>CD4+ T Cells</b>`,
-                    `<span style="font-size: 12px; color: grey; ">Click legend to show/hide types</span>`,
-                  ].join("<br>"),
-                  legend: {
-                    title: {
-                      text: "Type",
-                      font: { size: 14 },
-                    },
+      <Tab eventKey="cd4/8" title="CD4/CD8">
+        <Row>
+          <Col xl={6}>
+            <Plot
+              data={getTraces(cd4, traceColumns, traceConfig)}
+              layout={merge({}, defaultLayout, {
+                title: [
+                  `<b>CD4+ T Cells</b>`,
+                  `<span style="font-size: 12px; color: grey; ">Click legend to show/hide types</span>`,
+                ].join("<br>"),
+                legend: {
+                  title: {
+                    text: "Type",
+                    font: { size: 14 },
                   },
-                  annotations: cd4Annotations,
-                })}
-                config={defaultConfig}
-                useResizeHandler
-                className="w-100"
-                style={{ height: "800px" }}
-              />
-            </Col>
-            <Col xl={6}>
-              <Plot
-                data={getTraces(cd8, traceColumns, traceConfig)}
-                layout={merge({}, defaultLayout, {
-                  title:
-                    `<b>CD8+ T Cells</b>` +
-                    "<br>" +
-                    '<span style="font-size: 12px;color: grey;border: 1px;">Click legend to show/hide types</span>',
-                  legend: {
-                    title: {
-                      text: "Type",
-                      font: { size: 14 },
-                    },
+                },
+                annotations: cd4Annotations,
+              })}
+              config={defaultConfig}
+              useResizeHandler
+              className="w-100"
+              style={{ height: "800px" }}
+            />
+          </Col>
+          <Col xl={6}>
+            <Plot
+              data={getTraces(cd8, traceColumns, traceConfig)}
+              layout={merge({}, defaultLayout, {
+                title: [
+                  `<b>CD8+ T Cells</b>`,
+                  `<span style="font-size: 12px;color: grey;border: 1px;">Click legend to show/hide types</span>`,
+                ].join("<br>"),
+                legend: {
+                  title: {
+                    text: "Type",
+                    font: { size: 14 },
                   },
-                  annotations: cd8Annotations,
-                })}
-                config={defaultConfig}
-                useResizeHandler
-                className="w-100"
-                style={{ height: "800px" }}
-              />
-            </Col>
-          </Row>
-        </Tab>
-      </Tabs>
-    </>
+                },
+                annotations: cd8Annotations,
+              })}
+              config={defaultConfig}
+              useResizeHandler
+              className="w-100"
+              style={{ height: "800px" }}
+            />
+          </Col>
+        </Row>
+      </Tab>
+    </Tabs>
   );
 }
