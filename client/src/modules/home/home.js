@@ -11,13 +11,12 @@ export default function Home() {
         <Card.Body>
           <Row>
             <Col md={6}>
-              <figure class="figure">
-                <HomeImage />
-                {/* <img src="images/home.svg" className="img-fluid" alt="Home Page Figure" /> */}
-                <figurecaption class="figure-caption">
+              <figure className="figure">
+                <HomeImage className="figure-img img-fluid" />
+                <figcaption className="figure-caption">
                   CAFs, cancer-associated fibroblasts; TAMs, tumor-associated
                   macrophages; TECs, tumor-associated endothelial cells.
-                </figurecaption>
+                </figcaption>
               </figure>
             </Col>
 
@@ -39,9 +38,10 @@ export default function Home() {
 
               <p>
                 The single-cell data used for scAtlasLC can be downloaded from
-                Gene Expression Omnibus:{" "}
+                Gene Expression Omnibus:
                 <a
                   href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530"
+                  className="ms-1"
                   target="_blank"
                   rel="noopener noreferrer">
                   GSE151530
