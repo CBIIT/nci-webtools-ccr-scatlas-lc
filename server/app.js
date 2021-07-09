@@ -1,29 +1,29 @@
-const process = require('process');
-const express = require('express');
-const config = require('./config.json');
-const logger = require('./services/logger');
-const forkCluster = require('./services/cluster');
-const production = process.env.NODE_ENV === 'production';
+const express = require("express");
+const helmet = require("helmet");
+const config = require("./config.json");
+const getLogger = require("./services/logger");
+const forkCluster = require("./services/cluster");
+const { logErrors } = require("./services/middleware");
 
-if (forkCluster())
-    return;
+const production = process.env.NODE_ENV === "production";
+const logger = getLogger("scatlas-lc");
 
-logger.info(`[${process.pid}] Started worker process, parsing schema...`);
+if (forkCluster()) return;
 
 const app = express();
-app.use('/api', require('./services/api'));
+app.locals.logger = logger;
+logger.info(`Started worker process, parsing schema...`);
+
+app.use(helmet());
+app.use(logErrors);
+app.use("/api", require("./services/api"));
 
 // serve public folder during local development
-if (!production)
-    app.use(express.static(config.server.client));
-
-// global error handler
-app.use((error, request, response, next) => {
-    const { name, message, stack } = error;
-    logger.error({ message, stack });
-    response.status(500).json(`${name}: ${message}`);
-});
+if (!production && config.server.client)
+  app.use(express.static(config.server.client));
 
 app.listen(config.server.port, () => {
-    logger.info(`Application is running on port: ${config.server.port}`)
+  logger.info(`Application is running on port: ${config.server.port}`);
 });
+
+module.exports = app;
