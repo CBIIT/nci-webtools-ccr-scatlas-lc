@@ -11,15 +11,11 @@ export default function Select({
   options,
   placeholder,
   value,
-  inputProps,
 }) {
   const [inputItems, setInputItems] = useState(options);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const {
     isOpen,
-    selectedItem,
-    getToggleButtonProps,
     getLabelProps,
     getMenuProps,
     getInputProps,
@@ -38,7 +34,6 @@ export default function Select({
     },
     onSelectedItemChange: ({ selectedItem, inputValue }) => {
       onChange(selectedItem);
-      setIsMenuOpen(false);
     },
   });
 
@@ -87,22 +82,4 @@ export default function Select({
       </div>
     </>
   );
-
-  // return (
-  //   <select id={id} name={name} value={value || ''} className={className} onChange={onChange} {...inputProps}>
-  //     {placeholder && <option value="">{placeholder}</option>}
-  //     {options.map((o, i) => <option key={`option-${i}`} value={o.value || o}>{o.label || o}</option>)}
-  //   </select>
-  // )
 }
-
-// <Select
-//                             id="plot-gene"
-//                             className="w-100"
-//                             onChange="{(gene) => mergePlotOptions({gene})}"
-//                             options={lookup.gene}
-//                             placeholder="All genes"
-//                             value={plotOptions.gene}
-//                             inputProps={{
-//                                 'aria-label': 'Gene Search'
-//                             }}
