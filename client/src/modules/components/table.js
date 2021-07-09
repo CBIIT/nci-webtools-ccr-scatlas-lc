@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import Pagination from "react-bootstrap/Pagination";
 import { useTable, useFilters, usePagination, useSortBy } from "react-table";
+import classNames from "classnames";
 
 export function TextFilter({
   column: { filterValue, setFilter, placeholder, aria },
@@ -21,24 +22,23 @@ export function TextFilter({
 export function RangeFilter({
   column: { filterValue = [], setFilter, minPlaceholder, maxPlaceholder, aria },
 }) {
-  const getInputValue = (ev) =>
-    ev.target.value ? parseFloat(ev.target.value, 10) : undefined;
-
-  const asNumericValue = (value) => (typeof value === "number" ? value : "");
+  const asInputValue = (value) => (typeof value === "number" ? value : "");
+  const getInputValue = ({ target: { value } }) =>
+    value ? parseFloat(value, 10) : undefined;
 
   return (
     <InputGroup className="flex-nowrap">
       <Form.Control
-        placeholder={minPlaceholder || "Min value"}
         type="number"
-        value={asNumericValue(filterValue[0])}
+        placeholder={minPlaceholder || "Min value"}
+        value={asInputValue(filterValue[0])}
         onChange={(e) => setFilter((old = []) => [getInputValue(e), old[1]])}
         aria-label={aria + " Min"}
       />
       <Form.Control
-        placeholder={maxPlaceholder || "Max value"}
         type="number"
-        value={asNumericValue(filterValue[1])}
+        placeholder={maxPlaceholder || "Max value"}
+        value={asInputValue(filterValue[1])}
         onChange={(e) => setFilter((old = []) => [old[0], getInputValue(e)])}
         aria-label={aria + " Max"}
       />
@@ -84,14 +84,15 @@ export default function Table({ columns, data, options }) {
                 {headerGroup.headers.map((column) => (
                   <th {...column.getHeaderProps(column.getSortByToggleProps())}>
                     {column.render("Header")}
-                    {column.isSorted ? (
-                      column.isSortedDesc ? (
-                        <i className="bi bi-sort-down text-primary ml-1" />
-                      ) : (
-                        <i className="bi bi-sort-up text-primary ml-1" />
-                      )
-                    ) : (
-                      ""
+                    {column.isSorted && (
+                      <i
+                        className={classNames(
+                          "bi",
+                          "text-primary",
+                          "ms-1",
+                          column.isSortedDesc ? "bi-sort-down" : "bi-sort-up",
+                        )}
+                      />
                     )}
                   </th>
                 ))}
@@ -135,7 +136,7 @@ export default function Table({ columns, data, options }) {
         <div className="d-flex">
           <Form.Control
             as="select"
-            className="mr-2"
+            className="me-2"
             name="select-page-size"
             aria-label="Select page size"
             value={pageSize}
