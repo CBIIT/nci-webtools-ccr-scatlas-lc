@@ -1,21 +1,20 @@
-import { atom } from 'recoil';
+import { atom } from "recoil";
 
 export const defaultFormState = {
-    name: '',
-    email: '',
-    subject: '',
-    body: '',
+  name: "",
+  email: "",
+  subject: "",
+  body: "",
 };
 
 export const formState = atom({
-    key: 'contact.formState',
-    default: defaultFormState
+  key: "contact.formState",
+  default: defaultFormState,
 });
-
 
 export const defaultMessagesState = [];
 
 export const messagesState = atom({
-    key: 'contact.messagesState',
-    default: defaultMessagesState,
+  key: "contact.messagesState",
+  default: defaultMessagesState,
 });
