@@ -14,7 +14,10 @@ const app = express();
 app.locals.logger = logger;
 logger.info(`Started worker process, parsing schema...`);
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({ 
+  contentSecurityPolicy: false,
+  hsts: false,
+}));
 app.use(logErrors);
 app.use("/api", require("./services/api"));
 
