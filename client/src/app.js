@@ -4,7 +4,6 @@ import { Container, Navbar, Nav } from "react-bootstrap";
 import Home from "./modules/home/home";
 import TumorCell from "./modules/tumor-cell/tumor-cell";
 import TCell from "./modules/t-cell/t-cell";
-import Contact from "./modules/contact/contact";
 import "./styles/main.scss";
 
 export default function App() {
@@ -23,11 +22,7 @@ export default function App() {
     {
       route: "/t-cells",
       title: "T-Cell",
-    },
-    {
-      route: "/contact-us",
-      title: "Contact Us",
-    },
+    }
   ];
 
   return (
@@ -56,7 +51,6 @@ export default function App() {
         <Route exact path="/" component={Home} />
         <Route exact path="/tumor-cells" component={TumorCell} />
         <Route exact path="/t-cells" component={TCell} />
-        <Route exact path="/contact-us" component={Contact} />
       </div>
     </>
   );
