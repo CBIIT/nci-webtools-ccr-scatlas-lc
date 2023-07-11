@@ -2,6 +2,7 @@ import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import { Link } from 'react-router-dom';
 import { ReactComponent as HomeImage } from "./home.svg";
 
 export default function Home() {
@@ -45,8 +46,69 @@ export default function Home() {
                   target="_blank"
                   rel="noopener noreferrer">
                   GSE151530
+                </a>,
+                <a
+                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903"
+                  className="ms-1"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  GSE189903
+                </a>,
+                <a
+                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772"
+                  className="ms-1"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  GSE229772
                 </a>
               </p>
+            </Col>
+          </Row>
+          <Row>
+            <Col className="mb-3" xl={4}>
+              <Link to="/nci-clarity" rel="noreferrer">
+                <Card className="shadow" style={{ cursor: "pointer" }}>
+                  <Card.Img height="368px" variant="top" src={"/images/sample-image-1.jpg"} />
+                  <Card.Body>
+                    <Card.Text className="d-flex text-center justify-content-center">
+                      <div>
+                        <h3>NCI-CLARITY</h3>
+                        <div>52,789 cells</div>
+                      </div>
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+              </Link>
+            </Col>
+            <Col className="mb-3" xl={4}>
+              <Link to="/multi-regional" rel="noreferrer">
+                <Card className="shadow" style={{ cursor: "pointer" }}>
+                  <Card.Img height="368px" variant="top" src={"/images/sample-image-2.jpg"} />
+                  <Card.Body>
+                    <Card.Text className="d-flex text-center justify-content-center">
+                      <div>
+                        <h3>Multi-Regional</h3>
+                        <div>112,506 cells</div>
+                      </div>
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+              </Link>
+            </Col>
+            <Col className="mb-3" xl={4}>
+              <Link to="/sequential" rel="noreferrer">
+                <Card className="shadow" style={{ cursor: "pointer" }}>
+                  <Card.Img height="368px" variant="top" src={"/images/sample-image-3.jpg"} />
+                  <Card.Body>
+                    <Card.Text className="d-flex text-center justify-content-center">
+                      <div>
+                        <h3>Sequential NCI-CLARITY</h3>
+                        <div>57,567 cells</div>
+                      </div>
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+              </Link>
             </Col>
           </Row>
         </Card.Body>

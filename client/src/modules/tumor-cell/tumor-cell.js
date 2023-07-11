@@ -10,7 +10,7 @@ import TumorCellCounts from "./tumor-cell-counts";
 
 export default function TumorCell() {
   return (
-    <Container className="py-4">
+    <Container>
       <Card className="shadow mb-4">
         <Card.Body className="position-relative" style={{ minHeight: "800px" }}>
           <ErrorBoundary
