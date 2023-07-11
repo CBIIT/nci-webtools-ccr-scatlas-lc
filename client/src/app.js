@@ -2,9 +2,12 @@ import { useEffect } from "react";
 import { Route, useLocation, NavLink } from "react-router-dom";
 import { Container, Navbar, Nav } from "react-bootstrap";
 import Home from "./modules/home/home";
-import TumorCell from "./modules/tumor-cell/tumor-cell";
-import TCell from "./modules/t-cell/t-cell";
+import NCIClarity from "./modules/pages/nci-clarity";
+import MultiRegional from "./modules/pages/multi-regional";
+import Sequential from "./modules/pages/sequential";
+
 import "./styles/main.scss";
+
 
 export default function App() {
   const { pathname } = useLocation();
@@ -16,13 +19,17 @@ export default function App() {
       title: "Home",
     },
     {
-      route: "/tumor-cells",
-      title: "Tumor Cell Community",
+      route: "/nci-clarity",
+      title: "NCI-CLARITY",
     },
     {
-      route: "/t-cells",
-      title: "T-Cell",
-    }
+      route: "/multi-regional",
+      title: "Multi-Regional",
+    },
+    {
+      route: "/sequential",
+      title: "Sequential NCI-CLARITY",
+    },
   ];
 
   return (
@@ -49,8 +56,9 @@ export default function App() {
 
       <div id="content" className="bg-light flex-grow-auto">
         <Route exact path="/" component={Home} />
-        <Route exact path="/tumor-cells" component={TumorCell} />
-        <Route exact path="/t-cells" component={TCell} />
+        <Route exact path="/nci-clarity" component={NCIClarity} />
+        <Route exact path="/multi-regional" component={MultiRegional} />
+        <Route exact path="/sequential" component={Sequential} />
       </div>
     </>
   );

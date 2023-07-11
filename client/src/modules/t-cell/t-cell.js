@@ -10,7 +10,7 @@ import TCellCounts from "./t-cell-counts";
 
 export default function TCell() {
   return (
-    <Container className="py-4">
+    <Container>
       <Card className="shadow mb-4">
         <Card.Body className="position-relative" style={{ minHeight: "800px" }}>
           <ErrorBoundary
