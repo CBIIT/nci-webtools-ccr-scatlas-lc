@@ -54,6 +54,22 @@ a,
       background-color: #fff;
     }
   }
+  .navbar-nav .dropdown .nav-link{
+    font-weight: 700;
+    color: white;
+    transition: all 0.1s;
+    background-color: transparent;
+    border-color: transparent;
+    &.active {
+      color: #2e2e2e;
+      border-bottom-color: #14819b;
+      background-color: #fff;
+    }
+    &:hover {
+      color: #2e2e2e;
+      background-color: #fff;
+    }
+  }
 }
 
 .nav-tabs.nav-tabs-custom {
