@@ -6,18 +6,18 @@ export default function Sequential() {
 
     return (
         <Container className="py-3">
-             <h1 className="text-primary h3 mt-2">Sequential NCI-Clarity</h1>
-            <hr/>
+            <h1 className="text-primary h3 mt-2">Sequential NCI-Clarity</h1>
+            <hr />
             <Tabs
                 defaultActiveKey="tumorCell"
                 className="mb-3"
             >
                 <Tab eventKey="tumorCell" title="Tumor Cell Community">
-                    <TumorCell/>
+                    <TumorCell />
                 </Tab>
-                <Tab eventKey="tCell" title="T-Cell">
+                {/*<Tab eventKey="tCell" title="T-Cell">
                     <TCell/>
-                </Tab>
+    </Tab>*/}
             </Tabs>
         </Container>
     )
