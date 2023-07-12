@@ -6,15 +6,17 @@ export default function MultiRegional() {
 
     return (
         <Container className="py-3">
+            <h1 className="text-primary h3 mt-2">Multi-Regional</h1>
+            <hr />
             <Tabs
                 defaultActiveKey="tumorCell"
                 className="mb-3"
             >
                 <Tab eventKey="tumorCell" title="Tumor Cell Community">
-                    <TumorCell/>
+                    <TumorCell />
                 </Tab>
                 <Tab eventKey="tCell" title="T-Cell">
-                    <TCell/>
+                    <TCell />
                 </Tab>
             </Tabs>
         </Container>

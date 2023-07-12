@@ -27,14 +27,14 @@ export default function App() {
       title: "Sequential NCI-CLARITY",
     },
   ];
-  console.log(pathname)
+
   return (
     <>
       <Navbar bg="dark" expand="sm" className="navbar-dark py-0 flex-none-auto">
         <Container>
           <Navbar.Toggle aria-controls="app-navbar" />
           <Navbar.Collapse id="app-navbar">
-            <Nav className="mr-auto">]
+            <Nav className="mr-auto">
             <NavLink
                   key={`navlink-0`}
                   exact

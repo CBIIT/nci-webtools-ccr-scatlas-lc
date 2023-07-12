@@ -6,6 +6,8 @@ export default function NCIClarity() {
 
     return (
         <Container className="py-3">
+            <h1 className="text-primary h3 mt-2">NCI-Clarity</h1>
+            <hr/>
             <Tabs
                 defaultActiveKey="tumorCell"
                 className="mb-3"
