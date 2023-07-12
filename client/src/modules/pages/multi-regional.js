@@ -15,9 +15,9 @@ export default function MultiRegional() {
                 <Tab eventKey="tumorCell" title="Tumor Cell Community">
                     <TumorCell />
                 </Tab>
-                <Tab eventKey="tCell" title="T-Cell">
+                {/*<Tab eventKey="tCell" title="T-Cell">
                     <TCell />
-                </Tab>
+    </Tab>*/}
             </Tabs>
         </Container>
     )
