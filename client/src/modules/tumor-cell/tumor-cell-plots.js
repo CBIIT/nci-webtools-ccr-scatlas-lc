@@ -79,7 +79,6 @@ export default function TumorCellPlots() {
         thickness: 20,
       },
       ...(!gene && {
-        color: false,
         showscale: false,
       }),
     },
@@ -94,6 +93,7 @@ export default function TumorCellPlots() {
               malignantCellsGeneExpression,
               traceColumns,
               traceConfig,
+              gene
             )}
             layout={merge({}, defaultLayout, {
               title: `<b>Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})</b>`,
@@ -110,6 +110,7 @@ export default function TumorCellPlots() {
               nonmalignantCellsGeneExpression,
               traceColumns,
               traceConfig,
+              gene
             )}
             layout={merge({}, defaultLayout, {
               title: `<b>Non-malignant Cells: ${gene} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
@@ -127,7 +128,7 @@ export default function TumorCellPlots() {
       <Row>
         <Col xl={6}>
           <Plot
-            data={getTraces(malignantCells, traceColumns, traceConfig)}
+            data={getTraces(malignantCells, traceColumns, traceConfig, gene)}
             layout={merge({}, defaultLayout, {
               title: [
                 `<b>Malignant Cells (n=${malignantCells.records.length})</b>`,
@@ -145,7 +146,7 @@ export default function TumorCellPlots() {
         </Col>
         <Col xl={6}>
           <Plot
-            data={getTraces(nonmalignantCells, traceColumns, traceConfig)}
+            data={getTraces(nonmalignantCells, traceColumns, traceConfig, gene)}
             layout={merge({}, defaultLayout, {
               title: [
                 `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
