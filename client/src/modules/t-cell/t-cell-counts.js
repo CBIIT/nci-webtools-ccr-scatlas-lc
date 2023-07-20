@@ -65,7 +65,7 @@ export default function TCellCounts() {
 
   const data = useMemo((_) => geneCounts.records, [geneCounts]);
 
-  const sortBy = useMemo((_) => [{ id: "t_cell_count", desc: true }], []);
+  const sortBy = useMemo((_) => [{ id: "gene", desc: false }], []);
 
   const options = {
     initialState: { sortBy },

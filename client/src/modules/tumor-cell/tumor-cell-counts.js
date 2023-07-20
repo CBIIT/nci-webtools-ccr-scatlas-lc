@@ -48,7 +48,7 @@ export default function TumorCellCounts() {
   const data = useMemo((_) => geneCounts.records, [geneCounts]);
 
   const sortBy = useMemo(
-    (_) => [{ id: "malignant_cell_count", desc: true }],
+    (_) => [{ id: "gene", desc: false }],
     [],
   );
 
