@@ -1,6 +1,7 @@
 import groupBy from "lodash/groupBy";
 import merge from "lodash/merge";
 import isNumber from "lodash/isNumber";
+import colors from "./colors.json";
 
 function extent(array) {
   let min = array[0];
@@ -16,6 +17,7 @@ export function getTraces(
   { columns, records },
   { groupColumn, valueColumn },
   config,
+  gene
 ) {
   const idIndex = columns.indexOf("id");
   const xIndex = columns.indexOf("x");
@@ -23,13 +25,16 @@ export function getTraces(
   const groupIndex = columns.indexOf(groupColumn);
   const valueIndex = columns.indexOf(valueColumn || groupColumn);
   const groups = groupBy(records, groupIndex);
+  console.log(colors)
   const [minValue, maxValue] = valueColumn
     ? extent(records.map((r) => r[valueIndex]))
     : [null, null];
   const formatNumber = (value, precision = 4) =>
     isNumber(value) ? +value.toPrecision(precision) : value;
 
+  
   return Object.entries(groups).map(([key, values], i) =>
+    
     merge(
       {
         name: key,
@@ -41,7 +46,7 @@ export function getTraces(
         type: "scattergl",
         hoverinfo: "text+name",
         marker: {
-          color: values.map((v) => v[valueIndex]),
+          color: !gene ? colors[i%colors.length] : values.map((v) => v[valueIndex]),
           cmin: minValue,
           cmax: maxValue,
           showscale: i === 0,

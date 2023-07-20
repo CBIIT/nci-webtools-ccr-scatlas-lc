@@ -84,7 +84,6 @@ export default function TCellsPlots() {
         thickness: 20,
       },
       ...(!gene && {
-        color: false,
         showscale: false,
       }),
     },
@@ -169,7 +168,7 @@ export default function TCellsPlots() {
         <Row>
           <Col xl={12} className="d-flex justify-content-center">
             <Plot
-              data={getTraces(tCellGeneExpression, traceColumns, traceConfig)}
+              data={getTraces(tCellGeneExpression, traceColumns, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: `<b>T Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
                 xaxis: {
@@ -192,7 +191,7 @@ export default function TCellsPlots() {
         <Row>
           <Col xl={6}>
             <Plot
-              data={getTraces(cd4GeneExpression, traceColumns, traceConfig)}
+              data={getTraces(cd4GeneExpression, traceColumns, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: `<b>CD4+ T Cells: ${gene}</b>`,
                 annotations: cd4Annotations,
@@ -205,7 +204,7 @@ export default function TCellsPlots() {
           </Col>
           <Col xl={6}>
             <Plot
-              data={getTraces(cd8GeneExpression, traceColumns, traceConfig)}
+              data={getTraces(cd8GeneExpression, traceColumns, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: `<b>CD8+ T Cells: ${gene}</b>`,
                 annotations: cd8Annotations,
@@ -230,7 +229,7 @@ export default function TCellsPlots() {
         <Row>
           <Col xl={12} className="d-flex justify-content-center">
             <Plot
-              data={getTraces(tCells, traceColumns, traceConfig)}
+              data={getTraces(tCells, traceColumns, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: [
                   `<b>T Cells (n=${tCells.records.length})</b>`,
@@ -263,7 +262,7 @@ export default function TCellsPlots() {
         <Row>
           <Col xl={6}>
             <Plot
-              data={getTraces(cd4, traceColumns, traceConfig)}
+              data={getTraces(cd4, traceColumns, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: [
                   `<b>CD4+ T Cells</b>`,
