@@ -9,8 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "better-sqlite3": "^7.1.2",
-    "csv-reader": "^1.0.7",
-    "minimist": "^1.2.5"
+    "better-sqlite3": "^8.5.0",
+    "csv-reader": "^1.0.12",
+    "minimist": "^1.2.8"
   }
 }
