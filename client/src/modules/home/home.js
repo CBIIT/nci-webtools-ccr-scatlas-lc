@@ -68,7 +68,7 @@ export default function Home() {
             <Col className="mb-3" xl={4}>
               <Link to="/nci-clarity" rel="noreferrer">
                 <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img height="368px" variant="top" src={"/images/sample-image-1.jpg"} />
+                  <Card.Img height="368px" variant="top" src={"/images/nci_clarity_HD.svg"} />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>
@@ -83,7 +83,7 @@ export default function Home() {
             <Col className="mb-3" xl={4}>
               <Link to="/multi-regional" rel="noreferrer">
                 <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img height="368px" variant="top" src={"/images/sample-image-2.jpg"} />
+                  <Card.Img height="368px" variant="top" src={"/images/multiregional_HD.svg"} />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>
@@ -98,7 +98,7 @@ export default function Home() {
             <Col className="mb-3" xl={4}>
               <Link to="/sequential" rel="noreferrer">
                 <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img height="368px" variant="top" src={"/images/sample-image-3.jpg"} />
+                  <Card.Img height="368px" variant="top" src={"/images/sequential_nci_clarity_HD.svg"} />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>
