@@ -1,7 +1,7 @@
 {
   "database": "../database/cell.db",
   "server": {
-    "port": 10000,
+    "port": 9000,
     "client": "../client/build"
   },
   "logs": {
