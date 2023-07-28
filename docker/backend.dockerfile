@@ -18,6 +18,6 @@ COPY server/package.json server/package-lock.json /deploy/server/
 RUN npm install
 
 # copy the rest of the application
-COPY . /deploy/
+COPY server/ /deploy/server/
 
 CMD npm start
