@@ -23,7 +23,7 @@ ARG REACT_APP_GTAG
 ENV REACT_APP_GTAG ${REACT_APP_GTAG}
 
 RUN npm run build \
- && cp -r /deploy/client/build /var/www/html/scatlaslc
+ && cp -r /deploy/client/build/. /var/www/html
 
 WORKDIR /var/www/html
 
