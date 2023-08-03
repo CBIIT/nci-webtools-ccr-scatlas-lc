@@ -6,7 +6,7 @@ services:
       dockerfile: docker/backend.dockerfile
     env_file: ./server/.env
     volumes:
-      - "./database/cell.db:/deploy/database/cell.db:ro"
+      - "./database/cell.db:/data/scatlaslc.db:ro"
     ports:
       - "9000:9000"
   frontend:
@@ -14,7 +14,7 @@ services:
       context: .
       dockerfile: docker/frontend.dockerfile
     environment:
-      API_BASE_URL: http://backend:9000
+      API_HOST: http://backend:9000
     links:
       - backend:backend
     ports:
