@@ -2,13 +2,14 @@ const path = require("path");
 const util = require("util");
 const fs = require("fs");
 const { createLogger, format, transports, info } = require("winston");
-const logConfig = require("../config.json").logs;
+
 require("winston-daily-rotate-file");
 
 module.exports = getLogger;
 
-function getLogger(name, config = logConfig) {
-  const { folder, level } = config;
+function getLogger(name) {
+  const folder = "logs";
+  const level = "info";
   fs.mkdirSync(folder, { recursive: true });
 
   return new createLogger({
