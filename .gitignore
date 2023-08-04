@@ -7,3 +7,4 @@ server/config.json
 server/logs
 database/import/raw
 .DS_Store
+data
