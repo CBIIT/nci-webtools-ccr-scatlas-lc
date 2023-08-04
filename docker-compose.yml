@@ -6,7 +6,7 @@ services:
       dockerfile: docker/backend.dockerfile
     env_file: ./server/.env
     volumes:
-      - "./data/scatlaslc.db:/data/scatlaslc.db:ro"
+      - "./database/scatlaslc.db:/data/scatlaslc.db:ro"
     ports:
       - "9000:9000"
   frontend:
