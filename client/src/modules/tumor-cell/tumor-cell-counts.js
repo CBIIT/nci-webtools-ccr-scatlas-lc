@@ -2,7 +2,7 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { geneCountsQuery, plotOptionsState } from "./tumor-cell.state";
+import { geneCountsQuery, plotOptionsState , malignantCellsQuery} from "./tumor-cell.state";
 
 export default function TumorCellCounts() {
   const geneCounts = useRecoilValue(geneCountsQuery);
@@ -14,6 +14,7 @@ export default function TumorCellCounts() {
     },
     [plotOptions, setPlotOptions],
   );
+  const malignantCell = useRecoilValue(malignantCellsQuery);
 
   const columns = useMemo(
     (_) => [
@@ -40,6 +41,11 @@ export default function TumorCellCounts() {
         minPlaceholder: "Enter min count",
         maxPlaceholder: "Enter max count",
         aria: "Tumor Cell Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {(value / malignantCell.records.length*100).toFixed(1)}
+          </span>
+        ),
       },
     ],
     [setGene],
