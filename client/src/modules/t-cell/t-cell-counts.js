@@ -2,7 +2,7 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { tCellCountQuery, plotOptionsState } from "./t-cell.state";
+import { tCellCountQuery, plotOptionsState, cd4Query, cd8Query, tCellQuery } from "./t-cell.state";
 
 export default function TCellCounts() {
   const geneCounts = useRecoilValue(tCellCountQuery);
@@ -14,6 +14,9 @@ export default function TCellCounts() {
     },
     [plotOptions, setPlotOptions],
   );
+  const cd4QueryV = useRecoilValue(cd4Query);
+  const cd8QueryV = useRecoilValue(cd8Query);
+  const tCellQueryV = useRecoilValue(tCellQuery);
 
   const columns = useMemo(
     (_) => [
@@ -40,6 +43,11 @@ export default function TCellCounts() {
         minPlaceholder: "Enter min count",
         maxPlaceholder: "Enter max count",
         aria: "T Cell Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {(value / tCellQueryV.records.length*100).toFixed(1)}
+          </span>
+        ),
       },
       {
         Header: "CD4+ T Cells Expressing",
@@ -49,6 +57,11 @@ export default function TCellCounts() {
         minPlaceholder: "Enter min count",
         maxPlaceholder: "Enter max count",
         aria: "CD4+ Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {(value / cd4QueryV.records.length*100).toFixed(1)}
+          </span>
+        ),
       },
       {
         Header: "CD8+ T Cells Expressing",
@@ -58,6 +71,11 @@ export default function TCellCounts() {
         minPlaceholder: "Enter min count",
         maxPlaceholder: "Enter max count",
         aria: "CD8+ Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {(value / cd8QueryV.records.length*100).toFixed(1)}
+          </span>
+        ),
       },
     ],
     [setGene],
