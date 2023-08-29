@@ -1,6 +1,28 @@
-module.exports = { query };
 
-function query(database, params) {
+import util from "util";
+import getLogger from "./logger.js";
+const logger = getLogger("scatlas-lc");
+
+async function validate(schema, dataset, columns) {
+
+  if (!schema[dataset] || !Array.isArray(schema[dataset])) {
+    throw new Error(`Invalid dataset`);
+  }
+  const validColumns = columns.filter(c => schema[dataset].some(s => s.column_name === c));
+  if (!validColumns.length) {
+    throw new Error(`Invalid columns`);
+  }
+  return { dataset, columns: validColumns };
+}
+
+export async function query(database, schema, dataset, columns) {
+  
+  const run = util.promisify(database.all.bind(database));
+  const valid = await validate(schema, dataset, columns);
+  const sql = `select ${valid.columns.map(c => `"${c}"`).join(', ')} from "${valid.dataset}"`;
+  logger.info(sql)
+  return await run(sql);
+  /*
   // enable read-only mode
   database.pragma("query_only = ON");
   const ifDefined = (value, statement, defaultValue = "") =>
@@ -133,5 +155,5 @@ function query(database, params) {
       .get(queryParams);
   }
 
-  return result;
+  return result;*/
 }

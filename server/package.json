@@ -2,7 +2,7 @@
   "name": "liver-cancer-cell-atlas",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,8 +12,11 @@
   "dependencies": {
     "better-sqlite3": "8.5.0",
     "compression": "^1.7.4",
+    "dotenv": "^16.3.1",
+    "duckdb": "^0.8.1",
     "express": "^4.18.2",
     "helmet": "^7.0.0",
+    "http": "^0.0.1-security",
     "lodash": "^4.17.21",
     "nodemailer": "^6.9.4",
     "winston": "^3.10.0",

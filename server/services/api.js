@@ -1,32 +1,53 @@
-const express = require("express");
-const compression = require("compression");
-const sqlite = require("better-sqlite3");
+import express from "express";
+import compression from "compression";
+import sqlite from "better-sqlite3";
+import duckdb from "duckdb";
+import util from "util";
+import getLogger from "./logger.js";
+const logger = getLogger("scatlas-lc");
 
-const { logRequests, publicCacheControl, withAsync } = require("./middleware");
-const { query } = require("./query");
+import { logRequests, publicCacheControl, withAsync } from "./middleware.js";
+import { query } from "./query.js";
 
-const database = new sqlite(process.env.DATABASE_PATH);
 
-const lookup = {
-  gene: database.prepare("select gene from gene order by gene").pluck().all(),
-};
+async function getSchema(db) {
+  const run = util.promisify(db.all.bind(db));
+  const schema = {};
+  const tables = await run('show tables');
+  for (const { name } of tables) {
+    schema[name] = await run(`describe "${name}"`);
+  }
 
-const router = express.Router();
-router.use(express.json());
-router.use(compression());
-router.use(logRequests());
-router.use(publicCacheControl(60 * 60));
+  logger.info("Finished parsing schema")
+  return schema;
+}
 
-router.get("/ping", (request, response) => {
-  response.json(1 === database.prepare(`select 1`).pluck().get());
-});
+export async function createApi() {
+  const database = new duckdb.Database(process.env.DATABASE_PATH, duckdb.OPEN_READONLY)
 
-router.get("/lookup", (request, response) => {
-  response.json(lookup);
-});
+  const schema = await getSchema(database)
 
-router.get("/query", (request, response) => {
-  response.json(query(database, request.query));
-});
+  const router = express.Router();
+  router.use(express.json());
+  router.use(compression());
+  router.use(logRequests());
+  router.use(publicCacheControl(60 * 60));
 
-module.exports = router;
+  router.get("/ping", (request, response) => {
+    response.json(1 === database.prepare(`select 1`).pluck().get());
+  });
+
+  router.get("/lookup", (request, response) => {
+    response.json(lookup);
+  });
+
+  router.get("/query", async (request, response) => {
+    const { table, columns } = request.query
+    logger.info("Request Received")
+    const results = await query(database, schema, table, columns.split(","));
+    logger.info(results)
+    response.json(results)
+  });
+  
+  return router
+}

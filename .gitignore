@@ -8,3 +8,4 @@ server/logs
 database/import/raw
 .DS_Store
 data
+*.csv.gz
