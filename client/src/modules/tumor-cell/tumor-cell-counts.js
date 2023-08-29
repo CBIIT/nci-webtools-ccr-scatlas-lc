@@ -38,8 +38,8 @@ export default function TumorCellCounts() {
         accessor: "malignant_cell_count",
         Filter: RangeFilter,
         filter: "between",
-        minPlaceholder: "Enter min count",
-        maxPlaceholder: "Enter max count",
+        minPlaceholder: "Enter min percent",
+        maxPlaceholder: "Enter max percent",
         aria: "Tumor Cell Expressing",
         Cell: ({ value }) => (
           <span>
