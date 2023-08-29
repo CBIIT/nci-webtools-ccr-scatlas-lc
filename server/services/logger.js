@@ -1,13 +1,10 @@
-const path = require("path");
-const util = require("util");
-const fs = require("fs");
-const { createLogger, format, transports, info } = require("winston");
+import path from "path";
+import util from "util";
+import fs from "fs";
+import { createLogger, format, transports } from "winston";
+import "winston-daily-rotate-file";
 
-require("winston-daily-rotate-file");
-
-module.exports = getLogger;
-
-function getLogger(name) {
+export default function getLogger(name) {
   const folder = "logs";
   const level = "info";
   fs.mkdirSync(folder, { recursive: true });
@@ -24,18 +21,7 @@ function getLogger(name) {
         ].join(" - "),
       ),
     ),
-    transports: [
-      new transports.Console(),
-      new transports.DailyRotateFile({
-        filename: path.resolve(folder, `${name}-%DATE%.log`),
-        datePattern: "YYYY-MM-DD-HH",
-        zippedArchive: false,
-        maxSize: "1024m",
-        timestamp: true,
-        maxFiles: "1d",
-        prepend: true,
-      }),
-    ],
+    transports: [new transports.Console()],
     exitOnError: false,
   });
 }

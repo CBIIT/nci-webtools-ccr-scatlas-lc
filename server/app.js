@@ -1,27 +1,39 @@
-const express = require("express");
-const helmet = require("helmet");
-const getLogger = require("./services/logger");
-const forkCluster = require("./services/cluster");
-const { logErrors } = require("./services/middleware");
+import express from "express";
+import http from "http";
+import helmet from "helmet";
+import getLogger from "./services/logger.js";
+import forkCluster from "./services/cluster.js";
+import { logErrors } from "./services/middleware.js";
+import { createApi } from "./services/api.js";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const production = process.env.NODE_ENV === "production";
 const logger = getLogger("scatlas-lc");
 
-if (forkCluster()) return;
+export async function createApp() {
+  const app = express();
+  app.locals.logger = logger;
+  logger.info(`Started worker process, parsing schema...`);
 
-const app = express();
-app.locals.logger = logger;
-logger.info(`Started worker process, parsing schema...`);
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    hsts: false,
+  }));
+  app.use(logErrors);
+  app.use("/api", await createApi());
+  return app;
+}
 
-app.use(helmet({ 
-  contentSecurityPolicy: false,
-  hsts: false,
-}));
-app.use(logErrors);
-app.use("/api", require("./services/api"));
+export default async function main() {
+  const app = await createApp();
 
-app.listen(process.env.PORT, () => {
-  logger.info(`Application is running on port: ${process.env.PORT}`);
-});
+  const server = app.listen(process.env.PORT, () => {
+    logger.info(`Application is running on port: ${process.env.PORT}`);
+  });
+  return server;
+}
 
-module.exports = app;
+main()
+
+

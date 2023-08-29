@@ -1,5 +1,6 @@
-const cluster = require("cluster");
-const numCPUs = require("os").cpus().length;
+import cluster from "cluster";
+import os from "os";
+const numCPUs = os.cpus().length;
 
 /**
  * Forks the currently running script - if called within a forked process, returns false
@@ -8,7 +9,7 @@ const numCPUs = require("os").cpus().length;
  * @returns boolean - true if called from master process, false if called from child process (can be used for early termination
  * when in master process, eg: `if (forkCluster()) return;`)
  */
-function forkCluster(numProcesses = numCPUs, restartOnExit = false) {
+export default function forkCluster(numProcesses = numCPUs, restartOnExit = false) {
   if (!cluster.isMaster) return false;
 
   for (let i = 0; i < numProcesses; i++) cluster.fork();
@@ -21,4 +22,3 @@ function forkCluster(numProcesses = numCPUs, restartOnExit = false) {
   return true;
 }
 
-module.exports = forkCluster;

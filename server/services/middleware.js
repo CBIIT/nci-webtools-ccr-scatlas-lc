@@ -1,11 +1,5 @@
-module.exports = {
-  publicCacheControl,
-  logErrors,
-  logRequests,
-  withAsync,
-};
 
-function publicCacheControl(maxAge) {
+export function publicCacheControl(maxAge) {
   return (request, response, next) => {
     if (request.method === "GET")
       response.set("Cache-Control", `public, max-age=${maxAge}`);
@@ -13,7 +7,7 @@ function publicCacheControl(maxAge) {
   };
 }
 
-function logRequests(
+export function logRequests(
   formatter = (request) => [request.path, request.query, request.body],
 ) {
   return (request, response, next) => {
@@ -24,7 +18,7 @@ function logRequests(
   };
 }
 
-function logErrors(error, request, response, next) {
+export function logErrors(error, request, response, next) {
   const { name, message } = error;
   request.app.locals.logger.error(error);
 
@@ -37,7 +31,7 @@ function logErrors(error, request, response, next) {
  * @param {function} fn - An asynchronous middleware function
  * @returns The middleware function decorated with an error handler
  */
-function withAsync(fn) {
+export function withAsync(fn) {
   return async (request, response, next) => {
     try {
       return await fn(request, response, next);
