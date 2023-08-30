@@ -2,10 +2,10 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { geneCountsQuery, plotOptionsState , malignantCellsQuery} from "./tumor-cell.state";
+import { tumorCellsStatsQuery, plotOptionsState , tumorCellsQuery} from "./tumor-cell.state";
 
 export default function TumorCellCounts() {
-  const geneCounts = useRecoilValue(geneCountsQuery);
+  const geneCounts = useRecoilValue(tumorCellsStatsQuery);
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const setGene = useCallback(
     (gene) => {
@@ -14,7 +14,7 @@ export default function TumorCellCounts() {
     },
     [plotOptions, setPlotOptions],
   );
-  const malignantCell = useRecoilValue(malignantCellsQuery);
+  const tumorCell = useRecoilValue(tumorCellsQuery);
 
   const columns = useMemo(
     (_) => [
@@ -43,7 +43,7 @@ export default function TumorCellCounts() {
         aria: "Tumor Cell Expressing",
         Cell: ({ value }) => (
           <span>
-            {(value / malignantCell.records.length*100).toFixed(1)}
+            {(value / tumorCell.length*100).toFixed(1)}
           </span>
         ),
       },
@@ -51,7 +51,7 @@ export default function TumorCellCounts() {
     [setGene],
   );
 
-  const data = useMemo((_) => geneCounts.records, [geneCounts]);
+  const data = useMemo((_) => geneCounts, [geneCounts]);
 
   const sortBy = useMemo(
     (_) => [{ id: "gene", desc: false }],

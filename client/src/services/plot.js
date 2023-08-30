@@ -14,45 +14,39 @@ function extent(array) {
 }
 
 export function getTraces(
-  { columns, records },
-  { groupColumn, valueColumn },
+  records,
   config,
   gene
 ) {
-  const idIndex = columns.indexOf("id");
-  const xIndex = columns.indexOf("x");
-  const yIndex = columns.indexOf("y");
-  const groupIndex = columns.indexOf(groupColumn);
-  const valueIndex = columns.indexOf(valueColumn || groupColumn);
-  const groups = groupBy(records, groupIndex);
-  console.log(colors)
-  const [minValue, maxValue] = valueColumn
+  const valueIndex = gene || "type";
+  const groups = groupBy(records, "type");
+  const [minValue, maxValue] = gene
     ? extent(records.map((r) => r[valueIndex]))
     : [null, null];
   const formatNumber = (value, precision = 4) =>
     isNumber(value) ? +value.toPrecision(precision) : value;
 
-  
-  return Object.entries(groups).map(([key, values], i) =>
-    
-    merge(
-      {
-        name: key,
-        ids: values.map((v) => String(v[idIndex])),
-        x: values.map((v) => v[xIndex]),
-        y: values.map((v) => v[yIndex]),
-        text: values.map((v) => formatNumber(v[valueIndex])),
-        mode: "markers",
-        type: "scattergl",
-        hoverinfo: "text+name",
-        marker: {
-          color: !gene ? colors[i%colors.length] : values.map((v) => v[valueIndex]),
-          cmin: minValue,
-          cmax: maxValue,
-          showscale: i === 0,
+  return Object.entries(groups).map(([key, values], i) => {
+    return (
+      merge(
+        {
+          name: key,
+          x: values.map((v) => v.x),
+          y: values.map((v) => v.y),
+          text: values.map((v) => formatNumber(v[valueIndex])),
+          mode: "markers",
+          type: "scattergl",
+          hoverinfo: "text+name",
+          marker: {
+            color: !gene ? colors[i % colors.length] : values.map((v) => v[valueIndex]),
+            cmin: minValue,
+            cmax: maxValue,
+            showscale: i === 0,
+          },
         },
-      },
-      config,
-    ),
+        config,
+      )
+    )
+  }
   );
 }

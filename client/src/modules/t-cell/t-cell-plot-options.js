@@ -6,12 +6,14 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Select from "../components/select";
-import { plotOptionsState, lookupQuery } from "./t-cell.state";
+import { plotOptionsState, cd4StatsQuery, cd4Query } from "./t-cell.state";
 
 export default function TCellPlotOptions() {
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const [formValues, setFormValues] = useState(plotOptions);
-  const lookup = useRecoilValue(lookupQuery);
+  const lookup = useRecoilValue(cd4StatsQuery);
+  const cd4 = useRecoilValue(cd4Query);
+
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
   const mergeFormValues = (obj) => setFormValues({ ...formValues, ...obj });
 
@@ -69,7 +71,7 @@ export default function TCellPlotOptions() {
               label="Gene"
               className="form-control"
               onChange={(gene) => mergePlotOptions({ gene })}
-              options={lookup.gene}
+              options={lookup.map((e) => e.gene)}
               placeholder="All genes"
               value={plotOptions.gene}
             />

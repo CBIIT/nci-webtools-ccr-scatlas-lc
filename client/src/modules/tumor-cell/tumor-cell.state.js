@@ -1,15 +1,47 @@
 import { atom, selector, selectorFamily } from "recoil";
 import { query } from "../../services/query";
 
-export const malignantCellsQuery = selector({
-  key: "tumorCell.malignantCellsQuery",
-  get: ({ get }) => query("/api/query", { table: "malignant_cell", raw: true }),
+export const tumorCellsQuery = selector({
+  key: "tumorCell.tumorCellsQuery",
+  get: ({ get }) => query("/api/query", { table: "tumor_cell", columns: "x,y,type" }),
 });
 
-export const nonmalignantCellsQuery = selector({
-  key: "tumorCell.nonmalignantCellsQuery",
+export const tumorCellsStatsQuery = selector({
+  key: "tumorCell.tumorStatsQuery",
+  get: ({ get }) => query("/api/query", { table: "tumor_cell_stats", columns: "gene,count"}),
+});
+
+export const tumorGeneExpressionQuery = selectorFamily({
+  key: "tumorCell.tumorGeneExpressionQuery",
+  get: (gene) => async (_) =>
+    gene
+      ? await query("/api/query", {
+        table: `tumor_cell`,
+        columns: `x,y,type,${gene}`,
+      })
+      : [],
+});
+
+export const normalCellsQuery = selector({
+  key: "tumorCell.normalCellsQuery",
   get: ({ get }) =>
-    query("/api/query", { table: "nonmalignant_cell", raw: true }),
+    query("/api/query", { table: "normal_cell", columns: "x,y,type" }),
+});
+
+export const normalCellsStatsQuery = selector({
+  key: "tumorCell.normalStatsQuery",
+  get: ({ get }) => query("/api/query", { table: "normal_cell_stats", columns: "gene,count"}),
+});
+
+export const normalGeneExpressionQuery = selectorFamily({
+  key: "tumorCell.normalGeneExpressionQuery",
+  get: (gene) => async (_) =>
+    gene
+      ? await query("/api/query", {
+        table: `normal_cell`,
+        columns: `x,y,type,${gene}`,
+      })
+      : [],
 });
 
 export const geneCountsQuery = selector({
@@ -22,34 +54,8 @@ export const geneCountsQuery = selector({
     }),
 });
 
-export const lookupQuery = selector({
-  key: "tumorCell.lookupQuery",
-  get: async ({ get }) => await query("/api/lookup"),
-});
-
 export const plotOptionsState = atom({
   key: "tumorCell.plotOptions",
   default: { size: 4, opacity: 0.8, gene: null },
 });
 
-export const malignantCellsGeneExpressionQuery = selectorFamily({
-  key: "tumorCell.malignantCellsGeneExpressionQuery",
-  get: (gene) => async (_) =>
-    gene
-      ? await query("/api/query", {
-          table: `v_malignant_cell_gene_expression_${gene}`,
-          raw: true,
-        })
-      : [],
-});
-
-export const nonmalignantCellsGeneExpressionQuery = selectorFamily({
-  key: "tumorCell.nonmalignantCellsGeneExpressionQuery",
-  get: (gene) => async (_) =>
-    gene
-      ? await query("/api/query", {
-          table: `v_nonmalignant_cell_gene_expression_${gene}`,
-          raw: true,
-        })
-      : [],
-});

@@ -8,8 +8,11 @@ import merge from "lodash/merge";
 import { getTraces } from "../../services/plot";
 import {
   tCellQuery,
+  tCellStatsQuery,
   cd4Query,
+  cd4StatsQuery,
   cd8Query,
+  cd8StatsQuery,
   plotOptionsState,
   tabState,
   tCellGeneExpressionQuery,
@@ -23,7 +26,10 @@ export default function TCellsPlots() {
   const cd8 = useRecoilValue(cd8Query);
   const { size, opacity, gene } = useRecoilValue(plotOptionsState);
   const [tab, setTab] = useRecoilState(tabState);
-
+  console.log(tCells)
+  console.log(cd4)
+  console.log(cd8)
+ 
   const tCellGeneExpression = useRecoilValue(tCellGeneExpressionQuery(gene));
   const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery(gene));
   const cd8GeneExpression = useRecoilValue(cd8GeneExpressionQuery(gene));
@@ -168,9 +174,9 @@ export default function TCellsPlots() {
         <Row>
           <Col xl={12} className="d-flex justify-content-center">
             <Plot
-              data={getTraces(tCellGeneExpression, traceColumns, traceConfig, gene)}
+              data={getTraces(tCellGeneExpression, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
-                title: `<b>T Cells: ${gene} (n=${tCellGeneExpression.records.length})</b>`,
+                title: `<b>T Cells: ${gene} (n=${tCellGeneExpression.length})</b>`,
                 xaxis: {
                   title: "t-SNE 1",
                 },
@@ -191,7 +197,7 @@ export default function TCellsPlots() {
         <Row>
           <Col xl={6}>
             <Plot
-              data={getTraces(cd4GeneExpression, traceColumns, traceConfig, gene)}
+              data={getTraces(cd4GeneExpression, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: `<b>CD4+ T Cells: ${gene}</b>`,
                 annotations: cd4Annotations,
@@ -204,7 +210,7 @@ export default function TCellsPlots() {
           </Col>
           <Col xl={6}>
             <Plot
-              data={getTraces(cd8GeneExpression, traceColumns, traceConfig, gene)}
+              data={getTraces(cd8GeneExpression, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: `<b>CD8+ T Cells: ${gene}</b>`,
                 annotations: cd8Annotations,
@@ -229,10 +235,10 @@ export default function TCellsPlots() {
         <Row>
           <Col xl={12} className="d-flex justify-content-center">
             <Plot
-              data={getTraces(tCells, traceColumns, traceConfig, gene)}
+              data={getTraces(tCells, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: [
-                  `<b>T Cells (n=${tCells.records.length})</b>`,
+                  `<b>T Cells (n=${tCells.length})</b>`,
                   `<span style="font-size: 12px; color: grey; ">Click legend to show/hide types</span>`,
                 ].join("<br>"),
                 legend: {
@@ -262,7 +268,7 @@ export default function TCellsPlots() {
         <Row>
           <Col xl={6}>
             <Plot
-              data={getTraces(cd4, traceColumns, traceConfig, gene)}
+              data={getTraces(cd4, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: [
                   `<b>CD4+ T Cells</b>`,
@@ -284,7 +290,7 @@ export default function TCellsPlots() {
           </Col>
           <Col xl={6}>
             <Plot
-              data={getTraces(cd8, traceColumns, traceConfig)}
+              data={getTraces(cd8, traceConfig, gene)}
               layout={merge({}, defaultLayout, {
                 title: [
                   `<b>CD8+ T Cells</b>`,

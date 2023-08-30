@@ -6,23 +6,22 @@ import merge from "lodash/merge";
 import { getTraces } from "../../services/plot";
 import {
   plotOptionsState,
-  malignantCellsQuery,
-  nonmalignantCellsQuery,
-  malignantCellsGeneExpressionQuery,
-  nonmalignantCellsGeneExpressionQuery,
+  tumorCellsQuery,
+  normalCellsQuery,
+  tumorGeneExpressionQuery,
+  normalGeneExpressionQuery,
 } from "./tumor-cell.state";
 
 export default function TumorCellPlots() {
-  const malignantCells = useRecoilValue(malignantCellsQuery);
-  const nonmalignantCells = useRecoilValue(nonmalignantCellsQuery);
+  const tumorCells = useRecoilValue(tumorCellsQuery);
+  const normalCells = useRecoilValue(normalCellsQuery);
   const { size, opacity, gene } = useRecoilValue(plotOptionsState);
-  const malignantCellsGeneExpression = useRecoilValue(
-    malignantCellsGeneExpressionQuery(gene),
+  const tumorGeneExpression = useRecoilValue(
+    tumorGeneExpressionQuery(gene),
   );
-  const nonmalignantCellsGeneExpression = useRecoilValue(
-    nonmalignantCellsGeneExpressionQuery(gene),
+  const normalGeneExpression = useRecoilValue(
+    normalGeneExpressionQuery(gene),
   );
-
   const defaultLayout = {
     xaxis: {
       title: "t-SNE 1",
@@ -63,7 +62,7 @@ export default function TumorCellPlots() {
 
   const traceColumns = {
     groupColumn: "type",
-    valueColumn: gene && "value",
+    valueColumn: gene,
   };
 
   const traceConfig = {
@@ -90,13 +89,12 @@ export default function TumorCellPlots() {
         <Col xl={6}>
           <Plot
             data={getTraces(
-              malignantCellsGeneExpression,
-              traceColumns,
+              tumorGeneExpression,
               traceConfig,
               gene
             )}
             layout={merge({}, defaultLayout, {
-              title: `<b>Malignant Cells: ${gene} (n=${malignantCellsGeneExpression.records.length})</b>`,
+              title: `<b>Malignant Cells: ${gene} (n=${tumorGeneExpression.length})</b>`,
             })}
             config={defaultConfig}
             useResizeHandler
@@ -107,13 +105,12 @@ export default function TumorCellPlots() {
         <Col xl={6}>
           <Plot
             data={getTraces(
-              nonmalignantCellsGeneExpression,
-              traceColumns,
+              normalGeneExpression,
               traceConfig,
               gene
             )}
             layout={merge({}, defaultLayout, {
-              title: `<b>Non-malignant Cells: ${gene} (n=${nonmalignantCellsGeneExpression.records.length})</b>`,
+              title: `<b>Non-malignant Cells: ${gene} (n=${normalGeneExpression.length})</b>`,
             })}
             config={defaultConfig}
             useResizeHandler
@@ -128,10 +125,10 @@ export default function TumorCellPlots() {
       <Row>
         <Col xl={6}>
           <Plot
-            data={getTraces(malignantCells, traceColumns, traceConfig, gene)}
+            data={getTraces(tumorCells, traceConfig, gene)}
             layout={merge({}, defaultLayout, {
               title: [
-                `<b>Malignant Cells (n=${malignantCells.records.length})</b>`,
+                `<b>Malignant Cells (n=${tumorCells.length})</b>`,
                 `<span style="font-size: 12px; color: grey;">Click legend to show/hide cases</span>`,
               ].join("<br>"),
               legend: {
@@ -146,10 +143,10 @@ export default function TumorCellPlots() {
         </Col>
         <Col xl={6}>
           <Plot
-            data={getTraces(nonmalignantCells, traceColumns, traceConfig, gene)}
+            data={getTraces(normalCells, traceConfig, gene)}
             layout={merge({}, defaultLayout, {
               title: [
-                `<b>Non-malignant Cells (n=${nonmalignantCells.records.length})</b>`,
+                `<b>Non-malignant Cells (n=${normalCells.length})</b>`,
                 '<span style="font-size: 12px; color: grey; ">Click legend to show/hide types</span>',
               ].join("<br>"),
               legend: {
