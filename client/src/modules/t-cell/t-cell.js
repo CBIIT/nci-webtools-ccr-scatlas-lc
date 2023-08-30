@@ -27,11 +27,11 @@ export default function TCell() {
           </ErrorBoundary>
         </Card.Body>
       </Card>
-      <Card className="shadow mb-4">
+       {/* <Card className="shadow mb-4">
         <Card.Header className="bg-primary text-white">
           <Card.Title className="my-1">T-Cell Counts</Card.Title>
         </Card.Header>
-        <Card.Body
+       <Card.Body
           className="p-0 position-relative"
           style={{ minHeight: "600px" }}>
           <ErrorBoundary
@@ -41,12 +41,12 @@ export default function TCell() {
                 contact the website administrator if this problem persists.
               </Alert>
             }>
-            <Suspense fallback={<Loader message="Loading Cell Counts" />}>
+           <Suspense fallback={<Loader message="Loading Cell Counts" />}>
               <TCellCounts />
             </Suspense>
           </ErrorBoundary>
         </Card.Body>
-      </Card>
+      </Card>*/}
     </Container>
   );
 }

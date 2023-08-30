@@ -2,10 +2,10 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { tCellCountQuery, plotOptionsState, cd4Query, cd8Query, tCellQuery } from "./t-cell.state";
+import { cd4StatsQuery, plotOptionsState, cd4Query, cd8Query, tCellQuery } from "./t-cell.state";
 
 export default function TCellCounts() {
-  const geneCounts = useRecoilValue(tCellCountQuery);
+  const geneCounts = useRecoilValue(cd4StatsQuery);
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const setGene = useCallback(
     (gene) => {
@@ -45,7 +45,7 @@ export default function TCellCounts() {
         aria: "T Cell Expressing",
         Cell: ({ value }) => (
           <span>
-            {(value / tCellQueryV.records.length*100).toFixed(1)}
+            {(value / tCellQueryV.length*100).toFixed(1)}
           </span>
         ),
       },
@@ -59,7 +59,7 @@ export default function TCellCounts() {
         aria: "CD4+ Expressing",
         Cell: ({ value }) => (
           <span>
-            {(value / cd4QueryV.records.length*100).toFixed(1)}
+            {(value / cd4QueryV.length*100).toFixed(1)}
           </span>
         ),
       },
@@ -73,7 +73,7 @@ export default function TCellCounts() {
         aria: "CD8+ Expressing",
         Cell: ({ value }) => (
           <span>
-            {(value / cd8QueryV.records.length*100).toFixed(1)}
+            {(value / cd8QueryV.length*100).toFixed(1)}
           </span>
         ),
       },
@@ -81,7 +81,7 @@ export default function TCellCounts() {
     [setGene],
   );
 
-  const data = useMemo((_) => geneCounts.records, [geneCounts]);
+  const data = useMemo((_) => geneCounts, [geneCounts]);
 
   const sortBy = useMemo((_) => [{ id: "gene", desc: false }], []);
 

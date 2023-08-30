@@ -6,15 +6,17 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Select from "../components/select";
-import { plotOptionsState, lookupQuery } from "./tumor-cell.state";
+import { plotOptionsState, tumorCellsQuery, tumorCellsStatsQuery } from "./tumor-cell.state";
 
 export default function TumorCellPlotOptions() {
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const [formValues, setFormValues] = useState(plotOptions);
-  const lookup = useRecoilValue(lookupQuery);
+  const lookup = useRecoilValue(tumorCellsStatsQuery);
+  const tumor = useRecoilValue(tumorCellsQuery)
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
   const mergeFormValues = (obj) => setFormValues({ ...formValues, ...obj });
-
+  console.log(lookup)
+  console.log(tumor)
   function handleChange(event) {
     const { name, value, min, max, type } = event.target;
     const clampedValue =
@@ -67,7 +69,7 @@ export default function TumorCellPlotOptions() {
               label="Gene"
               className="form-control"
               onChange={(gene) => mergePlotOptions({ gene })}
-              options={lookup.gene}
+              options={lookup.map((e) => e.gene)}
               placeholder="All genes"
               value={plotOptions.gene}
             />
