@@ -2,10 +2,22 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { cd4StatsQuery, plotOptionsState, cd4Query, cd8Query, tCellQuery } from "./t-cell.state";
+import { cd4StatsQuery, cd8StatsQuery, tCellStatsQuery, plotOptionsState, cd4Query, cd8Query, tCellQuery } from "./t-cell.state";
 
 export default function TCellCounts() {
-  const geneCounts = useRecoilValue(cd4StatsQuery);
+  const cd4Stats = useRecoilValue(cd4StatsQuery);
+  const cd8Stats = useRecoilValue(cd8StatsQuery);
+  const tCellStats = useRecoilValue(tCellStatsQuery)
+
+  const geneCounts = cd4Stats.map((cd4, i) => {
+    return({
+      gene: cd4.gene,
+      cd4_cell_count: cd4.count,
+      cd8_cell_count: cd8Stats[i].count,
+      t_cell_count: tCellStats[i].count,
+    })
+  })
+
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const setGene = useCallback(
     (gene) => {
@@ -17,6 +29,9 @@ export default function TCellCounts() {
   const cd4QueryV = useRecoilValue(cd4Query);
   const cd8QueryV = useRecoilValue(cd8Query);
   const tCellQueryV = useRecoilValue(tCellQuery);
+
+  console.log(cd4QueryV.length)
+  console.log(tCellQueryV.length)
 
   const columns = useMemo(
     (_) => [

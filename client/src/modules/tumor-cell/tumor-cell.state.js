@@ -44,15 +44,6 @@ export const normalGeneExpressionQuery = selectorFamily({
       : [],
 });
 
-export const geneCountsQuery = selector({
-  key: "tumorCell.geneCountsQuery",
-  get: async ({ get }) =>
-    await query("/api/query", {
-      table: `v_malignant_nonmalignant_cell_gene_count`,
-      orderBy: "malignant_cell_count",
-      order: "desc",
-    }),
-});
 
 export const plotOptionsState = atom({
   key: "tumorCell.plotOptions",

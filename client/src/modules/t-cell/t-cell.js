@@ -27,7 +27,7 @@ export default function TCell() {
           </ErrorBoundary>
         </Card.Body>
       </Card>
-       {/* <Card className="shadow mb-4">
+      <Card className="shadow mb-4">
         <Card.Header className="bg-primary text-white">
           <Card.Title className="my-1">T-Cell Counts</Card.Title>
         </Card.Header>
@@ -46,7 +46,7 @@ export default function TCell() {
             </Suspense>
           </ErrorBoundary>
         </Card.Body>
-      </Card>*/}
+      </Card>
     </Container>
   );
 }

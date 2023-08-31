@@ -35,7 +35,7 @@ export default function TumorCellCounts() {
       },
       {
         Header: "Cells Expressing",
-        accessor: "malignant_cell_count",
+        accessor: "count",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",

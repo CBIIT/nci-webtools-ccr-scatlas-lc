@@ -10,7 +10,7 @@ export const cd4Query = selector({
 
 export const cd4StatsQuery = selector({
   key: "tCell.cd4StatsQuery",
-  get: ({ get }) => query("/api/query", { table: "cd4_cell_stats", columns: "gene,count", raw: true }),
+  get: ({ get }) => query("/api/query", { table: "cd4_cell_stats", columns: "gene,count"}),
 });
 
 export const cd4GeneExpressionQuery = selectorFamily({
@@ -67,41 +67,6 @@ export const tCellGeneExpressionQuery = selectorFamily({
       : [],
 });
 
-/*
-export const tCellGeneExpressionQuery = selectorFamily({
-  key: "tCell.tCellGeneExpressionQuery",
-  get: (gene) => async (_) =>
-    gene
-      ? await query("/api/query", {
-          table: `v_t_cell_gene_expression_${gene}`,
-          raw: true,
-        })
-      : [],
-});
-
-export const cd4GeneExpressionQuery = selectorFamily({
-  key: "tCell.cd4GeneExpressionQuery",
-  get: (gene) => async (_) =>
-    gene
-      ? await query("/api/query", {
-          table: `cd4_cell_stats`,
-          columns: "gene",
-          raw: true,
-        })
-      : [],
-});
-
-export const cd8GeneExpressionQuery = selectorFamily({
-  key: "tCell.cd8GeneExpressionQuery",
-  get: (gene) => async (_) =>
-    gene
-      ? await query("/api/query", {
-          table: `v_cd8_cell_gene_expression_${gene}`,
-          raw: true,
-        })
-      : [],
-});
-*/
 
 export const plotOptionsState = atom({
   key: "tCell.plotOptionsState",
