@@ -40,7 +40,7 @@ export const normalGeneExpressionQuery = selectorFamily({
     get: (gene) => async (_) =>
       gene
         ? await query("/api/query", {
-          table: `multiregional_tumor_cell`,
+          table: `multiregional_normal_cell`,
           columns: `x,y,type,${gene}`,
         })
         : [],
