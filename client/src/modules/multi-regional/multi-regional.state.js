@@ -8,7 +8,7 @@ export const tumorCellQuery = selector({
 });
 
 
-export const tumorCellStatsQuery = selector({
+export const tumorCellsStatsQuery = selector({
   key: "multiregional.tumorStatsQuery",
   get: ({ get }) => query("/api/query", { table: "multiregional_tumor_cell_stats", columns: "gene,count"}),
 });
@@ -35,23 +35,19 @@ export const normalCellStatsQuery = selector({
   get: ({ get }) => query("/api/query", { table: "multiregional_normal_cell_stats", columns: "gene,count" }),
 });
 
-export const normalrGeneExpressionQuery = selectorFamily({
+export const normalGeneExpressionQuery = selectorFamily({
     key: "multiregional.normalGeneExpressionQuery",
     get: (gene) => async (_) =>
       gene
         ? await query("/api/query", {
-          table: `multiregional_normal_cell`,
+          table: `multiregional_tumor_cell`,
           columns: `x,y,type,${gene}`,
         })
         : [],
   });
 
 export const plotOptionsState = atom({
-  key: "tCell.plotOptionsState",
+  key: "multiregional.plotOptionsState",
   default: { size: 4, opacity: 0.8, gene: null },
 });
 
-export const tabState = atom({
-  key: "tCell.tabState",
-  default: "tcell",
-});
