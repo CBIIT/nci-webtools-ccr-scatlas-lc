@@ -8,7 +8,7 @@ import MultiRegionalCellPlots from "./multi-regional-plots";
 import MultiRegionalCellPlotOptions from "./multi-regional-plot-options";
 import MultiRegionalCellCounts from "./multi-regional-counts";
 
-export default function TumorCell() {
+export default function MultiRegionalCell() {
   return (
     <Container>
       <Card className="shadow mb-4">
