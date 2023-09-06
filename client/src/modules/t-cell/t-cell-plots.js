@@ -26,9 +26,6 @@ export default function TCellsPlots() {
   const cd8 = useRecoilValue(cd8Query);
   const { size, opacity, gene } = useRecoilValue(plotOptionsState);
   const [tab, setTab] = useRecoilState(tabState);
-  console.log(tCells)
-  console.log(cd4)
-  console.log(cd8)
  
   const tCellGeneExpression = useRecoilValue(tCellGeneExpressionQuery(gene));
   const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery(gene));

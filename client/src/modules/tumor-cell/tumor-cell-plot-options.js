@@ -15,8 +15,7 @@ export default function TumorCellPlotOptions() {
   const tumor = useRecoilValue(tumorCellsQuery)
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
   const mergeFormValues = (obj) => setFormValues({ ...formValues, ...obj });
-  console.log(lookup)
-  console.log(tumor)
+
   function handleChange(event) {
     const { name, value, min, max, type } = event.target;
     const clampedValue =
