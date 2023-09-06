@@ -30,9 +30,6 @@ export default function TCellCounts() {
   const cd8QueryV = useRecoilValue(cd8Query);
   const tCellQueryV = useRecoilValue(tCellQuery);
 
-  console.log(cd4QueryV.length)
-  console.log(tCellQueryV.length)
-
   const columns = useMemo(
     (_) => [
       {
