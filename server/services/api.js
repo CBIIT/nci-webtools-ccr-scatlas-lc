@@ -42,7 +42,6 @@ export async function createApi() {
     const { table, columns } = request.query
     logger.info("Request Received")
     const results = await query(database, schema, table, columns.split(","));
-    logger.info(results)
     response.json(results)
   });
   
