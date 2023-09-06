@@ -2,7 +2,7 @@ import { atom, selector, selectorFamily } from "recoil";
 import { query } from "../../services/query";
 
 
-export const tumorCellQuery = selector({
+export const tumorCellsQuery = selector({
   key: "sequential.tumorCellQuery",
   get: ({ get }) => query("/api/query", { table: "longitudinal_tumor_cell", columns: "x,y,type" }),
 });
@@ -25,12 +25,12 @@ export const tumorGeneExpressionQuery = selectorFamily({
 });
 
 
-export const normalCellQuery = selector({
+export const normalCellsQuery = selector({
   key: "longitudinal.normalCellQuery",
   get: ({ get }) => query("/api/query", { table: "longitudinal_normal_cell", columns: "x,y,type" }),
 });
 
-export const normalCellStatsQuery = selector({
+export const normalCellsStatsQuery = selector({
   key: "longitudinal.normalStatsQuery",
   get: ({ get }) => query("/api/query", { table: "longitudinal_normal_cell_stats", columns: "gene,count" }),
 });
