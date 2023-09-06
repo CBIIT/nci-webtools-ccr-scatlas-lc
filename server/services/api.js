@@ -33,12 +33,9 @@ export async function createApi() {
   router.use(logRequests());
   router.use(publicCacheControl(60 * 60));
 
-  router.get("/ping", (request, response) => {
-    response.json(1 === database.prepare(`select 1`).pluck().get());
-  });
-
-  router.get("/lookup", (request, response) => {
-    response.json(lookup);
+  router.get("/ping", async (request, response) => {
+    const run = util.promisify(database.all.bind(database));
+    response.json((await run(`select 1`)).length === 1);
   });
 
   router.get("/query", async (request, response) => {
