@@ -8,7 +8,7 @@ export const tumorCellsQuery = selector({
 
 export const tumorCellsStatsQuery = selector({
   key: "tumorCell.tumorStatsQuery",
-  get: ({ get }) => query("/api/query", { table: "tumor_cell_stats", columns: "gene,count"}),
+  get: ({ get }) => query("/api/query", { table: "tumor_cell_stats", columns: "gene,count,mean"}),
 });
 
 export const tumorGeneExpressionQuery = selectorFamily({
@@ -30,7 +30,7 @@ export const normalCellsQuery = selector({
 
 export const normalCellsStatsQuery = selector({
   key: "tumorCell.normalStatsQuery",
-  get: ({ get }) => query("/api/query", { table: "normal_cell_stats", columns: "gene,count"}),
+  get: ({ get }) => query("/api/query", { table: "normal_cell_stats", columns: "gene,count,mean"}),
 });
 
 export const normalGeneExpressionQuery = selectorFamily({

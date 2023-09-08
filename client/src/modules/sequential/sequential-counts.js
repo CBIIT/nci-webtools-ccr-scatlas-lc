@@ -2,10 +2,22 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { tumorCellsStatsQuery, plotOptionsState , tumorCellsQuery} from "./sequential.state";
+import { tumorCellsStatsQuery, normalCellsStatsQuery, plotOptionsState , tumorCellsQuery} from "./sequential.state";
 
 export default function SequentialCellCounts() {
-  const geneCounts = useRecoilValue(tumorCellsStatsQuery);
+  const tumorStats = useRecoilValue(tumorCellsStatsQuery);
+  const normalStats = useRecoilValue(normalCellsStatsQuery);
+  const geneCounts =  tumorStats.map((tumor, i) => {
+    return({
+      gene: tumor.gene,
+      tumor_cell_count: tumor.count,
+      tumor_cell_mean: tumor.mean,
+      normal_cell_count: normalStats[i].count,
+      normal_cell_mean: normalStats[i].mean
+    })
+  })
+
+
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const setGene = useCallback(
     (gene) => {
@@ -35,7 +47,7 @@ export default function SequentialCellCounts() {
       },
       {
         Header: "Cells Expressing",
-        accessor: "count",
+        accessor: "tumor_cell_count",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",
@@ -44,6 +56,34 @@ export default function SequentialCellCounts() {
         Cell: ({ value }) => (
           <span>
             {(value / tumorCell.length*100).toFixed(1)}
+          </span>
+        ),
+      },
+      {
+        Header: "Malignant Cells Normalized Expression Level",
+        accessor: "tumor_cell_mean",
+        Filter: RangeFilter,
+        filter: "between",
+        minPlaceholder: "Enter min percent",
+        maxPlaceholder: "Enter max percent",
+        aria: "Tumor Cell Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {value}
+          </span>
+        ),
+      },
+      {
+        Header: "Non-malignant Cells Normalized Expression Level",
+        accessor: "normal_cell_mean",
+        Filter: RangeFilter,
+        filter: "between",
+        minPlaceholder: "Enter min percent",
+        maxPlaceholder: "Enter max percent",
+        aria: "Tumor Cell Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {value}
           </span>
         ),
       },
