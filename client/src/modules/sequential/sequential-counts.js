@@ -64,9 +64,9 @@ export default function SequentialCellCounts() {
         accessor: "tumor_cell_mean",
         Filter: RangeFilter,
         filter: "between",
-        minPlaceholder: "Enter min percent",
-        maxPlaceholder: "Enter max percent",
-        aria: "Tumor Cell Expressing",
+        minPlaceholder: "Enter min mean",
+        maxPlaceholder: "Enter max mean",
+        aria: "Tumor Cell Mean",
         Cell: ({ value }) => (
           <span>
             {value}
@@ -78,9 +78,9 @@ export default function SequentialCellCounts() {
         accessor: "normal_cell_mean",
         Filter: RangeFilter,
         filter: "between",
-        minPlaceholder: "Enter min percent",
-        maxPlaceholder: "Enter max percent",
-        aria: "Tumor Cell Expressing",
+        minPlaceholder: "Enter min mean",
+        maxPlaceholder: "Enter max mean",
+        aria: "Normal Cell Mean",
         Cell: ({ value }) => (
           <span>
             {value}
