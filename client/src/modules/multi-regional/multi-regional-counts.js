@@ -58,6 +58,34 @@ export default function MultiRegionalCellCounts() {
           </span>
         ),
       },
+      {
+        Header: "Malignant Cells Normalized Expression Level",
+        accessor: "tumor_cell_mean",
+        Filter: RangeFilter,
+        filter: "between",
+        minPlaceholder: "Enter min percent",
+        maxPlaceholder: "Enter max percent",
+        aria: "Tumor Cell Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {value}
+          </span>
+        ),
+      },
+      {
+        Header: "Non-malignant Cells Normalized Expression Level",
+        accessor: "normal_cell_mean",
+        Filter: RangeFilter,
+        filter: "between",
+        minPlaceholder: "Enter min percent",
+        maxPlaceholder: "Enter max percent",
+        aria: "Tumor Cell Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {value}
+          </span>
+        ),
+      },
     ],
     [setGene],
   );
