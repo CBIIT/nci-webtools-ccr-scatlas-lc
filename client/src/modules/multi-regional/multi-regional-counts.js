@@ -11,9 +11,9 @@ export default function MultiRegionalCellCounts() {
     return({
       gene: tumor.gene,
       tumor_cell_count: tumor.count,
-      tumor_cell_mean: tumor.mean,
+      tumor_cell_mean: tumor.mean.toExponential(6),
       normal_cell_count: normalStats[i].count,
-      normal_cell_mean: normalStats[i].mean
+      normal_cell_mean: normalStats[i].mean.toExponential(6)
     })
   })
 

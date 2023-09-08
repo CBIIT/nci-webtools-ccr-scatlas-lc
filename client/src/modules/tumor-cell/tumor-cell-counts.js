@@ -12,9 +12,9 @@ export default function TumorCellCounts() {
     return({
       gene: tumor.gene,
       tumor_cell_count: tumor.count,
-      tumor_cell_mean: tumor.mean,
+      tumor_cell_mean: tumor.mean.toExponential(6),
       normal_cell_count: normalStats[i].count,
-      normal_cell_mean: normalStats[i].mean
+      normal_cell_mean: normalStats[i].mean.toExponential(6),
     })
   })
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
@@ -63,8 +63,8 @@ export default function TumorCellCounts() {
         accessor: "tumor_cell_mean",
         Filter: RangeFilter,
         filter: "between",
-        minPlaceholder: "Enter min percent",
-        maxPlaceholder: "Enter max percent",
+        minPlaceholder: "Enter min mean",
+        maxPlaceholder: "Enter max mean",
         aria: "Tumor Cell Expressing",
         Cell: ({ value }) => (
           <span>
@@ -77,8 +77,8 @@ export default function TumorCellCounts() {
         accessor: "normal_cell_mean",
         Filter: RangeFilter,
         filter: "between",
-        minPlaceholder: "Enter min percent",
-        maxPlaceholder: "Enter max percent",
+        minPlaceholder: "Enter min mean",
+        maxPlaceholder: "Enter max mean",
         aria: "Tumor Cell Expressing",
         Cell: ({ value }) => (
           <span>
