@@ -1,4 +1,4 @@
-export const required = ["APP_PORT", "APP_NAME", "DATABASE_PATH"];
+export const required = ["PORT", "APPLICATION_NAME", "DATABASE_PATH"];
 
 export function validateEnvironment(env = process.env, vars = required) {
   for (const key of required) {
