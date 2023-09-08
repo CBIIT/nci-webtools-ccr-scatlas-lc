@@ -17,11 +17,11 @@ if (isMainModule(import.meta)) {
  * @returns {Promise<import("http").Server>} a node http server
  */
 export async function main(env) {
-  const { APP_PORT, APP_NAME, SERVER_TIMEOUT } = env;
+  const { PORT, APPLICATION_NAME, SERVER_TIMEOUT } = env;
   const serverTimeout = +SERVER_TIMEOUT || 1000 * 60 * 15;
   const app = await createApp(env);
-  const server = app.listen(APP_PORT, () => {
-    app.locals.logger.info(`${APP_NAME} started on port ${APP_PORT}`);
+  const server = app.listen(PORT, () => {
+    app.locals.logger.info(`${APPLICATION_NAME} started on port ${PORT}`);
   });
   server.setTimeout(serverTimeout);
   return server;
@@ -33,7 +33,7 @@ export async function main(env) {
  * @returns {Promise<express.Application>} an Express app
  */
 export async function createApp(env) {
-  const { APP_NAME, LOG_LEVEL } = env;
+  const { APPLICATION_NAME, LOG_LEVEL } = env;
   const app = express();
 
   // if behind a proxy, use the first x-forwarded-for address as the client's ip address
@@ -42,7 +42,7 @@ export async function createApp(env) {
   app.set("x-powered-by", false);
 
   // register services as app locals
-  app.locals.logger = createLogger(APP_NAME, LOG_LEVEL);
+  app.locals.logger = createLogger(APPLICATION_NAME, LOG_LEVEL);
   app.use("/api", await createApi(env));
 
   return app;
