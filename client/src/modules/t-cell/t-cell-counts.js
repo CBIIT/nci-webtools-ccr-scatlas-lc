@@ -13,11 +13,11 @@ export default function TCellCounts() {
     return({
       gene: cd4.gene,
       cd4_cell_count: cd4.count,
-      cd4_cell_mean: cd4.mean,
+      cd4_cell_mean: cd4.mean.toExponential(6),
       cd8_cell_count: cd8Stats[i].count,
-      cd8_cell_mean: cd8Stats[i].mean,
+      cd8_cell_mean: cd8Stats[i].mean.toExponential(6),
       t_cell_count: tCellStats[i].count,
-      t_cell_mean: tCellStats[i].mean
+      t_cell_mean: tCellStats[i].mean.toExponential(6)
     })
   })
 
