@@ -1,49 +1,34 @@
 import express from "express";
-import compression from "compression";
-import sqlite from "better-sqlite3";
+import Router from "express-promise-router";
 import duckdb from "duckdb";
-import util from "util";
-import getLogger from "./logger.js";
-const logger = getLogger("scatlas-lc");
+import { promisify } from "util";
+import { getQuery, getSchema } from "./query.js";
+import { logErrors, logRequests } from "./middleware.js";
+const { Database, OPEN_READONLY } = duckdb;
 
-import { logRequests, publicCacheControl, withAsync } from "./middleware.js";
-import { query } from "./query.js";
+export async function createApi(env = process.env) {
+  const database = new Database(env.DATABASE_PATH, OPEN_READONLY);
+  const runQuery = promisify(database.all.bind(database));
+  const schema = await getSchema(database);
 
-
-async function getSchema(db) {
-  const run = util.promisify(db.all.bind(db));
-  const schema = {};
-  const tables = await run('show tables');
-  for (const { name } of tables) {
-    schema[name] = await run(`describe "${name}"`);
-  }
-
-  logger.info("Finished parsing schema")
-  return schema;
-}
-
-export async function createApi() {
-  const database = new duckdb.Database(process.env.DATABASE_PATH, duckdb.OPEN_READONLY)
-
-  const schema = await getSchema(database)
-
-  const router = express.Router();
-  router.use(express.json());
-  router.use(compression());
+  const router = Router();
   router.use(logRequests());
-  router.use(publicCacheControl(60 * 60));
+  router.use(express.json());
 
   router.get("/ping", async (request, response) => {
-    const run = util.promisify(database.all.bind(database));
-    response.json((await run(`select 1`)).length === 1);
+    const [results] = await runQuery("select 1 as status");
+    response.json(results?.status === 1);
   });
 
   router.get("/query", async (request, response) => {
-    const { table, columns } = request.query
-    logger.info("Request Received")
-    const results = await query(database, schema, table, columns.split(","));
-    response.json(results)
+    const { logger } = request.app.locals;
+    const { table, columns } = request.query;
+    const query = getQuery(schema, table, columns.split(","));
+    logger.info(query);
+    const results = await runQuery(query);
+    response.json(results);
   });
-  
-  return router
+
+  router.use(logErrors());
+  return router;
 }
