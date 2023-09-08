@@ -1,42 +1,36 @@
+import { formatObject } from "./logger.js";
 
-export function publicCacheControl(maxAge) {
-  return (request, response, next) => {
-    if (request.method === "GET")
-      response.set("Cache-Control", `public, max-age=${maxAge}`);
-    next();
-  };
+export function requestFormatter(request) {
+  const parts = [
+    request.method,
+    request.path,
+    formatObject(request.query),
+    formatObject(request.body),
+  ];
+  return parts.join(" ");
 }
 
-export function logRequests(
-  formatter = (request) => [request.path, request.query, request.body],
-) {
+export function errorFormatter(error) {
+  return { error: error.message };
+}
+
+export function logRequests(formatter = requestFormatter) {
   return (request, response, next) => {
     const { logger } = request.app.locals;
-    request.startTime = new Date().getTime();
     logger.info(formatter(request));
     next();
   };
 }
 
-export function logErrors(error, request, response, next) {
-  const { name, message } = error;
-  request.app.locals.logger.error(error);
-
-  // return less descriptive errors in production
-  response.status(500).json(isProduction ? name : `${name}: ${message}`);
-}
-
-/**
- * Passes async errors to error-handling middleware
- * @param {function} fn - An asynchronous middleware function
- * @returns The middleware function decorated with an error handler
- */
-export function withAsync(fn) {
-  return async (request, response, next) => {
-    try {
-      return await fn(request, response, next);
-    } catch (error) {
-      next(error);
-    }
+export function logErrors(formatter = errorFormatter) {
+  return (error, request, response, next) => {
+    const { logger } = request.app.locals;
+    logger.error(formatObject(error));
+    response
+      .status(400)
+      .json({
+        error:
+          "An error occurred processing your request. Please try again later.",
+      });
   };
 }
