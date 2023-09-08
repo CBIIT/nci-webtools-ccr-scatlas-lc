@@ -1,39 +1,49 @@
 import express from "express";
-import http from "http";
-import helmet from "helmet";
-import getLogger from "./services/logger.js";
-import forkCluster from "./services/cluster.js";
-import { logErrors } from "./services/middleware.js";
+import { createLogger } from "./services/logger.js";
 import { createApi } from "./services/api.js";
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { validateEnvironment } from "./services/environment.js";
+import { isMainModule } from "./services/utils.js";
 
-const production = process.env.NODE_ENV === "production";
-const logger = getLogger("scatlas-lc");
-
-export async function createApp() {
-  const app = express();
-  app.locals.logger = logger;
-  logger.info(`Started worker process, parsing schema...`);
-
-  app.use(helmet({
-    contentSecurityPolicy: false,
-    hsts: false,
-  }));
-  app.use(logErrors);
-  app.use("/api", await createApi());
-  return app;
+// if this module is the main module, start the app
+if (isMainModule(import.meta)) {
+  const env = process.env;
+  validateEnvironment(env);
+  await main(env);
 }
 
-export default async function main() {
-  const app = await createApp();
-
-  const server = app.listen(process.env.PORT, () => {
-    logger.info(`Application is running on port: ${process.env.PORT}`);
+/**
+ * Creates and starts an express app given a specified environment.
+ * @param {object} env
+ * @returns {Promise<import("http").Server>} a node http server
+ */
+export async function main(env) {
+  const { APP_PORT, APP_NAME, SERVER_TIMEOUT } = env;
+  const serverTimeout = +SERVER_TIMEOUT || 1000 * 60 * 15;
+  const app = await createApp(env);
+  const server = app.listen(APP_PORT, () => {
+    app.locals.logger.info(`${APP_NAME} started on port ${APP_PORT}`);
   });
+  server.setTimeout(serverTimeout);
   return server;
 }
 
-main()
+/**
+ * Creates an express app given a specified environment.
+ * @param {object} env
+ * @returns {Promise<express.Application>} an Express app
+ */
+export async function createApp(env) {
+  const { APP_NAME, LOG_LEVEL } = env;
+  const app = express();
 
+  // if behind a proxy, use the first x-forwarded-for address as the client's ip address
+  app.set("trust proxy", true);
+  app.set("json spaces", 2);
+  app.set("x-powered-by", false);
 
+  // register services as app locals
+  app.locals.logger = createLogger(APP_NAME, LOG_LEVEL);
+  app.use("/api", await createApi(env));
+
+  return app;
+}
