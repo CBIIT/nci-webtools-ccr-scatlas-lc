@@ -69,8 +69,8 @@ export default function TCellCounts() {
         accessor: "t_cell_mean",
         Filter: RangeFilter,
         filter: "between",
-        minPlaceholder: "Enter min percent",
-        maxPlaceholder: "Enter max percent",
+        minPlaceholder: "Enter min mean",
+        maxPlaceholder: "Enter max mean",
         aria: "T Cell Mean",
         Cell: ({ value }) => (
           <span>
@@ -97,8 +97,8 @@ export default function TCellCounts() {
         accessor: "cd4_cell_mean",
         Filter: RangeFilter,
         filter: "between",
-        minPlaceholder: "Enter min percent",
-        maxPlaceholder: "Enter max percent",
+        minPlaceholder: "Enter min mean",
+        maxPlaceholder: "Enter max mean",
         aria: "CD4+ Mean",
         Cell: ({ value }) => (
           <span>
@@ -125,9 +125,9 @@ export default function TCellCounts() {
         accessor: "cd8_cell_mean",
         Filter: RangeFilter,
         filter: "between",
-        minPlaceholder: "Enter min percent",
-        maxPlaceholder: "Enter max percent",
-        aria: "CD8+ Expressing",
+        minPlaceholder: "Enter min mean",
+        maxPlaceholder: "Enter max mean",
+        aria: "CD8+ Mean",
         Cell: ({ value }) => (
           <span>
             {value}

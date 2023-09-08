@@ -65,7 +65,7 @@ export default function TumorCellCounts() {
         filter: "between",
         minPlaceholder: "Enter min mean",
         maxPlaceholder: "Enter max mean",
-        aria: "Tumor Cell Expressing",
+        aria: "Tumor Cell Mean",
         Cell: ({ value }) => (
           <span>
             {value}
@@ -79,7 +79,7 @@ export default function TumorCellCounts() {
         filter: "between",
         minPlaceholder: "Enter min mean",
         maxPlaceholder: "Enter max mean",
-        aria: "Tumor Cell Expressing",
+        aria: "Normal Cell Mean",
         Cell: ({ value }) => (
           <span>
             {value}
