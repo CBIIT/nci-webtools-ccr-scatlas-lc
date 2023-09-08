@@ -10,7 +10,7 @@ export const cd4Query = selector({
 
 export const cd4StatsQuery = selector({
   key: "tCell.cd4StatsQuery",
-  get: ({ get }) => query("/api/query", { table: "cd4_cell_stats", columns: "gene,count"}),
+  get: ({ get }) => query("/api/query", { table: "cd4_cell_stats", columns: "gene,count,mean"}),
 });
 
 export const cd4GeneExpressionQuery = selectorFamily({
@@ -32,7 +32,7 @@ export const cd8Query = selector({
 
 export const cd8StatsQuery = selector({
   key: "tCell.cd8StatsQuery",
-  get: ({ get }) => query("/api/query", { table: "cd8_cell_stats", columns: "gene,count", raw: true }),
+  get: ({ get }) => query("/api/query", { table: "cd8_cell_stats", columns: "gene,count,mean", raw: true }),
 });
 
 export const cd8GeneExpressionQuery = selectorFamily({
@@ -53,7 +53,7 @@ export const tCellQuery = selector({
 
 export const tCellStatsQuery = selector({
   key: "tCell.tCellStatsQuery",
-  get: ({ get }) => query("/api/query", { table: "t_cell_stats", columns: "gene,count", raw: true }),
+  get: ({ get }) => query("/api/query", { table: "t_cell_stats", columns: "gene,count,mean", raw: true }),
 });
 
 export const tCellGeneExpressionQuery = selectorFamily({

@@ -2,10 +2,21 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { tumorCellsStatsQuery, plotOptionsState , tumorCellsQuery} from "./multi-regional.state";
+import { tumorCellsStatsQuery, normalCellsStatsQuery, plotOptionsState , tumorCellsQuery} from "./multi-regional.state";
 
 export default function MultiRegionalCellCounts() {
-  const geneCounts = useRecoilValue(tumorCellsStatsQuery);
+  const tumorStats = useRecoilValue(tumorCellsStatsQuery);
+  const normalStats = useRecoilValue(normalCellsStatsQuery);
+  const geneCounts =  tumorStats.map((tumor, i) => {
+    return({
+      gene: tumor.gene,
+      tumor_cell_count: tumor.count,
+      tumor_cell_mean: tumor.mean,
+      normal_cell_count: normalStats[i].count,
+      normal_cell_mean: normalStats[i].mean
+    })
+  })
+
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const setGene = useCallback(
     (gene) => {
@@ -35,7 +46,7 @@ export default function MultiRegionalCellCounts() {
       },
       {
         Header: "Cells Expressing",
-        accessor: "count",
+        accessor: "tumor_cell_count",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",

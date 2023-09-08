@@ -10,7 +10,7 @@ export const tumorCellsQuery = selector({
 
 export const tumorCellsStatsQuery = selector({
   key: "multiregional.tumorStatsQuery",
-  get: ({ get }) => query("/api/query", { table: "multiregional_tumor_cell_stats", columns: "gene,count"}),
+  get: ({ get }) => query("/api/query", { table: "multiregional_tumor_cell_stats", columns: "gene,count,mean"}),
 });
 
 export const tumorGeneExpressionQuery = selectorFamily({
@@ -32,7 +32,7 @@ export const normalCellsQuery = selector({
 
 export const normalCellsStatsQuery = selector({
   key: "multiregional.normalStatsQuery",
-  get: ({ get }) => query("/api/query", { table: "multiregional_normal_cell_stats", columns: "gene,count" }),
+  get: ({ get }) => query("/api/query", { table: "multiregional_normal_cell_stats", columns: "gene,count,mean" }),
 });
 
 export const normalGeneExpressionQuery = selectorFamily({
