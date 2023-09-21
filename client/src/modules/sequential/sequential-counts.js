@@ -60,6 +60,20 @@ export default function SequentialCellCounts() {
         ),
       },
       {
+        Header: "Cells Expressing (Non-Malignant)",
+        accessor: "normal_cell_count",
+        Filter: RangeFilter,
+        filter: "between",
+        minPlaceholder: "Enter min percent",
+        maxPlaceholder: "Enter max percent",
+        aria: "Normal Cell Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {(value / tumorCell.length*100).toFixed(1)}
+          </span>
+        ),
+      },
+      {
         Header: "Malignant Cells Normalized Expression Level",
         accessor: "tumor_cell_mean",
         Filter: RangeFilter,

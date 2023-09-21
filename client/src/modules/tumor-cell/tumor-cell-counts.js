@@ -45,13 +45,27 @@ export default function TumorCellCounts() {
         aria: "Tumor Cell Gene",
       },
       {
-        Header: "Cells Expressing",
+        Header: "Cells Expressing (Malignant)",
         accessor: "tumor_cell_count",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",
         maxPlaceholder: "Enter max percent",
         aria: "Tumor Cell Expressing",
+        Cell: ({ value }) => (
+          <span>
+            {(value / tumorCell.length*100).toFixed(1)}
+          </span>
+        ),
+      },
+      {
+        Header: "Cells Expressing (Non-Malignant)",
+        accessor: "normal_cell_count",
+        Filter: RangeFilter,
+        filter: "between",
+        minPlaceholder: "Enter min percent",
+        maxPlaceholder: "Enter max percent",
+        aria: "Normal Cell Expressing",
         Cell: ({ value }) => (
           <span>
             {(value / tumorCell.length*100).toFixed(1)}
