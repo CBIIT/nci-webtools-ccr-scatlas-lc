@@ -2,7 +2,7 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { tumorCellsStatsQuery, normalCellsStatsQuery, plotOptionsState , tumorCellsQuery} from "./sequential.state";
+import { tumorCellsStatsQuery, normalCellsStatsQuery, plotOptionsState , tumorCellsQuery, normalCellsQuery } from "./sequential.state";
 
 export default function SequentialCellCounts() {
   const tumorStats = useRecoilValue(tumorCellsStatsQuery);
@@ -27,6 +27,7 @@ export default function SequentialCellCounts() {
     [plotOptions, setPlotOptions],
   );
   const tumorCell = useRecoilValue(tumorCellsQuery);
+  const normalCell = useRecoilValue(normalCellsQuery);
 
   const columns = useMemo(
     (_) => [
@@ -69,7 +70,7 @@ export default function SequentialCellCounts() {
         aria: "Normal Cell Expressing",
         Cell: ({ value }) => (
           <span>
-            {(value / tumorCell.length*100).toFixed(1)}
+            {(value / normalCell.length*100).toFixed(1)}
           </span>
         ),
       },
