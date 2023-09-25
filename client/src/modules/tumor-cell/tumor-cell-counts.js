@@ -26,7 +26,7 @@ export default function TumorCellCounts() {
     [plotOptions, setPlotOptions],
   );
   const tumorCell = useRecoilValue(tumorCellsQuery);
-
+  const normalCell = useRecoilValue(normalCellsQuery);
   const columns = useMemo(
     (_) => [
       {
@@ -68,7 +68,7 @@ export default function TumorCellCounts() {
         aria: "Normal Cell Expressing",
         Cell: ({ value }) => (
           <span>
-            {(value / tumorCell.length*100).toFixed(1)}
+            {(value / normalCell.length*100).toFixed(1)}
           </span>
         ),
       },
