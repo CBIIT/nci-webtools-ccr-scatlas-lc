@@ -22,6 +22,17 @@ export default function TumorCellPlots() {
   const normalGeneExpression = useRecoilValue(
     normalGeneExpressionQuery(gene),
   );
+
+  const normalCellColors = [
+    "#4682B4",
+    "#FF7F24",
+    "#8B4513",
+    "#ED82B4",
+    "#F7EC37",
+    "#EE2C2C",  
+    "#228B22",
+  ]
+
   const defaultLayout = {
     xaxis: {
       title: "t-SNE 1",
@@ -143,7 +154,7 @@ export default function TumorCellPlots() {
         </Col>
         <Col xl={6}>
           <Plot
-            data={getTraces(normalCells, traceConfig, gene)}
+            data={getTraces(normalCells, traceConfig, gene, normalCellColors)}
             layout={merge({}, defaultLayout, {
               title: [
                 `<b>Non-malignant Cells (n=${normalCells.length})</b>`,

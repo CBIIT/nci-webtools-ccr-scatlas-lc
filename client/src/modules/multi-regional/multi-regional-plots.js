@@ -22,6 +22,17 @@ export default function MultiRegionalCellPlots() {
   const normalGeneExpression = useRecoilValue(
     normalGeneExpressionQuery(gene),
   );
+
+  const normalCellColors = [
+    "#4682B4",
+    "#FF7F24",
+    "#8B4513",
+    "#ED82B4",
+    "#228B22",
+    "#F7EC37",
+    "#EE2C2C",  
+  ]
+
   const defaultLayout = {
     xaxis: {
       title: "t-SNE 1",
@@ -37,6 +48,7 @@ export default function MultiRegionalCellPlots() {
     legend: {
       itemsizing: "constant",
       itemwidth: 40,
+      traceOrder: "reverse",
     },
     hovermode: "closest",
     uirevision: gene || 1,
@@ -143,7 +155,7 @@ export default function MultiRegionalCellPlots() {
         </Col>
         <Col xl={6}>
           <Plot
-            data={getTraces(normalCells, traceConfig, gene)}
+            data={getTraces(normalCells, traceConfig, gene, normalCellColors)}
             layout={merge({}, defaultLayout, {
               title: [
                 `<b>Non-malignant Cells (n=${normalCells.length})</b>`,

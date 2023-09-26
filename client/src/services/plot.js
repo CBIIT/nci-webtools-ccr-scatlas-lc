@@ -16,7 +16,8 @@ function extent(array) {
 export function getTraces(
   records,
   config,
-  gene
+  gene,
+  colorArray = colors
 ) {
   const valueIndex = gene || "type";
   const groups = groupBy(records, "type");
@@ -25,8 +26,8 @@ export function getTraces(
     : [null, null];
   const formatNumber = (value, precision = 4) =>
     isNumber(value) ? +value.toPrecision(precision) : value;
-
-  return Object.entries(groups).map(([key, values], i) => {
+    
+  const toReturn = Object.entries(groups).sort((a,b) => a[0] > b[0]).map(([key, values], i) => {
     return (
       merge(
         {
@@ -38,7 +39,7 @@ export function getTraces(
           type: "scattergl",
           hoverinfo: "text+name",
           marker: {
-            color: !gene ? colors[i % colors.length] : values.map((v) => v[valueIndex]),
+            color: !gene ? colorArray[i % colorArray.length] : values.map((v) => v[valueIndex]),
             cmin: minValue,
             cmax: maxValue,
             showscale: i === 0,
@@ -47,6 +48,7 @@ export function getTraces(
         config,
       )
     )
-  }
-  );
+  })
+
+  return toReturn;
 }
