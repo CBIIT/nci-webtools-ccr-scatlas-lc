@@ -22,7 +22,31 @@ export default function SequentialCellPlots() {
   const normalGeneExpression = useRecoilValue(
     normalGeneExpressionQuery(gene),
   );
-
+  const tumorCellColors = [
+    "#CD69C9",
+    "#8B4789",
+    "#D02090",
+    "#B4CDCD",
+    "#FF7F24",
+    "#CD661D",
+    "#8B4513",
+    "#FCBBA1",
+    "#FC9272",
+    "#FB6A4A",
+    "#CB181D",
+    "#CDBE70",
+    "#8B814C",
+    "#90EE90",
+    "#008B00",
+    "#006400",
+    "#63B8FF",
+    "#4682B4",
+    "#4876FF",
+    "#27408B",
+    "#551A8B",
+    "#7FFFD4",
+    "#458B74",
+  ]
   const normalCellColors = [
     "#4682B4",
     "#FF7F24",
@@ -137,7 +161,7 @@ export default function SequentialCellPlots() {
       <Row>
         <Col xl={6}>
           <Plot
-            data={getTraces(tumorCells, traceConfig, gene)}
+            data={getTraces(tumorCells, traceConfig, gene, tumorCellColors)}
             layout={merge({}, defaultLayout, {
               title: [
                 `<b>Malignant Cells (n=${tumorCells.length})</b>`,

@@ -23,6 +23,26 @@ export default function MultiRegionalCellPlots() {
     normalGeneExpressionQuery(gene),
   );
 
+  const tumorCellColors = [
+    "#FFD700",
+    "#FF8C00",
+    "#8B5A00",
+    "#ADFF2F",
+    "#32CD32",
+    "#00868B",
+    "#D3D3D3",
+    "#7A7A7A",
+    "#00EEEE",
+    "#B0C4DE",
+    "#3A5FCD",
+    "#FFC0CB",
+    "#CD919E",
+    "#EEAEEE",
+    "#FF00FF",
+    "#AB82FF",
+    "#551A8B",
+  ]
+
   const normalCellColors = [
     "#4682B4",
     "#FF7F24",
@@ -137,7 +157,7 @@ export default function MultiRegionalCellPlots() {
       <Row>
         <Col xl={6}>
           <Plot
-            data={getTraces(tumorCells, traceConfig, gene)}
+            data={getTraces(tumorCells, traceConfig, gene, tumorCellColors)}
             layout={merge({}, defaultLayout, {
               title: [
                 `<b>Malignant Cells (n=${tumorCells.length})</b>`,
