@@ -26,8 +26,8 @@ export function getTraces(
     : [null, null];
   const formatNumber = (value, precision = 4) =>
     isNumber(value) ? +value.toPrecision(precision) : value;
-    
-  const toReturn = Object.entries(groups).sort((a,b) => a[0] > b[0]).map(([key, values], i) => {
+
+  const toReturn = Object.entries(groups).sort((a,b) => a[0].localeCompare(b[0])).map(([key, values], i) => {
     return (
       merge(
         {
