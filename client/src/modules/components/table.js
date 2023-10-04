@@ -46,7 +46,7 @@ export function RangeFilter({
   );
 }
 
-export default function Table({ columns, data, options }) {
+export default function Table({ columns, data, options,selectedGene }) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -114,10 +114,12 @@ export default function Table({ columns, data, options }) {
           <tbody {...getTableBodyProps()}>
             {page.map((row) => {
               prepareRow(row);
+              const isHighlighted = row.original.gene === selectedGene;
+
               return (
-                <tr {...row.getRowProps()}>
+                <tr {...row.getRowProps()} >
                   {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                    <td {...cell.getCellProps()} className={isHighlighted ? "highlighted-row" : ""}>{cell.render("Cell")}</td>
                   ))}
                 </tr>
               );

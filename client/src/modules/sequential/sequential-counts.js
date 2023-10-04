@@ -118,5 +118,5 @@ export default function SequentialCellCounts() {
     defaultCanSort: true,
   };
 
-  return <Table columns={columns} data={data} options={options} />;
+  return <Table columns={columns} data={data} options={options} selectedGene={plotOptions.gene}/>;
 }
