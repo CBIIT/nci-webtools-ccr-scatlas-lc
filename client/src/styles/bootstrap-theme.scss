@@ -54,7 +54,7 @@ a,
       background-color: #fff;
     }
   }
-  .navbar-nav .dropdown .nav-link{
+  .navbar-nav .dropdown .nav-link {
     font-weight: 700;
     color: white;
     transition: all 0.1s;
@@ -86,4 +86,8 @@ a,
     border-bottom: 4px solid #14819b;
     color: $primary;
   }
+}
+
+.right-0 {
+  right: 0;
 }

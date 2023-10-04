@@ -6,7 +6,11 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Select from "../components/select";
-import { plotOptionsState, cd4StatsQuery } from "./t-cell.state";
+import {
+  plotOptionsState,
+  cd4StatsQuery,
+  defaultPlotOptions,
+} from "./t-cell.state";
 
 export default function TCellPlotOptions() {
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
@@ -24,12 +28,17 @@ export default function TCellPlotOptions() {
     mergeFormValues({ [name]: value });
   }
 
+  function handleReset() {
+    mergePlotOptions(defaultPlotOptions);
+    mergeFormValues(defaultPlotOptions);
+  }
+
   function handleBlur() {
     mergeFormValues(plotOptions);
   }
 
   return (
-    <Row as={Form}>
+    <form className="row" onReset={handleReset}>
       <Col md={3}>
         <Form.Group controlId="cell-size" className="mb-3">
           <Form.Label>Cell Size</Form.Label>
@@ -75,14 +84,25 @@ export default function TCellPlotOptions() {
               value={plotOptions.gene}
             />
             <Button
-              variant="primary"
-              disabled={!plotOptions.gene}
+              variant="light"
+              className="bg-transparent border-0 right-0 position-absolute"
               onClick={(_) => mergePlotOptions({ gene: null })}>
+              &times;
+            </Button>
+          </InputGroup>
+        </Form.Group>
+      </Col>
+
+      <Col md={3}>
+        <Form.Group>
+          <Form.Label className="d-none d-md-block">&zwj;</Form.Label>
+          <InputGroup>
+            <Button variant="primary" type="reset">
               Reset
             </Button>
           </InputGroup>
         </Form.Group>
       </Col>
-    </Row>
+    </form>
   );
 }

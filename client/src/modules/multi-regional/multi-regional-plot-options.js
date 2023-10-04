@@ -6,13 +6,18 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Select from "../components/select";
-import { plotOptionsState, tumorCellsQuery, tumorCellsStatsQuery } from "./multi-regional.state";
+import {
+  plotOptionsState,
+  tumorCellsQuery,
+  tumorCellsStatsQuery,
+  defaultPlotOptions,
+} from "./multi-regional.state";
 
 export default function MultiRegionalCellPlotOptions() {
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const [formValues, setFormValues] = useState(plotOptions);
   const lookup = useRecoilValue(tumorCellsStatsQuery);
-  const tumor = useRecoilValue(tumorCellsQuery)
+  const tumor = useRecoilValue(tumorCellsQuery);
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
   const mergeFormValues = (obj) => setFormValues({ ...formValues, ...obj });
 
@@ -24,12 +29,17 @@ export default function MultiRegionalCellPlotOptions() {
     mergeFormValues({ [name]: value });
   }
 
+  function handleReset() {
+    mergePlotOptions(defaultPlotOptions);
+    mergeFormValues(defaultPlotOptions);
+  }
+
   function handleBlur() {
     mergeFormValues(plotOptions);
   }
 
   return (
-    <Row as={Form}>
+    <form className="row" onReset={handleReset}>
       <Col md={3}>
         <Form.Group controlId="cell-size" className="mb-3">
           <Form.Label>Cell Size</Form.Label>
@@ -73,14 +83,25 @@ export default function MultiRegionalCellPlotOptions() {
               value={plotOptions.gene}
             />
             <Button
-              variant="primary"
-              disabled={!plotOptions.gene}
+              variant="light"
+              className="bg-transparent border-0 right-0 position-absolute"
               onClick={(_) => mergePlotOptions({ gene: null })}>
+              &times;
+            </Button>
+          </InputGroup>
+        </Form.Group>
+      </Col>
+
+      <Col md={3}>
+        <Form.Group>
+          <Form.Label className="d-none d-md-block">&zwj;</Form.Label>
+          <InputGroup>
+            <Button variant="primary" type="reset">
               Reset
             </Button>
           </InputGroup>
         </Form.Group>
       </Col>
-    </Row>
+    </form>
   );
 }

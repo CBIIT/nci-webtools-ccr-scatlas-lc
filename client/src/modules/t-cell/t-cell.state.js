@@ -1,16 +1,19 @@
 import { atom, selector, selectorFamily } from "recoil";
 import { query } from "../../services/query";
 
-
 export const cd4Query = selector({
   key: "tCell.cd4Query",
-  get: ({ get }) => query("/api/query", { table: "cd4_cell", columns: "x,y,type" }),
+  get: ({ get }) =>
+    query("/api/query", { table: "cd4_cell", columns: "x,y,type" }),
 });
-
 
 export const cd4StatsQuery = selector({
   key: "tCell.cd4StatsQuery",
-  get: ({ get }) => query("/api/query", { table: "cd4_cell_stats", columns: "gene,count,mean"}),
+  get: ({ get }) =>
+    query("/api/query", {
+      table: "cd4_cell_stats",
+      columns: "gene,count,mean",
+    }),
 });
 
 export const cd4GeneExpressionQuery = selectorFamily({
@@ -18,21 +21,26 @@ export const cd4GeneExpressionQuery = selectorFamily({
   get: (gene) => async (_) =>
     gene
       ? await query("/api/query", {
-        table: `cd4_cell`,
-        columns: `x,y,type,${gene}`,
-      })
+          table: `cd4_cell`,
+          columns: `x,y,type,${gene}`,
+        })
       : [],
 });
 
-
 export const cd8Query = selector({
   key: "tCell.cd8Query",
-  get: ({ get }) => query("/api/query", { table: "cd8_cell", columns: "x,y,type" }),
+  get: ({ get }) =>
+    query("/api/query", { table: "cd8_cell", columns: "x,y,type" }),
 });
 
 export const cd8StatsQuery = selector({
   key: "tCell.cd8StatsQuery",
-  get: ({ get }) => query("/api/query", { table: "cd8_cell_stats", columns: "gene,count,mean", raw: true }),
+  get: ({ get }) =>
+    query("/api/query", {
+      table: "cd8_cell_stats",
+      columns: "gene,count,mean",
+      raw: true,
+    }),
 });
 
 export const cd8GeneExpressionQuery = selectorFamily({
@@ -40,20 +48,26 @@ export const cd8GeneExpressionQuery = selectorFamily({
   get: (gene) => async (_) =>
     gene
       ? await query("/api/query", {
-        table: `cd8_cell`,
-        columns: `x,y,type,${gene}`,
-      })
+          table: `cd8_cell`,
+          columns: `x,y,type,${gene}`,
+        })
       : [],
 });
 
 export const tCellQuery = selector({
   key: "tCell.tCellQuery",
-  get: ({ get }) => query("/api/query", { table: "t_cell", columns: "x,y,type" }),
+  get: ({ get }) =>
+    query("/api/query", { table: "t_cell", columns: "x,y,type" }),
 });
 
 export const tCellStatsQuery = selector({
   key: "tCell.tCellStatsQuery",
-  get: ({ get }) => query("/api/query", { table: "t_cell_stats", columns: "gene,count,mean", raw: true }),
+  get: ({ get }) =>
+    query("/api/query", {
+      table: "t_cell_stats",
+      columns: "gene,count,mean",
+      raw: true,
+    }),
 });
 
 export const tCellGeneExpressionQuery = selectorFamily({
@@ -61,16 +75,17 @@ export const tCellGeneExpressionQuery = selectorFamily({
   get: (gene) => async (_) =>
     gene
       ? await query("/api/query", {
-        table: `t_cell`,
-        columns: `x,y,type,${gene}`,
-      })
+          table: `t_cell`,
+          columns: `x,y,type,${gene}`,
+        })
       : [],
 });
 
+export const defaultPlotOptions = { size: 4, opacity: 0.8, gene: null };
 
 export const plotOptionsState = atom({
   key: "tCell.plotOptionsState",
-  default: { size: 4, opacity: 0.8, gene: null },
+  default: defaultPlotOptions,
 });
 
 export const tabState = atom({
