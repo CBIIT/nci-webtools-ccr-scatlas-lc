@@ -2,3 +2,8 @@
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-icons/font/bootstrap-icons.css";
 @import "./bootstrap-theme.scss";
+
+/* Add this to your CSS file */
+.highlighted-row {
+    background-color: yellow !important;
+  }
