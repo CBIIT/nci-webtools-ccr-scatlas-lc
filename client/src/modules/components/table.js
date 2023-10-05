@@ -5,6 +5,8 @@ import InputGroup from "react-bootstrap/InputGroup";
 import Pagination from "react-bootstrap/Pagination";
 import { useTable, useFilters, usePagination, useSortBy } from "react-table";
 import classNames from "classnames";
+import { useEffect, useRef } from "react";
+
 
 export function TextFilter({
   column: { filterValue, setFilter, placeholder, aria },
@@ -72,11 +74,37 @@ export default function Table({ columns, data, options,selectedGene }) {
     useFilters,
     useSortBy,
     usePagination,
-  );
+    );
+    const tableRef = useRef(null);
+
+    useEffect(() => {
+      // Find the index of the highlighted row
+      const highlightedRowIndex = rows.findIndex(
+        (row) => row.original.gene === selectedGene
+      );
+  
+      // Calculate the page that contains the highlighted row
+      const highlightedRowPage = Math.floor(highlightedRowIndex / pageSize);
+  
+      // Navigate to the page if it's not the current page
+      if (highlightedRowPage !== pageIndex) {
+        gotoPage(highlightedRowPage);
+      }
+  
+      // Scroll to the highlighted row after a delay
+      const scrollDelay = 100;
+      setTimeout(() => {
+        const highlightedRow = tableRef.current.querySelector(".highlighted-row");
+        if (highlightedRow) {
+          highlightedRow.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, scrollDelay);
+    }, [selectedGene, pageIndex, pageSize, rows, gotoPage]);
+    
 
   return (
     <>
-      <div className="table-responsive">
+      <div className="table-responsive" ref={tableRef}>
         <BootstrapTable {...getTableProps()} hover bordered>
           <thead>
             {headerGroups.map((headerGroup) => (
