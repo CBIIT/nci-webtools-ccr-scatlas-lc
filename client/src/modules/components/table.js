@@ -7,7 +7,6 @@ import { useTable, useFilters, usePagination, useSortBy } from "react-table";
 import classNames from "classnames";
 import { useEffect, useRef } from "react";
 
-
 export function TextFilter({
   column: { filterValue, setFilter, placeholder, aria },
 }) {
@@ -48,7 +47,7 @@ export function RangeFilter({
   );
 }
 
-export default function Table({ columns, data, options,selectedGene }) {
+export default function Table({ columns, data, options, selectedGene }) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -74,33 +73,32 @@ export default function Table({ columns, data, options,selectedGene }) {
     useFilters,
     useSortBy,
     usePagination,
-    );
-    const tableRef = useRef(null);
+  );
+  const tableRef = useRef(null);
 
-    useEffect(() => {
-      // Find the index of the highlighted row
-      const highlightedRowIndex = rows.findIndex(
-        (row) => row.original.gene === selectedGene
-      );
-  
-      // Calculate the page that contains the highlighted row
-      const highlightedRowPage = Math.floor(highlightedRowIndex / pageSize);
-  
-      // Navigate to the page if it's not the current page
-      if (highlightedRowPage !== pageIndex) {
-        gotoPage(highlightedRowPage);
-      }
-  
-      // Scroll to the highlighted row after a delay
-      const scrollDelay = 100;
-      setTimeout(() => {
-        const highlightedRow = tableRef.current.querySelector(".highlighted-row");
-        if (highlightedRow) {
-          highlightedRow.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }, scrollDelay);
-    }, [selectedGene, pageIndex, pageSize, rows, gotoPage]);
-    
+  useEffect(() => {
+    // Find the index of the highlighted row
+    const highlightedRowIndex = rows.findIndex(
+      (row) => row.original.gene === selectedGene,
+    );
+
+    // Calculate the page that contains the highlighted row
+    const highlightedRowPage = Math.floor(highlightedRowIndex / pageSize);
+
+    // Navigate to the page if it's not the current page
+    if (highlightedRowPage !== pageIndex) {
+      gotoPage(highlightedRowPage);
+    }
+
+    // Scroll to the highlighted row after a delay
+    // const scrollDelay = 100;
+    // setTimeout(() => {
+    //   const highlightedRow = tableRef.current.querySelector(".highlighted-row");
+    //   if (highlightedRow) {
+    //     highlightedRow.scrollIntoView({ behavior: "smooth", block: "center" });
+    //   }
+    // }, scrollDelay);
+  }, [selectedGene, pageIndex, pageSize, rows, gotoPage]);
 
   return (
     <>
@@ -145,9 +143,13 @@ export default function Table({ columns, data, options,selectedGene }) {
               const isHighlighted = row.original.gene === selectedGene;
 
               return (
-                <tr {...row.getRowProps()} >
+                <tr {...row.getRowProps()}>
                   {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()} className={isHighlighted ? "highlighted-row" : ""}>{cell.render("Cell")}</td>
+                    <td
+                      {...cell.getCellProps()}
+                      className={isHighlighted ? "highlighted-row" : ""}>
+                      {cell.render("Cell")}
+                    </td>
                   ))}
                 </tr>
               );
