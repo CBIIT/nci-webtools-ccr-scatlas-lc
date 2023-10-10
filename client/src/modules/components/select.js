@@ -12,6 +12,8 @@ export default function Select({
   placeholder,
   value,
 }) {
+  // Move "All genes" to the beginning of the options array
+  //const updatedOptions = ["All genes", ...options];
   const [inputItems, setInputItems] = useState(options);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -40,6 +42,8 @@ export default function Select({
     },
     // Add onSelectedItemChange here
     onSelectedItemChange: ({ selectedItem }) => {
+      //const selectedValue = selectedItem === "All genes" ? null : selectedItem;
+      //selectItem(selectedValue);
       selectItem(selectedItem);
       setIsInputFocused(false); // Set isInputFocused to false after selecting an item
       setIsOpen(false); // Close the dropdown after selecting an item
@@ -57,9 +61,10 @@ export default function Select({
   };
 
   const handleDropdownBlur = () => {
-    if (!isInputFocused) {
-      setIsOpen(false); // Close the dropdown when dropdown loses focus
-    }
+    console.log("Dropdown blurred");
+    //if (!isInputFocused) {
+    setIsOpen(false); // Close the dropdown when dropdown loses focus
+    //}
   };
 
   return (
@@ -89,7 +94,7 @@ export default function Select({
           "w-100",
           // isOpen && "show",
           // Add "show" class when input is focused or user types
-          { show: isInputFocused || isOpen },
+          { show: isOpen },
         )}
         style={{ top: "40px", maxHeight: "200px" }}
         tabIndex={-1} // Make the dropdown focusable
