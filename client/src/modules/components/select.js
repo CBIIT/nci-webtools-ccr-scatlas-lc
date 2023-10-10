@@ -62,9 +62,6 @@ export default function Select({
     }
   };
 
-  console.log("isInputFocused -- ", isInputFocused);
-  console.log("isOpen ", isOpen);
-
   return (
     <>
       <label className="visually-hidden" {...getLabelProps()}>
