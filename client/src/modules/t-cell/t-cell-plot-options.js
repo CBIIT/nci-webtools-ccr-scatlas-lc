@@ -78,13 +78,13 @@ export default function TCellPlotOptions() {
               name="gene"
               label="Gene"
               className="form-control"
-              //onChange={(gene) => mergePlotOptions({ gene })}
-              //options={lookup.map((e) => e.gene)}
+              // onChange={(gene) => mergePlotOptions({ gene })}
+              // options={lookup.map((e) => e.gene)}
               onChange={(selectedGene) => {
-              const gene = selectedGene === 'All genes' ? null : selectedGene;
-              mergePlotOptions({ gene });
+                const gene = selectedGene === "All genes" ? null : selectedGene;
+                mergePlotOptions({ gene });
               }}
-              options={[...lookup.map((e) => e.gene), "All genes"]}  // Include "All genes" in the options array
+              options={[...lookup.map((e) => e.gene), "All genes"]} // Include "All genes" in the options array
               placeholder="All genes"
               value={plotOptions.gene}
             />
