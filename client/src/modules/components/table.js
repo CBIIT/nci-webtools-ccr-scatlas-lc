@@ -89,15 +89,6 @@ export default function Table({ columns, data, options, selectedGene }) {
     if (highlightedRowPage !== pageIndex) {
       gotoPage(highlightedRowPage);
     }
-
-    // Scroll to the highlighted row after a delay
-    // const scrollDelay = 100;
-    // setTimeout(() => {
-    //   const highlightedRow = tableRef.current.querySelector(".highlighted-row");
-    //   if (highlightedRow) {
-    //     highlightedRow.scrollIntoView({ behavior: "smooth", block: "center" });
-    //   }
-    // }, scrollDelay);
   }, [selectedGene, pageIndex, pageSize, rows, gotoPage]);
 
   return (
