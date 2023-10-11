@@ -84,7 +84,7 @@ export default function TCellPlotOptions() {
                 const gene = selectedGene === "All genes" ? null : selectedGene;
                 mergePlotOptions({ gene });
               }}
-              options={[...lookup.map((e) => e.gene), "All genes"]} // Include "All genes" in the options array
+              options={["All genes", ...lookup.map((e) => e.gene)]} // Include "All genes" in the options array
               placeholder="All genes"
               value={plotOptions.gene}
             />
