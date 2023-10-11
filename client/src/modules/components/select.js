@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useCombobox } from "downshift";
 import classNames from "classnames";
 
@@ -13,11 +13,15 @@ export default function Select({
   value,
 }) {
   // Move "All genes" to the beginning of the options array
-  //const updatedOptions = ["All genes", ...options];
+  const updatedOptions = ["All genes", ...options];
   const [inputItems, setInputItems] = useState(options);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  useEffect(() => {
+    // Set inputItems to include "All genes" when the component mounts
+    setInputItems(updatedOptions);
+  }, []);
 
   const {
     getLabelProps,
@@ -32,14 +36,16 @@ export default function Select({
     items: inputItems,
     selectedItem: value,
     onInputValueChange: ({ inputValue }) => {
-      setInputItems(
-        options.filter((option) =>
+      setInputItems([
+        "All genes",
+        ...options.filter((option) =>
           option.toLowerCase().startsWith(inputValue.toLowerCase()),
         ),
-      );
+      ]);
       setInputValue(inputValue);
-      setIsOpen(!!inputValue); // Close the dropdown when there's input
+      setIsOpen(!!inputValue);
     },
+
     // Add onSelectedItemChange here
     onSelectedItemChange: ({ selectedItem }) => {
       //const selectedValue = selectedItem === "All genes" ? null : selectedItem;

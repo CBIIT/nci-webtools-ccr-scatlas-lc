@@ -78,12 +78,12 @@ export default function TumorCellPlotOptions() {
               label="Gene"
               className="form-control"
               // onChange={(gene) => mergePlotOptions({ gene })}
-              // options={lookup.map((e) => e.gene)}
+              options={lookup.map((e) => e.gene)}
               onChange={(selectedGene) => {
                 const gene = selectedGene === "All genes" ? null : selectedGene;
                 mergePlotOptions({ gene });
               }}
-              options={["All genes", ...lookup.map((e) => e.gene)]} // Include "All genes" in the options array
+              //options={["All genes", ...lookup.map((e) => e.gene)]} // Include "All genes" in the options array
               placeholder="All genes"
               value={plotOptions.gene}
             />
