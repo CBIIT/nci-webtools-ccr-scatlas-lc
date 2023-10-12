@@ -13,12 +13,7 @@ function extent(array) {
   return [min, max];
 }
 
-export function getTraces(
-  records,
-  config,
-  gene,
-  colorArray = colors
-) {
+export function getTraces(records, config, gene, colorArray = colors) {
   const valueIndex = gene || "type";
   const groups = groupBy(records, "type");
   const [minValue, maxValue] = gene
@@ -27,9 +22,10 @@ export function getTraces(
   const formatNumber = (value, precision = 4) =>
     isNumber(value) ? +value.toPrecision(precision) : value;
 
-  const toReturn = Object.entries(groups).sort((a,b) => a[0].localeCompare(b[0])).map(([key, values], i) => {
-    return (
-      merge(
+  const toReturn = Object.entries(groups)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([key, values], i) => {
+      return merge(
         {
           name: key,
           x: values.map((v) => v.x),
@@ -39,16 +35,29 @@ export function getTraces(
           type: "scattergl",
           hoverinfo: "text+name",
           marker: {
-            color: !gene ? colorArray[i % colorArray.length] : values.map((v) => v[valueIndex]),
+            color: !gene
+              ? colorArray[i % colorArray.length]
+              : values.map((v) => v[valueIndex]),
             cmin: minValue,
             cmax: maxValue,
             showscale: i === 0,
           },
         },
         config,
-      )
-    )
-  })
+      );
+    });
 
   return toReturn;
+}
+
+export function hasWebglSupport() {
+  try {
+    const canvas = document.createElement("canvas");
+    return (
+      !!window.WebGLRenderingContext &&
+      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+    );
+  } catch (e) {
+    return false;
+  }
 }
