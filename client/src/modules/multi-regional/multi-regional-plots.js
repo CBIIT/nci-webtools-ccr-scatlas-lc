@@ -16,12 +16,8 @@ export default function MultiRegionalCellPlots() {
   const tumorCells = useRecoilValue(tumorCellsQuery);
   const normalCells = useRecoilValue(normalCellsQuery);
   const { size, opacity, gene } = useRecoilValue(plotOptionsState);
-  const tumorGeneExpression = useRecoilValue(
-    tumorGeneExpressionQuery(gene),
-  );
-  const normalGeneExpression = useRecoilValue(
-    normalGeneExpressionQuery(gene),
-  );
+  const tumorGeneExpression = useRecoilValue(tumorGeneExpressionQuery(gene));
+  const normalGeneExpression = useRecoilValue(normalGeneExpressionQuery(gene));
 
   const tumorCellColors = [
     "#FFD700",
@@ -41,7 +37,7 @@ export default function MultiRegionalCellPlots() {
     "#FF00FF",
     "#AB82FF",
     "#551A8B",
-  ]
+  ];
 
   const normalCellColors = [
     "#4682B4",
@@ -50,12 +46,32 @@ export default function MultiRegionalCellPlots() {
     "#ED82B4",
     "#228B22",
     "#F7EC37",
-    "#EE2C2C",  
-  ]
+    "#EE2C2C",
+  ];
 
   const defaultLayout = {
     xaxis: {
       title: "t-SNE 1",
+      zeroline: false,
+      scaleanchor: "y",
+      scaleratio: 1,
+      constrain: "domain",
+    },
+    yaxis: {
+      title: "t-SNE 2",
+      zeroline: false,
+    },
+    legend: {
+      itemsizing: "constant",
+      itemwidth: 40,
+      traceOrder: "reverse",
+    },
+    hovermode: "closest",
+    uirevision: gene || 1,
+  };
+  const defaultLayoutNonMalignant = {
+    xaxis: {
+      title: "UMAP",
       zeroline: false,
       scaleanchor: "y",
       scaleratio: 1,
@@ -120,11 +136,7 @@ export default function MultiRegionalCellPlots() {
       <Row>
         <Col xl={6}>
           <Plot
-            data={getTraces(
-              tumorGeneExpression,
-              traceConfig,
-              gene
-            )}
+            data={getTraces(tumorGeneExpression, traceConfig, gene)}
             layout={merge({}, defaultLayout, {
               title: `<b>Malignant Cells: ${gene} (n=${tumorGeneExpression.length})</b>`,
             })}
@@ -136,11 +148,7 @@ export default function MultiRegionalCellPlots() {
         </Col>
         <Col xl={6}>
           <Plot
-            data={getTraces(
-              normalGeneExpression,
-              traceConfig,
-              gene
-            )}
+            data={getTraces(normalGeneExpression, traceConfig, gene)}
             layout={merge({}, defaultLayout, {
               title: `<b>Non-malignant Cells: ${gene} (n=${normalGeneExpression.length})</b>`,
             })}
@@ -176,7 +184,7 @@ export default function MultiRegionalCellPlots() {
         <Col xl={6}>
           <Plot
             data={getTraces(normalCells, traceConfig, gene, normalCellColors)}
-            layout={merge({}, defaultLayout, {
+            layout={merge({}, defaultLayoutNonMalignant, {
               title: [
                 `<b>Non-malignant Cells (n=${normalCells.length})</b>`,
                 '<span style="font-size: 12px; color: grey; ">Click legend to show/hide types</span>',
