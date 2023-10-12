@@ -7,7 +7,7 @@ import MultiRegional from "./modules/pages/multi-regional";
 import Sequential from "./modules/pages/sequential";
 
 import "./styles/main.scss";
-
+import WebglAlert from "./modules/components/webgl-alert";
 
 export default function App() {
   const { pathname } = useLocation();
@@ -35,21 +35,35 @@ export default function App() {
           <Navbar.Toggle aria-controls="app-navbar" />
           <Navbar.Collapse id="app-navbar">
             <Nav className="mr-auto">
-            <NavLink
-                  key={`navlink-0`}
-                  exact
-                  activeClassName="active"
-                  className="nav-link px-3 text-uppercase font-weight-bold"
-                  to="/">
-                  Home
-                </NavLink>
+              <NavLink
+                key={`navlink-0`}
+                exact
+                activeClassName="active"
+                className="nav-link px-3 text-uppercase font-weight-bold"
+                to="/">
+                Home
+              </NavLink>
 
               <Dropdown className="">
-                <Dropdown.Toggle as={"button"} className={`nav-link px-3 text-uppercase font-weight-bold ${pathname !== "/" ? "active" : ""}`}>{pathname === "/" ? "Cohorts" : links.find((e) => e.route === pathname).title}</Dropdown.Toggle>
+                <Dropdown.Toggle
+                  as={"button"}
+                  className={`nav-link px-3 text-uppercase font-weight-bold ${
+                    pathname !== "/" ? "active" : ""
+                  }`}>
+                  {pathname === "/"
+                    ? "Cohorts"
+                    : links.find((e) => e.route === pathname).title}
+                </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  <Dropdown.Item as={NavLink} to="/nci-clarity">NCI-CLARITY</Dropdown.Item>
-                  <Dropdown.Item as={NavLink} to="/multi-regional">Multi-Regional</Dropdown.Item>
-                  <Dropdown.Item as={NavLink} to="/sequential">Sequential NCI-CLARITY</Dropdown.Item>
+                  <Dropdown.Item as={NavLink} to="/nci-clarity">
+                    NCI-CLARITY
+                  </Dropdown.Item>
+                  <Dropdown.Item as={NavLink} to="/multi-regional">
+                    Multi-Regional
+                  </Dropdown.Item>
+                  <Dropdown.Item as={NavLink} to="/sequential">
+                    Sequential NCI-CLARITY
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </Nav>
@@ -58,6 +72,7 @@ export default function App() {
       </Navbar>
 
       <div id="content" className="bg-light flex-grow-auto">
+        <WebglAlert />
         <Route exact path="/" component={Home} />
         <Route exact path="/nci-clarity" component={NCIClarity} />
         <Route exact path="/multi-regional" component={MultiRegional} />
