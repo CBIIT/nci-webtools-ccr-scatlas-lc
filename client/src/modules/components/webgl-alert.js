@@ -6,7 +6,7 @@ export default function WebglAlert() {
   if (hasWebgl) return null;
 
   return (
-    <div className="container my-2">
+    <div className="container my-4">
       <div className="alert alert-danger" role="alert">
         <div className="row">
           <div className="col-auto">
@@ -16,8 +16,8 @@ export default function WebglAlert() {
           <div className="col">
             <h4 className="alert-heading">WebGL Is Not Enabled</h4>
             <p>
-              WebGL is not enabled in your browser. Please enable hardware
-              acceleration if available.
+              WebGL is not enabled in your browser. Please follow the
+              instructions below to "use hardware acceleration when available".
             </p>
             <div className="fw-bold">Chrome</div>
             <ol>

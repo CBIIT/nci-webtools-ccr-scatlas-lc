@@ -70,9 +70,9 @@ export default function App() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
+      <WebglAlert />
 
       <div id="content" className="bg-light flex-grow-auto">
-        <WebglAlert />
         <Route exact path="/" component={Home} />
         <Route exact path="/nci-clarity" component={NCIClarity} />
         <Route exact path="/multi-regional" component={MultiRegional} />
