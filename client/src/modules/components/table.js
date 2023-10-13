@@ -102,8 +102,6 @@ export default function Table({ columns, data, options, selectedGene }) {
     setHighlightedRowIndex(newHighlightedRowIndex);
   }, [selectedGene, pageIndex, pageSize, rows, gotoPage, highlightedRowIndex]);
 
-  console.log("highlightedRowIndex --=== ", highlightedRowIndex);
-
   return (
     <>
       <div className="table-responsive" ref={tableRef}>
