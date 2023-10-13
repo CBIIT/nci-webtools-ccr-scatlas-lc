@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import BootstrapTable from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
@@ -48,6 +48,10 @@ export function RangeFilter({
 }
 
 export default function Table({ columns, data, options, selectedGene }) {
+  const [highlightedRowIndex, setHighlightedRowIndex] = useState(null);
+  const navigationRef = useRef(null); // Add this line to create navigationRef
+  const [gotoPageTimes, setGoToPageTimes] = useState(0);
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -77,19 +81,28 @@ export default function Table({ columns, data, options, selectedGene }) {
   const tableRef = useRef(null);
 
   useEffect(() => {
-    // Find the index of the highlighted row
-    const highlightedRowIndex = rows.findIndex(
+    const newHighlightedRowIndex = rows.findIndex(
       (row) => row.original.gene === selectedGene,
     );
 
-    // Calculate the page that contains the highlighted row
-    const highlightedRowPage = Math.floor(highlightedRowIndex / pageSize);
+    if (newHighlightedRowIndex !== highlightedRowIndex) {
+      setGoToPageTimes(1);
 
-    // Navigate to the page if it's not the current page
-    if (highlightedRowPage !== pageIndex) {
-      gotoPage(highlightedRowPage);
+      // Navigate to the page if it's not the current page
     }
-  }, [selectedGene, pageIndex, pageSize, rows, gotoPage]);
+    if (gotoPageTimes === 1) {
+      const highlightedRowPage = Math.floor(newHighlightedRowIndex / pageSize);
+      gotoPage(highlightedRowPage);
+      setGoToPageTimes(0);
+      // Update the navigation reference
+      navigationRef.current = highlightedRowPage;
+    }
+
+    // Update the highlighted row index after the navigation is complete
+    setHighlightedRowIndex(newHighlightedRowIndex);
+  }, [selectedGene, pageIndex, pageSize, rows, gotoPage, highlightedRowIndex]);
+
+  console.log("highlightedRowIndex --=== ", highlightedRowIndex);
 
   return (
     <>
