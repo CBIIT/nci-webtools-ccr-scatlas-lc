@@ -23,6 +23,18 @@ export default function Select({
     setInputItems(updatedOptions);
   }, []);
 
+  const handleSelectedItemChange = ({ selectedItem }) => {
+    // Close the dropdown before invoking onChange
+    setIsOpen(false);
+
+    // Invoke onChange after closing the dropdown
+    onChange(selectedItem);
+
+    // Rest of your code
+    selectItem(selectedItem);
+    setIsInputFocused(false);
+  };
+
   const {
     getLabelProps,
     getMenuProps,
@@ -43,18 +55,15 @@ export default function Select({
         ),
       ]);
       setInputValue(inputValue);
-      setIsOpen(!!inputValue);
+      if (isInputFocused) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
     },
 
     // Add onSelectedItemChange here
-    onSelectedItemChange: ({ selectedItem }) => {
-      //const selectedValue = selectedItem === "All genes" ? null : selectedItem;
-      //selectItem(selectedValue);
-      selectItem(selectedItem);
-      setIsInputFocused(false); // Set isInputFocused to false after selecting an item
-      setIsOpen(false); // Close the dropdown after selecting an item
-      onChange(selectedItem);
-    },
+    onSelectedItemChange: handleSelectedItemChange,
   });
 
   const handleInputFocus = () => {
@@ -67,7 +76,6 @@ export default function Select({
   };
 
   const handleDropdownBlur = () => {
-    console.log("Dropdown blurred");
     //if (!isInputFocused) {
     setIsOpen(false); // Close the dropdown when dropdown loses focus
     //}
