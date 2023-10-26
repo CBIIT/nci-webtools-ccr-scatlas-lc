@@ -78,7 +78,7 @@ export default function MultiRegionalCellPlots() {
       constrain: "domain",
     },
     yaxis: {
-      title: "t-SNE 2",
+      title: "UMAP 2",
       zeroline: false,
     },
     legend: {
