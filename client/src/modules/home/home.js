@@ -2,7 +2,7 @@ import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 import { ReactComponent as HomeImage } from "./home.svg";
 
 export default function Home() {
@@ -62,29 +62,55 @@ export default function Home() {
                   GSE229772
                 </a>
               </p> */}
-              <p>Current single-cell data used for scAtlasLC includes the following:</p>
+              <p>
+                Current single-cell data used for scAtlasLC includes the
+                following:
+              </p>
               <ul>
-                <li>NCI-CLARITY (<a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE151530
-                </a>). This cohort includes single cell transcriptomic profiles of 52,789 cells derived from 46 hepatocellular carcinoma (HCC) and intrahepatic cholangiocarcinoma (iCCA) biopsies of 37 patients.</li>
-                <li>Multi-Regional (<a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE189903
-                </a>). This cohort consists of 112,506 cells from four HCC patients and three iCCA patients. For each tumor, single cells from five separate regions, i.e., three tumor cores (T1, T2, and T3), one tumor border (B) and an adjacent normal tissue (N), were prepared. A total of 34 samples were included in this study.</li>
-                <li>Sequential NCI-CLARITY (<a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE229772
-                </a>). This cohort consists of 57,567 cells from nine HCC patients and two iCCA patients. Tumor biopsies were collected longitudinally, with two to five samples for each patient. Overall, 31 samples were collected across all patients.</li>
+                <li>
+                  NCI-CLARITY (
+                  <a
+                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530"
+                    className="ms-1"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    GSE151530
+                  </a>
+                  ). This cohort includes single cell transcriptomic profiles of
+                  52,789 cells derived from 46 hepatocellular carcinoma (HCC)
+                  and intrahepatic cholangiocarcinoma (iCCA) biopsies of 37
+                  patients.
+                </li>
+                <li>
+                  Multi-Regional (
+                  <a
+                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903"
+                    className="ms-1"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    GSE189903
+                  </a>
+                  ). This cohort consists of 112,506 cells from four HCC
+                  patients and three iCCA patients. For each tumor, single cells
+                  from five separate regions, i.e., three tumor cores (T1, T2,
+                  and T3), one tumor border (B) and an adjacent normal tissue
+                  (N), were prepared. A total of 34 samples were included in
+                  this study.
+                </li>
+                <li>
+                  Sequential NCI-CLARITY (
+                  <a
+                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772"
+                    className="ms-1"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    GSE229772
+                  </a>
+                  ). This cohort consists of 57,567 cells from nine HCC patients
+                  and two iCCA patients. Tumor biopsies were collected
+                  longitudinally, with two to five samples for each patient.
+                  Overall, 31 samples were collected across all patients.
+                </li>
               </ul>
             </Col>
           </Row>
@@ -92,7 +118,11 @@ export default function Home() {
             <Col className="mb-3" xl={4}>
               <Link to="/nci-clarity" rel="noreferrer">
                 <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img height="368px" variant="top" src={"/images/nci_clarity_HD.svg"} />
+                  <Card.Img
+                    height="368px"
+                    variant="top"
+                    src={"/images/nci_clarity_HD.svg"}
+                  />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>
@@ -107,7 +137,11 @@ export default function Home() {
             <Col className="mb-3" xl={4}>
               <Link to="/multi-regional" rel="noreferrer">
                 <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img height="368px" variant="top" src={"/images/multiregional_HD.svg"} />
+                  <Card.Img
+                    height="368px"
+                    variant="top"
+                    src={"/images/multiregional_HD.svg"}
+                  />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>
@@ -122,7 +156,11 @@ export default function Home() {
             <Col className="mb-3" xl={4}>
               <Link to="/sequential" rel="noreferrer">
                 <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img height="368px" variant="top" src={"/images/sequential_nci_clarity_HD.svg"} />
+                  <Card.Img
+                    height="368px"
+                    variant="top"
+                    src={"/images/sequential_nci_clarity_HD.svg"}
+                  />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>

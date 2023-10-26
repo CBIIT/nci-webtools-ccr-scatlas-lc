@@ -20,11 +20,11 @@ export default function App() {
     },
     {
       route: "/multi-regional",
-      title: "Multi-Regional",
+      title: "MULTI-REGIONAL",
     },
     {
       route: "/sequential",
-      title: "Sequential NCI-CLARITY",
+      title: "SEQUENTIAL NCI-CLARITY",
     },
   ];
 
@@ -59,10 +59,10 @@ export default function App() {
                     NCI-CLARITY
                   </Dropdown.Item>
                   <Dropdown.Item as={NavLink} to="/multi-regional">
-                    Multi-Regional
+                    MULTI-REGIONAL
                   </Dropdown.Item>
                   <Dropdown.Item as={NavLink} to="/sequential">
-                    Sequential NCI-CLARITY
+                    SEQUENTIAL NCI-CLARITY
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>

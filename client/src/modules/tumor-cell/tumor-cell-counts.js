@@ -82,7 +82,7 @@ export default function TumorCellCounts() {
         minPlaceholder: "Enter min mean",
         maxPlaceholder: "Enter max mean",
         aria: "Tumor Cell Mean",
-        Cell: ({ value }) => <span>{value}</span>,
+        Cell: ({ value }) => <span>{Number(value).toFixed(2)}</span>,
       },
       {
         Header: "Normalized Expression Levels (Non-Malignant)",
@@ -92,7 +92,7 @@ export default function TumorCellCounts() {
         minPlaceholder: "Enter min mean",
         maxPlaceholder: "Enter max mean",
         aria: "Normal Cell Mean",
-        Cell: ({ value }) => <span>{value}</span>,
+        Cell: ({ value }) => <span>{Number(value).toFixed(2)}</span>,
       },
     ],
     [setGene],
