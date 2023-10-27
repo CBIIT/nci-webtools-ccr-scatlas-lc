@@ -2,24 +2,32 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { cd4StatsQuery, cd8StatsQuery, tCellStatsQuery, plotOptionsState, cd4Query, cd8Query, tCellQuery } from "./t-cell.state";
+import {
+  cd4StatsQuery,
+  cd8StatsQuery,
+  tCellStatsQuery,
+  plotOptionsState,
+  cd4Query,
+  cd8Query,
+  tCellQuery,
+} from "./t-cell.state";
 
 export default function TCellCounts() {
   const cd4Stats = useRecoilValue(cd4StatsQuery);
   const cd8Stats = useRecoilValue(cd8StatsQuery);
-  const tCellStats = useRecoilValue(tCellStatsQuery)
+  const tCellStats = useRecoilValue(tCellStatsQuery);
 
   const geneCounts = cd4Stats.map((cd4, i) => {
-    return({
+    return {
       gene: cd4.gene,
       cd4_cell_count: cd4.count,
       cd4_cell_mean: cd4.mean.toExponential(6),
       cd8_cell_count: cd8Stats[i].count,
       cd8_cell_mean: cd8Stats[i].mean.toExponential(6),
       t_cell_count: tCellStats[i].count,
-      t_cell_mean: tCellStats[i].mean.toExponential(6)
-    })
-  })
+      t_cell_mean: tCellStats[i].mean.toExponential(6),
+    };
+  });
 
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const setGene = useCallback(
@@ -51,7 +59,7 @@ export default function TCellCounts() {
         aria: "T Cell Gene",
       },
       {
-        Header: "T Cells Expressing",
+        Header: "% Cells Expressing (T cells)",
         accessor: "t_cell_count",
         Filter: RangeFilter,
         filter: "between",
@@ -59,27 +67,21 @@ export default function TCellCounts() {
         maxPlaceholder: "Enter max percent",
         aria: "T Cell Expressing",
         Cell: ({ value }) => (
-          <span>
-            {(value / tCellQueryV.length*100).toFixed(1)}
-          </span>
+          <span>{((value / tCellQueryV.length) * 100).toFixed(1)}</span>
         ),
       },
       {
-        Header: "T Cells Normalized Expression Level",
+        Header: "Normalized Expression Level (T Cells)",
         accessor: "t_cell_mean",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min mean",
         maxPlaceholder: "Enter max mean",
         aria: "T Cell Mean",
-        Cell: ({ value }) => (
-          <span>
-            {value}
-          </span>
-        ),
+        Cell: ({ value }) => <span>{Number(value).toFixed(2)}</span>,
       },
       {
-        Header: "CD4+ T Cells Expressing",
+        Header: "% Cells Expressing (CD4+)",
         accessor: "cd4_cell_count",
         Filter: RangeFilter,
         filter: "between",
@@ -87,27 +89,21 @@ export default function TCellCounts() {
         maxPlaceholder: "Enter max percent",
         aria: "CD4+ Expressing",
         Cell: ({ value }) => (
-          <span>
-            {(value / cd4QueryV.length*100).toFixed(1)}
-          </span>
+          <span>{((value / cd4QueryV.length) * 100).toFixed(1)}</span>
         ),
       },
       {
-        Header: "CD4+ T Cells Normalized Expression Level",
+        Header: "Normalized Expression Level (CD4+)",
         accessor: "cd4_cell_mean",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min mean",
         maxPlaceholder: "Enter max mean",
         aria: "CD4+ Mean",
-        Cell: ({ value }) => (
-          <span>
-            {value}
-          </span>
-        ),
+        Cell: ({ value }) => <span>{Number(value).toFixed(2)}</span>,
       },
       {
-        Header: "CD8+ T Cells Expressing",
+        Header: "% Cells Expressing (CD8+)",
         accessor: "cd8_cell_count",
         Filter: RangeFilter,
         filter: "between",
@@ -115,24 +111,18 @@ export default function TCellCounts() {
         maxPlaceholder: "Enter max percent",
         aria: "CD8+ Expressing",
         Cell: ({ value }) => (
-          <span>
-            {(value / cd8QueryV.length*100).toFixed(1)}
-          </span>
+          <span>{((value / cd8QueryV.length) * 100).toFixed(1)}</span>
         ),
       },
       {
-        Header: "CD8+ T Cells Normalized Expression Level",
+        Header: "Normalized Expression Level (CD8+)",
         accessor: "cd8_cell_mean",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min mean",
         maxPlaceholder: "Enter max mean",
         aria: "CD8+ Mean",
-        Cell: ({ value }) => (
-          <span>
-            {value}
-          </span>
-        ),
+        Cell: ({ value }) => <span>{Number(value).toFixed(2)}</span>,
       },
     ],
     [setGene],
@@ -147,5 +137,12 @@ export default function TCellCounts() {
     defaultCanSort: true,
   };
 
-  return <Table columns={columns} data={data} options={options} selectedGene={plotOptions.gene}/>;
+  return (
+    <Table
+      columns={columns}
+      data={data}
+      options={options}
+      selectedGene={plotOptions.gene}
+    />
+  );
 }
