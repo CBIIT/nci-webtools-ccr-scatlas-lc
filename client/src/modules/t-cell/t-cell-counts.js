@@ -21,10 +21,13 @@ export default function TCellCounts() {
     return {
       gene: cd4.gene,
       cd4_cell_count: cd4.count,
+      cd4_cell_percent: cd4.percent,
       cd4_cell_mean: cd4.mean.toExponential(6),
       cd8_cell_count: cd8Stats[i].count,
+      cd8_cell_percent: cd8Stats[i].percent,
       cd8_cell_mean: cd8Stats[i].mean.toExponential(6),
       t_cell_count: tCellStats[i].count,
+      t_cell_percent: tCellStats[i].percent,
       t_cell_mean: tCellStats[i].mean.toExponential(6),
     };
   });
@@ -60,15 +63,13 @@ export default function TCellCounts() {
       },
       {
         Header: "% Cells Expressing (T cells)",
-        accessor: "t_cell_count",
+        accessor: "t_cell_percent",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",
         maxPlaceholder: "Enter max percent",
         aria: "T Cell Expressing",
-        Cell: ({ value }) => (
-          <span>{((value / tCellQueryV.length) * 100).toFixed(1)}</span>
-        ),
+        Cell: ({ value }) => <span>{Number(value).toFixed(1)}</span>,
       },
       {
         Header: "Normalized Expression Level (T Cells)",
@@ -82,15 +83,13 @@ export default function TCellCounts() {
       },
       {
         Header: "% Cells Expressing (CD4+)",
-        accessor: "cd4_cell_count",
+        accessor: "cd4_cell_percent",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",
         maxPlaceholder: "Enter max percent",
         aria: "CD4+ Expressing",
-        Cell: ({ value }) => (
-          <span>{((value / cd4QueryV.length) * 100).toFixed(1)}</span>
-        ),
+        Cell: ({ value }) => <span>{Number(value).toFixed(1)}</span>,
       },
       {
         Header: "Normalized Expression Level (CD4+)",
@@ -104,15 +103,13 @@ export default function TCellCounts() {
       },
       {
         Header: "% Cells Expressing (CD8+)",
-        accessor: "cd8_cell_count",
+        accessor: "cd8_cell_percent",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",
         maxPlaceholder: "Enter max percent",
         aria: "CD8+ Expressing",
-        Cell: ({ value }) => (
-          <span>{((value / cd8QueryV.length) * 100).toFixed(1)}</span>
-        ),
+        Cell: ({ value }) => <span>{Number(value).toFixed(1)}</span>,
       },
       {
         Header: "Normalized Expression Level (CD8+)",
