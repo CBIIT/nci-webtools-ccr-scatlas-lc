@@ -20,6 +20,8 @@ export default function MultiRegionalCellCounts() {
       tumor_cell_mean: tumor.mean.toExponential(6),
       normal_cell_count: normalStats[i].count,
       normal_cell_mean: normalStats[i].mean.toExponential(6),
+      tumor_cell_percent: tumor.percent,
+      normal_cell_percent: normalStats[i].percent,
     };
   });
 
@@ -53,27 +55,23 @@ export default function MultiRegionalCellCounts() {
       },
       {
         Header: "% Cells Expressing (Malignant)",
-        accessor: "tumor_cell_count",
+        accessor: "tumor_cell_percent",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",
         maxPlaceholder: "Enter max percent",
         aria: "Tumor Cell Expressing",
-        Cell: ({ value }) => (
-          <span>{((value / tumorCell.length) * 100).toFixed(1)}</span>
-        ),
+        Cell: ({ value }) => <span>{Number(value).toFixed(1)}</span>,
       },
       {
         Header: "% Cells Expressing (Non-Malignant)",
-        accessor: "normal_cell_count",
+        accessor: "normal_cell_percent",
         Filter: RangeFilter,
         filter: "between",
         minPlaceholder: "Enter min percent",
         maxPlaceholder: "Enter max percent",
         aria: "Normal Cell Expressing",
-        Cell: ({ value }) => (
-          <span>{((value / normalCell.length) * 100).toFixed(1)}</span>
-        ),
+        Cell: ({ value }) => <span>{Number(value).toFixed(1)}</span>,
       },
       {
         Header: "Normalized Expression Levels (Malignant)",

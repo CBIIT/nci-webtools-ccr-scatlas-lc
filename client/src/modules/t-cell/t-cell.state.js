@@ -12,7 +12,7 @@ export const cd4StatsQuery = selector({
   get: ({ get }) =>
     query("/api/query", {
       table: "cd4_cell_stats",
-      columns: "gene,count,mean",
+      columns: "gene,count,mean,percent",
     }),
 });
 
@@ -38,7 +38,7 @@ export const cd8StatsQuery = selector({
   get: ({ get }) =>
     query("/api/query", {
       table: "cd8_cell_stats",
-      columns: "gene,count,mean",
+      columns: "gene,count,mean,percent",
       raw: true,
     }),
 });
@@ -65,7 +65,7 @@ export const tCellStatsQuery = selector({
   get: ({ get }) =>
     query("/api/query", {
       table: "t_cell_stats",
-      columns: "gene,count,mean",
+      columns: "gene,count,mean,percent",
       raw: true,
     }),
 });

@@ -12,7 +12,7 @@ export const tumorCellsStatsQuery = selector({
   get: ({ get }) =>
     query("/api/query", {
       table: "tumor_cell_stats",
-      columns: "gene,count,mean",
+      columns: "gene,count,mean,percent",
     }),
 });
 
@@ -38,7 +38,7 @@ export const normalCellsStatsQuery = selector({
   get: ({ get }) =>
     query("/api/query", {
       table: "normal_cell_stats",
-      columns: "gene,count,mean",
+      columns: "gene,count,mean,percent",
     }),
 });
 
