@@ -24,7 +24,7 @@ export default function App() {
     },
     {
       route: "/sequential",
-      title: "SEQUENTIAL NCI-CLARITY",
+      title: "Sequential NCI-CLARITY",
     },
   ];
 
@@ -62,7 +62,7 @@ export default function App() {
                     MULTI-REGIONAL
                   </Dropdown.Item>
                   <Dropdown.Item as={NavLink} to="/sequential">
-                    SEQUENTIAL NCI-CLARITY
+                    Sequential NCI-CLARITY
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
