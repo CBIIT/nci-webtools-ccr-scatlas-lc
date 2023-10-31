@@ -3,6 +3,9 @@ import { createLogger } from "./services/logger.js";
 import { createApi } from "./services/api.js";
 import { validateEnvironment } from "./services/environment.js";
 import { isMainModule } from "./services/utils.js";
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
 
 // if this module is the main module, start the app
 if (isMainModule(import.meta)) {
