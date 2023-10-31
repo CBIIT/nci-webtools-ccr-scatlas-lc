@@ -39,7 +39,7 @@ type_stats <- long_data %>%
   pivot_wider(
     names_from = type,
     values_from = c(count, percent, mean, stdev, stderr),
-    names_sep = "_"
+    names_sep = "."
   )
 
 # Join overall and type-specific statistics
