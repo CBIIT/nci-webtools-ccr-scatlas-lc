@@ -71,7 +71,7 @@ export default function MultiRegionalCellPlots() {
   };
   const defaultLayoutNonMalignant = {
     xaxis: {
-      title: "UMAP",
+      title: "UMAP 1",
       zeroline: false,
       scaleanchor: "y",
       scaleratio: 1,
