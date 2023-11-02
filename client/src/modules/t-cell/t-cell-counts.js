@@ -80,6 +80,12 @@ export default function TCellCounts() {
         maxPlaceholder: "Enter max mean",
         aria: "T Cell Mean",
         Cell: ({ value }) => <span>{Number(value).toFixed(2)}</span>,
+        sortType: (rowA, rowB, columnId) => {
+          // Convert the values to numbers for numeric comparison
+          const valueA = parseFloat(rowA.values[columnId]);
+          const valueB = parseFloat(rowB.values[columnId]);
+          return valueA - valueB;
+        },
       },
       {
         Header: "% Cells Expressing (CD4+)",
