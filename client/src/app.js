@@ -59,7 +59,7 @@ export default function App() {
                     NCI-CLARITY
                   </Dropdown.Item>
                   <Dropdown.Item as={NavLink} to="/multi-regional">
-                    MULTI-REGIONAL
+                    Multi-Regional
                   </Dropdown.Item>
                   <Dropdown.Item as={NavLink} to="/sequential">
                     Sequential NCI-CLARITY
