@@ -5,7 +5,7 @@ import { Container } from "react-bootstrap";
 export default function MultiRegional() {
   return (
     <Container className="py-3">
-      <h1 className="text-primary h3 mt-2">MULTI-REGIONAL</h1>
+      <h1 className="text-primary h3 mt-2">Multi-RegionalL</h1>
       <hr />
       <MultiRegionalCell />
     </Container>
