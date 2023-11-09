@@ -26,7 +26,7 @@ export default function TCellsPlots() {
   const cd8 = useRecoilValue(cd8Query);
   const { size, opacity, gene } = useRecoilValue(plotOptionsState);
   const [tab, setTab] = useRecoilState(tabState);
- 
+
   const tCellGeneExpression = useRecoilValue(tCellGeneExpressionQuery(gene));
   const cd4GeneExpression = useRecoilValue(cd4GeneExpressionQuery(gene));
   const cd8GeneExpression = useRecoilValue(cd8GeneExpressionQuery(gene));
@@ -38,10 +38,12 @@ export default function TCellsPlots() {
       scaleanchor: "y",
       scaleratio: 1,
       constrain: "domain",
+      range: [-70, 70],
     },
     yaxis: {
       title: "t-SNE 2",
       zeroline: false,
+      range: [-90, 90],
     },
     legend: {
       itemsizing: "constant",

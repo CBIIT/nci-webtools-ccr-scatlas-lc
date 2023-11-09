@@ -16,12 +16,8 @@ export default function TumorCellPlots() {
   const tumorCells = useRecoilValue(tumorCellsQuery);
   const normalCells = useRecoilValue(normalCellsQuery);
   const { size, opacity, gene } = useRecoilValue(plotOptionsState);
-  const tumorGeneExpression = useRecoilValue(
-    tumorGeneExpressionQuery(gene),
-  );
-  const normalGeneExpression = useRecoilValue(
-    normalGeneExpressionQuery(gene),
-  );
+  const tumorGeneExpression = useRecoilValue(tumorGeneExpressionQuery(gene));
+  const normalGeneExpression = useRecoilValue(normalGeneExpressionQuery(gene));
 
   const normalCellColors = [
     "#4682B4",
@@ -29,9 +25,9 @@ export default function TumorCellPlots() {
     "#8B4513",
     "#ED82B4",
     "#F7EC37",
-    "#EE2C2C",  
+    "#EE2C2C",
     "#228B22",
-  ]
+  ];
 
   const defaultLayout = {
     xaxis: {
@@ -40,10 +36,12 @@ export default function TumorCellPlots() {
       scaleanchor: "y",
       scaleratio: 1,
       constrain: "domain",
+      range: [-100, 100],
     },
     yaxis: {
       title: "t-SNE 2",
       zeroline: false,
+      range: [-100, 100],
     },
     legend: {
       itemsizing: "constant",
@@ -99,11 +97,7 @@ export default function TumorCellPlots() {
       <Row>
         <Col xl={6}>
           <Plot
-            data={getTraces(
-              tumorGeneExpression,
-              traceConfig,
-              gene
-            )}
+            data={getTraces(tumorGeneExpression, traceConfig, gene)}
             layout={merge({}, defaultLayout, {
               title: `<b>Malignant Cells: ${gene} (n=${tumorGeneExpression.length})</b>`,
             })}
@@ -115,11 +109,7 @@ export default function TumorCellPlots() {
         </Col>
         <Col xl={6}>
           <Plot
-            data={getTraces(
-              normalGeneExpression,
-              traceConfig,
-              gene
-            )}
+            data={getTraces(normalGeneExpression, traceConfig, gene)}
             layout={merge({}, defaultLayout, {
               title: `<b>Non-malignant Cells: ${gene} (n=${normalGeneExpression.length})</b>`,
             })}
