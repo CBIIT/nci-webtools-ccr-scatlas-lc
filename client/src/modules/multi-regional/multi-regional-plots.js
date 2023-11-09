@@ -56,10 +56,12 @@ export default function MultiRegionalCellPlots() {
       scaleanchor: "y",
       scaleratio: 1,
       constrain: "domain",
+      range: [-45, 45],
     },
     yaxis: {
       title: "t-SNE 2",
       zeroline: false,
+      range: [-60, 60],
     },
     legend: {
       itemsizing: "constant",
@@ -76,10 +78,12 @@ export default function MultiRegionalCellPlots() {
       scaleanchor: "y",
       scaleratio: 1,
       constrain: "domain",
+      range: [-20, 10],
     },
     yaxis: {
       title: "UMAP 2",
       zeroline: false,
+      range: [-15, 20],
     },
     legend: {
       itemsizing: "constant",
