@@ -20,7 +20,7 @@ export default function App() {
     },
     {
       route: "/multi-regional",
-      title: "MULTI-REGIONAL",
+      title: "Multi-Regional",
     },
     {
       route: "/sequential",
