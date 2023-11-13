@@ -2,7 +2,12 @@ node_modules
 *.log
 *.db
 *.db-journal
+.env
 server/config.json
 server/logs
 database/import/raw
 .DS_Store
+data
+*.csv.gz
+*.csv
+test.mjs
