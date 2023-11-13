@@ -30,11 +30,17 @@
       gtag("js", new Date());
       gtag("config", "UA-62346354-27");
     </script>
+    <!-- Import web component -->
+    <script src="https://cbiit.github.io/nci-softwaresolutions-elements/components/include-html.js"></script>
   </head>
 
   <body class="d-flex flex-column vh-100" react-cloak>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <header class="flex-grow-0">
+      <!-- Set component's src attribute to url of html snippet -->
+      <include-html
+        src="https://cbiit.github.io/nci-softwaresolutions-elements/banners/government-shutdown.html"
+      ></include-html>
       <div class="container">
         <a href="https://ccr.cancer.gov/" class="h5 mb-1">
           <img
@@ -241,7 +247,7 @@
                   >
                     HHS Vulnerability Disclosure
                   </a>
-                </li>                
+                </li>
               </ul>
             </div>
             <div class="col-lg-3 mb-4">
