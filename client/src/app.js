@@ -5,6 +5,7 @@ import Home from "./modules/home/home";
 import NCIClarity from "./modules/pages/nci-clarity";
 import MultiRegional from "./modules/pages/multi-regional";
 import Sequential from "./modules/pages/sequential";
+import About from "./modules/about/about";
 
 import "./styles/main.scss";
 import WebglAlert from "./modules/components/webgl-alert";
@@ -48,9 +49,9 @@ export default function App() {
                 <Dropdown.Toggle
                   as={"button"}
                   className={`nav-link px-3 text-uppercase font-weight-bold ${
-                    pathname !== "/" ? "active" : ""
+                    pathname !== "/" && pathname !== "/about" ? "active" : ""
                   }`}>
-                  {pathname === "/"
+                  {pathname === "/" || pathname === "/about"
                     ? "Cohorts"
                     : links.find((e) => e.route === pathname).title}
                 </Dropdown.Toggle>
@@ -66,6 +67,15 @@ export default function App() {
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
+
+              <NavLink
+                key={`navlink-5`}
+                exact
+                activeClassName="active"
+                className="nav-link px-3 text-uppercase font-weight-bold"
+                to="/about">
+                About
+              </NavLink>
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -77,6 +87,7 @@ export default function App() {
         <Route exact path="/nci-clarity" component={NCIClarity} />
         <Route exact path="/multi-regional" component={MultiRegional} />
         <Route exact path="/sequential" component={Sequential} />
+        <Route exact path="/about" component={About} />
       </div>
     </>
   );
