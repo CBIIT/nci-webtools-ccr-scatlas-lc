@@ -153,7 +153,7 @@ export default function MultiRegionalCellPlots() {
         <Col xl={6}>
           <Plot
             data={getTraces(normalGeneExpression, traceConfig, gene)}
-            layout={merge({}, defaultLayout, {
+            layout={merge({}, defaultLayoutNonMalignant, {
               title: `<b>Non-malignant Cells: ${gene} (n=${normalGeneExpression.length})</b>`,
             })}
             config={defaultConfig}
