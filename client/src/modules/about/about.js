@@ -29,6 +29,14 @@ export default function About() {
                 <td>Set to 0.1 to increase transparency of the dots.</td>
               </tr>
               <tr>
+                <td>Gene</td>
+                <td>Enter a gene.</td>
+                <td>
+                  Enter EPCAM to generate plots of the expression in malignant
+                  cells and non-malignant cells.
+                </td>
+              </tr>
+              <tr>
                 <td>% Cells Expressing (Malignant)</td>
                 <td>
                   The proportion of cells in expressing a given gene in
