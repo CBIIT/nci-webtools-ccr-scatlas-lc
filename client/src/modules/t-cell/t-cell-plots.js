@@ -52,6 +52,26 @@ export default function TCellsPlots() {
     hovermode: "closest",
     uirevision: gene || 1,
   };
+  const defaultLayoutCD4CD8 = {
+    xaxis: {
+      title: "t-SNE 1",
+      zeroline: false,
+      scaleanchor: "y",
+      scaleratio: 1,
+      constrain: "domain",
+      range: [-15, 10],
+    },
+    yaxis: {
+      title: "t-SNE 2",
+      zeroline: false,
+    },
+    legend: {
+      itemsizing: "constant",
+      itemwidth: 40,
+    },
+    hovermode: "closest",
+    uirevision: gene || 1,
+  };
 
   const defaultConfig = {
     displayModeBar: true,
@@ -197,7 +217,7 @@ export default function TCellsPlots() {
           <Col xl={6}>
             <Plot
               data={getTraces(cd4GeneExpression, traceConfig, gene)}
-              layout={merge({}, defaultLayout, {
+              layout={merge({}, defaultLayoutCD4CD8, {
                 title: `<b>CD4+ T Cells: ${gene}</b>`,
                 annotations: cd4Annotations,
               })}
@@ -210,7 +230,7 @@ export default function TCellsPlots() {
           <Col xl={6}>
             <Plot
               data={getTraces(cd8GeneExpression, traceConfig, gene)}
-              layout={merge({}, defaultLayout, {
+              layout={merge({}, defaultLayoutCD4CD8, {
                 title: `<b>CD8+ T Cells: ${gene}</b>`,
                 annotations: cd8Annotations,
               })}
@@ -268,7 +288,7 @@ export default function TCellsPlots() {
           <Col xl={6}>
             <Plot
               data={getTraces(cd4, traceConfig, gene)}
-              layout={merge({}, defaultLayout, {
+              layout={merge({}, defaultLayoutCD4CD8, {
                 title: [
                   `<b>CD4+ T Cells</b>`,
                   `<span style="font-size: 12px; color: grey; ">Click legend to show/hide types</span>`,
@@ -290,7 +310,7 @@ export default function TCellsPlots() {
           <Col xl={6}>
             <Plot
               data={getTraces(cd8, traceConfig, gene)}
-              layout={merge({}, defaultLayout, {
+              layout={merge({}, defaultLayoutCD4CD8, {
                 title: [
                   `<b>CD8+ T Cells</b>`,
                   `<span style="font-size: 12px;color: grey;border: 1px;">Click legend to show/hide types</span>`,
