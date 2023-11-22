@@ -61,7 +61,7 @@ export default function MultiRegionalCellPlots() {
     yaxis: {
       title: "t-SNE 2",
       zeroline: false,
-      range: [-60, 60],
+      range: [-40, 40],
     },
     legend: {
       itemsizing: "constant",
