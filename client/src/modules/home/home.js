@@ -122,11 +122,12 @@ export default function Home() {
                     height="368px"
                     variant="top"
                     src={"/images/nci_clarity_HD.svg"}
+                    alt="NCI-CLARITY Image"
                   />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>
-                        <h3>NCI-CLARITY</h3>
+                        <h2 className="h3">NCI-CLARITY</h2>
                         <div>52,789 cells</div>
                       </div>
                     </Card.Text>
@@ -141,11 +142,12 @@ export default function Home() {
                     height="368px"
                     variant="top"
                     src={"/images/multiregional_HD.svg"}
+                    alt="Multi-Regional Image"
                   />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>
-                        <h3>Multi-Regional</h3>
+                        <h2 className="h3">Multi-Regional</h2>
                         <div>112,506 cells</div>
                       </div>
                     </Card.Text>
@@ -160,11 +162,12 @@ export default function Home() {
                     height="368px"
                     variant="top"
                     src={"/images/sequential_nci_clarity_HD.svg"}
+                    alt="Sequential NCI-CLARITY Image"
                   />
                   <Card.Body>
                     <Card.Text className="d-flex text-center justify-content-center">
                       <div>
-                        <h3>Sequential NCI-CLARITY</h3>
+                        <h2 className="h3">Sequential NCI-CLARITY</h2>
                         <div>57,567 cells</div>
                       </div>
                     </Card.Text>
