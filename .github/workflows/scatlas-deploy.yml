@@ -1,4 +1,4 @@
-name: Deploy
+name: scAtlasLC Deploy
 on:
   push:
     branches:
