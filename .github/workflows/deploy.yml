@@ -12,16 +12,6 @@ on:
           - qa
           - stage
           - prod
-      rebuild_backend:
-        description: "Rebuild backend image"
-        required: false
-        default: true
-        type: boolean
-      rebuild_frontend:
-        description: "Rebuild frontend image"
-        required: false
-        default: true
-        type: boolean
       run_security_scan:
         description: "Run Trivy security scan"
         required: false
@@ -50,8 +40,6 @@ jobs:
       DOCKER_BUILDKIT: 1
       FRONTEND_CONTAINER_PORT: 80
       BACKEND_CONTAINER_PORT: 9000
-      REBUILD_BACKEND: ${{ github.event_name == 'workflow_dispatch' && inputs.rebuild_backend || true }}
-      REBUILD_FRONTEND: ${{ github.event_name == 'workflow_dispatch' && inputs.rebuild_frontend || true }}
       RUN_SECURITY_SCAN: ${{ github.event_name == 'workflow_dispatch' && inputs.run_security_scan || false }}
       NO_CACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.no_cache || false }}
 
@@ -140,7 +128,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build backend image
-        if: env.REBUILD_BACKEND == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -157,7 +144,7 @@ jobs:
             BUILDKIT_INLINE_CACHE=1
 
       - name: Scan backend image for vulnerabilities
-        if: env.RUN_SECURITY_SCAN == 'true' && env.REBUILD_BACKEND == 'true'
+        if: env.RUN_SECURITY_SCAN == 'true'
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             aquasec/trivy:latest image --timeout 15m \
@@ -165,7 +152,6 @@ jobs:
             ${{ env.BACKEND_IMAGE_LATEST }}
 
       - name: Build frontend image
-        if: env.REBUILD_FRONTEND == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -183,7 +169,7 @@ jobs:
           cache-to: type=registry,ref=${{ env.IMAGE_REPOSITORY }}:frontend-cache,mode=max
 
       - name: Scan frontend image for vulnerabilities
-        if: env.RUN_SECURITY_SCAN == 'true' && env.REBUILD_FRONTEND == 'true'
+        if: env.RUN_SECURITY_SCAN == 'true'
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             aquasec/trivy:latest image --timeout 15m \
