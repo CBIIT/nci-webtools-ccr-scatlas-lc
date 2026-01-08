@@ -42,6 +42,7 @@ jobs:
       BACKEND_CONTAINER_PORT: 9000
       # RUN_SECURITY_SCAN: ${{ github.event_name == 'workflow_dispatch' && inputs.run_security_scan || false }}
       NO_CACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.no_cache || false }}
+      CICD_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-cicd
 
     steps:
       - uses: "actions/checkout@v5"
@@ -86,7 +87,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
         with:
-          role-to-assume: ${{ secrets.CICD_ROLE_ARN }}
+          role-to-assume: ${{ env.CICD_ROLE_ARN }}
           role-session-name: ${{ env.TIER }}-${{ env.APP }}-deploy-${{ env.BRANCH }}
           aws-region: ${{ env.AWS_REGION }}
 
