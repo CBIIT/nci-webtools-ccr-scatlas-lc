@@ -22,7 +22,7 @@ export default function Home() {
             </Col>
 
             <Col md={6}>
-              <h1 className="h3">AAAbout scAtlasLC</h1>
+              <h1 className="h3">About scAtlasLC</h1>
               <p>
                 scAtlasLC (single-cell Atlas in Liver Cancer) is a publicly
                 available data portal of single-cell transcriptomic profiles of
