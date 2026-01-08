@@ -36,7 +36,7 @@ containerDefinitions:
       - name: API_HOST
         value: http://localhost:$BACKEND_CONTAINER_PORT
       - name: TZ
-        value: "$TZ"
+        value: "$TIMEZONE"
     secrets:
       - name: TIMEOUT
         valueFrom: "/analysistools/$TIER/$APP/server_timeout"
