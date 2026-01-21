@@ -29,20 +29,6 @@ The pipeline supports four deployment tiers that map to different AWS environmen
 - `dev` and `qa` → use `development` image tags
 - `stage` and `prod` → use `release` image tags
 
-### Deployment Workflow
-
-#### Manual Deployment
-Deployments are triggered manually via `workflow_dispatch` in GitHub Actions:
-
-1. Navigate to **Actions** → **scAtlasLC Deploy**
-2. Click **Run workflow**
-3. Select the target tier: `dev`, `qa`, `stage`, or `prod`
-4. Optional: Enable `no_cache` to force a clean build without Docker layer caching
-
-#### Branch-Based Deployment (Automated)
-The pipeline can automatically determine the deployment tier based on branch naming:
-- Branch ending with `_dev` → deploys to `dev` environment
-- Other branches → deploys to `qa` environment
 
 ### Deployment Process
 
