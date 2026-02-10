@@ -42,7 +42,7 @@ jobs:
       BACKEND_CONTAINER_PORT: 9000
       # RUN_SECURITY_SCAN: ${{ github.event_name == 'workflow_dispatch' && inputs.run_security_scan || false }}
       NO_CACHE: ${{ github.event_name == 'workflow_dispatch' && inputs.no_cache || false }}
-      CICD_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-cicd
+      CICD_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/power-user-github-actions-cicd
 
     steps:
       - uses: "actions/checkout@v5"
