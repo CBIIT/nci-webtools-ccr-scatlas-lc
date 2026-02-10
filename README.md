@@ -41,7 +41,7 @@ The deployment workflow performs the following steps:
    - Configures ECR repository URLs
 
 2. **AWS Authentication**
-   - Assumes IAM role via GitHub OIDC: `github-actions-cicd`
+   - Assumes IAM role via GitHub OIDC: `power-user-github-actions-cicd`
    - Retrieves environment-specific parameters from AWS Systems Manager Parameter Store:
      - ECS cluster name
      - ECS task definition and service names
