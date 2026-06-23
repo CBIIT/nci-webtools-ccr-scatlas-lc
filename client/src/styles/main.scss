@@ -7,3 +7,11 @@
 .highlighted-row {
     background-color: yellow !important;
   }
+
+/* 3-level main menu (NCIATWP-10322) — nested submenus open to the side.
+   Top-level toggles are styled by the existing `.navbar-dark .navbar-nav .dropdown
+   .nav-link` theme rules (white text, transparent bg, teal active/hover underline);
+   we only add the nested-submenu chevron affordance here. */
+.main-nav .dropdown-item .bi-chevron-right {
+  opacity: 0.6;
+}
