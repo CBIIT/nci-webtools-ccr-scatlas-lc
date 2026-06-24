@@ -13,12 +13,19 @@ export default function CohortWidget({ image, title, count, description, to }) {
       aria-label={`${title} cohort`}>
       <div className="cohort-widget-inner shadow">
         <Card className="cohort-widget-face cohort-widget-front border-0">
-          <Card.Img
-            variant="top"
-            src={image}
-            alt={`${title} cohort`}
-            className="cohort-widget-img"
-          />
+          {image ? (
+            <Card.Img
+              variant="top"
+              src={image}
+              alt={`${title} cohort`}
+              className="cohort-widget-img"
+            />
+          ) : (
+            <div className="cohort-widget-img cohort-widget-img-placeholder d-flex flex-column align-items-center justify-content-center text-muted">
+              <i className="bi bi-image fs-1" aria-hidden="true" />
+              <span className="small">Image</span>
+            </div>
+          )}
           <Card.Body className="text-center">
             <Card.Title as="h3" className="h5 text-dark mb-1">
               {title}
