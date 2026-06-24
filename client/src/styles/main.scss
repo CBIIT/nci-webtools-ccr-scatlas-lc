@@ -55,6 +55,12 @@
     object-fit: contain;
     padding: 0.5rem;
   }
+
+  // placeholder shown when a cohort has no image yet
+  .cohort-widget-img-placeholder {
+    background-color: #f1f3f5;
+    border-bottom: 1px solid #e9ecef;
+  }
 }
 
 /* Atlas summary page — modality section header with an icon that highlights on focus/hover. */
