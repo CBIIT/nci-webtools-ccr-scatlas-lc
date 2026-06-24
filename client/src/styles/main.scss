@@ -8,10 +8,30 @@
     background-color: yellow !important;
   }
 
-/* 3-level main menu (NCIATWP-10322) — nested submenus open to the side.
-   Top-level toggles are styled by the existing `.navbar-dark .navbar-nav .dropdown
-   .nav-link` theme rules (white text, transparent bg, teal active/hover underline);
-   we only add the nested-submenu chevron affordance here. */
+/* 3-level main menu — nested submenus open to the side. Top-level toggles are styled
+   by the existing `.navbar-dark .navbar-nav .dropdown .nav-link` theme rules (white
+   text, transparent bg, teal active/hover underline); we only add the nested-submenu
+   chevron affordance here. */
 .main-nav .dropdown-item .bi-chevron-right {
   opacity: 0.6;
+}
+
+/* Atlas summary page — modality section header with an icon that highlights on focus/hover. */
+.summary-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  outline: none;
+
+  .summary-icon {
+    font-size: 1.75rem;
+    color: #adb5bd;
+    transition: color 0.15s ease;
+  }
+
+  &:hover .summary-icon,
+  &:focus .summary-icon,
+  &:focus-within .summary-icon {
+    color: $primary;
+  }
 }

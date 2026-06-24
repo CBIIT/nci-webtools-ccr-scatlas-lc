@@ -6,6 +6,7 @@ import MultiRegional from "./modules/pages/multi-regional";
 import Sequential from "./modules/pages/sequential";
 import About from "./modules/about/about";
 import AtlasSummary from "./modules/pages/atlas-summary";
+import SingleCellSummary from "./modules/pages/single-cell-summary";
 import {
   SpatialTransMultiRegional,
   SpatialTransEuropean,
@@ -31,11 +32,7 @@ export default function App() {
       <div id="content" className="bg-light flex-grow-auto">
         <Route exact path="/" component={Home} />
 
-        <Route
-          exact
-          path="/single-cell"
-          render={() => <AtlasSummary title="Single-Cell Atlas" />}
-        />
+        <Route exact path="/single-cell" component={SingleCellSummary} />
         <Route
           exact
           path="/spatial"
