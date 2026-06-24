@@ -112,7 +112,7 @@ const TopNavToggle = forwardRef(function TopNavToggle(
       ref={ref}
       type="button"
       onClick={onNavigate}
-      className={`nav-link px-3 text-uppercase font-weight-bold ${
+      className={`nav-link dropdown-toggle px-3 text-uppercase font-weight-bold ${
         active ? "active" : ""
       }`}>
       {title}
