@@ -1,8 +1,35 @@
-import { Container } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
+import CohortWidget from "../components/cohort-widget";
 
 // Single-Cell Atlas Summary page — a landing/summary layer above the existing
-// single-cell cohort pages. Overview text + modality sections; the cohort widgets
-// under scRNA-seq are wired next (the CohortWidget shared component).
+// single-cell cohort pages. Overview text + modality sections + cohort widgets.
+const scrnaCohorts = [
+  {
+    title: "NCI-CLARITY",
+    to: "/nci-clarity",
+    image: "/images/nci_clarity_HD.svg",
+    count: "52,789 cells",
+    description:
+      "52,789 cells from 46 hepatocellular carcinoma (HCC) and intrahepatic cholangiocarcinoma (iCCA) biopsies of 37 patients (GSE151530).",
+  },
+  {
+    title: "Multi-Regional",
+    to: "/multi-regional",
+    image: "/images/multiregional_HD.svg",
+    count: "112,506 cells",
+    description:
+      "112,506 cells from four HCC and three iCCA patients. Five regions per tumor — three cores (T1–T3), one border (B), and adjacent normal (N); 34 samples (GSE189903).",
+  },
+  {
+    title: "Sequential NCI-CLARITY",
+    to: "/sequential",
+    image: "/images/sequential_nci_clarity_HD.svg",
+    count: "57,567 cells",
+    description:
+      "57,567 cells from nine HCC and two iCCA patients, sampled longitudinally (two to five each); 31 samples (GSE229772).",
+  },
+];
+
 export default function SingleCellSummary() {
   return (
     <Container className="py-3">
@@ -26,8 +53,13 @@ export default function SingleCellSummary() {
           <i className="bi bi-diagram-3-fill summary-icon" aria-hidden="true" />
           <h2 className="h5 mb-0">Single cell RNA sequencing (scRNA-seq)</h2>
         </div>
-        {/* cohort widgets wired in the next sub-problem */}
-        <p className="text-muted mt-3">Cohort widgets coming next.</p>
+        <Row className="mt-3">
+          {scrnaCohorts.map((cohort) => (
+            <Col key={cohort.to} md={4} className="mb-3">
+              <CohortWidget {...cohort} />
+            </Col>
+          ))}
+        </Row>
       </section>
 
       <section className="summary-section mt-4">

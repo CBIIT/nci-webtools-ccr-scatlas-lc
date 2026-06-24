@@ -16,6 +16,47 @@
   opacity: 0.6;
 }
 
+/* Cohort widget (atlas summary pages) — card flips on hover/focus to reveal the
+   description; clicking still navigates. Shared by both summary pages. */
+.cohort-widget {
+  display: block;
+  perspective: 1200px;
+  cursor: pointer;
+
+  .cohort-widget-inner {
+    position: relative;
+    min-height: 360px;
+    transition: transform 0.5s ease;
+    transform-style: preserve-3d;
+    border-radius: 0.375rem;
+  }
+
+  // flip on hover OR keyboard focus (the link is focusable)
+  &:hover .cohort-widget-inner,
+  &:focus .cohort-widget-inner,
+  &:focus-within .cohort-widget-inner {
+    transform: rotateY(180deg);
+  }
+
+  .cohort-widget-face {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .cohort-widget-back {
+    transform: rotateY(180deg);
+  }
+
+  .cohort-widget-img {
+    height: 240px;
+    object-fit: contain;
+    padding: 0.5rem;
+  }
+}
+
 /* Atlas summary page — modality section header with an icon that highlights on focus/hover. */
 .summary-section-head {
   display: flex;
