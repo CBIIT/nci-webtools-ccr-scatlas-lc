@@ -5,7 +5,8 @@ import NCIClarity from "./modules/pages/nci-clarity";
 import MultiRegional from "./modules/pages/multi-regional";
 import Sequential from "./modules/pages/sequential";
 import About from "./modules/about/about";
-import AtlasSummary from "./modules/pages/atlas-summary";
+import SingleCellSummary from "./modules/pages/single-cell-summary";
+import SpatialSummary from "./modules/pages/spatial-summary";
 import {
   SpatialTransMultiRegional,
   SpatialTransEuropean,
@@ -31,16 +32,8 @@ export default function App() {
       <div id="content" className="bg-light flex-grow-auto">
         <Route exact path="/" component={Home} />
 
-        <Route
-          exact
-          path="/single-cell"
-          render={() => <AtlasSummary title="Single-Cell Atlas" />}
-        />
-        <Route
-          exact
-          path="/spatial"
-          render={() => <AtlasSummary title="Spatial Atlas" />}
-        />
+        <Route exact path="/single-cell" component={SingleCellSummary} />
+        <Route exact path="/spatial" component={SpatialSummary} />
 
         <Route exact path="/nci-clarity" component={NCIClarity} />
         <Route exact path="/multi-regional" component={MultiRegional} />

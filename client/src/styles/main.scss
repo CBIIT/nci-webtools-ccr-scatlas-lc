@@ -8,10 +8,77 @@
     background-color: yellow !important;
   }
 
-/* 3-level main menu (NCIATWP-10322) — nested submenus open to the side.
-   Top-level toggles are styled by the existing `.navbar-dark .navbar-nav .dropdown
-   .nav-link` theme rules (white text, transparent bg, teal active/hover underline);
-   we only add the nested-submenu chevron affordance here. */
+/* 3-level main menu — nested submenus open to the side. Top-level toggles are styled
+   by the existing `.navbar-dark .navbar-nav .dropdown .nav-link` theme rules (white
+   text, transparent bg, teal active/hover underline); we only add the nested-submenu
+   chevron affordance here. */
 .main-nav .dropdown-item .bi-chevron-right {
   opacity: 0.6;
+}
+
+/* Cohort widget (atlas summary pages) — card flips on hover/focus to reveal the
+   description; clicking still navigates. Shared by both summary pages. */
+.cohort-widget {
+  display: block;
+  perspective: 1200px;
+  cursor: pointer;
+
+  .cohort-widget-inner {
+    position: relative;
+    min-height: 360px;
+    transition: transform 0.5s ease;
+    transform-style: preserve-3d;
+    border-radius: 0.375rem;
+  }
+
+  // flip on hover OR keyboard focus (the link is focusable)
+  &:hover .cohort-widget-inner,
+  &:focus .cohort-widget-inner,
+  &:focus-within .cohort-widget-inner {
+    transform: rotateY(180deg);
+  }
+
+  .cohort-widget-face {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .cohort-widget-back {
+    transform: rotateY(180deg);
+  }
+
+  .cohort-widget-img {
+    height: 240px;
+    object-fit: contain;
+    padding: 0.5rem;
+  }
+
+  // placeholder shown when a cohort has no image yet
+  .cohort-widget-img-placeholder {
+    background-color: #f1f3f5;
+    border-bottom: 1px solid #e9ecef;
+  }
+}
+
+/* Atlas summary page — modality section header with an icon that highlights on focus/hover. */
+.summary-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  outline: none;
+
+  .summary-icon {
+    font-size: 1.75rem;
+    color: #adb5bd;
+    transition: color 0.15s ease;
+  }
+
+  &:hover .summary-icon,
+  &:focus .summary-icon,
+  &:focus-within .summary-icon {
+    color: $primary;
+  }
 }
