@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import CohortWidget from "../components/cohort-widget";
+import SummarySection from "../components/summary-section";
 
 // Single-Cell Atlas Summary page — a landing/summary layer above the existing
 // single-cell cohort pages. Overview text + modality sections + cohort widgets.
@@ -31,6 +33,9 @@ const scrnaCohorts = [
 ];
 
 export default function SingleCellSummary() {
+  // which section's icon is currently highlighted (latched; one at a time)
+  const [activeSection, setActiveSection] = useState(null);
+
   return (
     <Container className="py-3">
       <h1 className="text-primary h3 mt-2">Single-Cell Atlas</h1>
@@ -48,11 +53,11 @@ export default function SingleCellSummary() {
         immune cells.
       </p>
 
-      <section className="summary-section mt-4">
-        <div className="summary-section-head" tabIndex={0}>
-          <i className="bi bi-diagram-3-fill summary-icon" aria-hidden="true" />
-          <h2 className="h5 mb-0">Single cell RNA sequencing (scRNA-seq)</h2>
-        </div>
+      <SummarySection
+        icon="bi-diagram-3-fill"
+        title="Single cell RNA sequencing (scRNA-seq)"
+        active={activeSection === "scrna"}
+        onActivate={() => setActiveSection("scrna")}>
         <Row className="mt-3">
           {scrnaCohorts.map((cohort) => (
             <Col key={cohort.to} md={4} className="mb-3">
@@ -60,17 +65,15 @@ export default function SingleCellSummary() {
             </Col>
           ))}
         </Row>
-      </section>
+      </SummarySection>
 
-      <section className="summary-section mt-4">
-        <div className="summary-section-head" tabIndex={0}>
-          <i className="bi bi-grid-3x3-gap-fill summary-icon" aria-hidden="true" />
-          <h2 className="h5 mb-0">
-            Single-cell spatial transcriptomics (CosMx SMI)
-          </h2>
-        </div>
+      <SummarySection
+        icon="bi-grid-3x3-gap-fill"
+        title="Single-cell spatial transcriptomics (CosMx SMI)"
+        active={activeSection === "cosmx"}
+        onActivate={() => setActiveSection("cosmx")}>
         <p className="text-muted mt-3">Coming soon.</p>
-      </section>
+      </SummarySection>
     </Container>
   );
 }

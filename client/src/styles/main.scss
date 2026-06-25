@@ -90,7 +90,8 @@
   }
 }
 
-/* Atlas summary page — modality section header with an icon that highlights on focus/hover. */
+/* Atlas summary page — modality section header. The icon highlights when the
+   section is the page's active (latched) section; see SummarySection. */
 .summary-section-head {
   display: flex;
   align-items: center;
@@ -103,9 +104,7 @@
     transition: color 0.15s ease;
   }
 
-  &:hover .summary-icon,
-  &:focus .summary-icon,
-  &:focus-within .summary-icon {
+  &.active .summary-icon {
     color: $primary;
   }
 }

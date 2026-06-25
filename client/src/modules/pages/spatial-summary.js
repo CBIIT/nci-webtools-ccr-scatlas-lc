@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import CohortWidget from "../components/cohort-widget";
+import SummarySection from "../components/summary-section";
 
 // Spatial Atlas Summary page — landing/summary layer above the spatial cohort
 // pages. Mirrors the Single-Cell summary: overview text + modality sections
@@ -36,6 +38,9 @@ function CohortRow({ cohorts }) {
 }
 
 export default function SpatialSummary() {
+  // which section's icon is currently highlighted (latched; one at a time)
+  const [activeSection, setActiveSection] = useState(null);
+
   return (
     <Container className="py-3">
       <h1 className="text-primary h3 mt-2">Spatial Atlas</h1>
@@ -43,21 +48,21 @@ export default function SpatialSummary() {
 
       <p className="text-muted fst-italic">{LOREM}</p>
 
-      <section className="summary-section mt-4">
-        <div className="summary-section-head" tabIndex={0}>
-          <i className="bi bi-grid-1x2-fill summary-icon" aria-hidden="true" />
-          <h2 className="h5 mb-0">Spatial transcriptomics</h2>
-        </div>
+      <SummarySection
+        icon="bi-grid-1x2-fill"
+        title="Spatial transcriptomics"
+        active={activeSection === "transcriptomics"}
+        onActivate={() => setActiveSection("transcriptomics")}>
         <CohortRow cohorts={transcriptomicsCohorts} />
-      </section>
+      </SummarySection>
 
-      <section className="summary-section mt-4">
-        <div className="summary-section-head" tabIndex={0}>
-          <i className="bi bi-palette-fill summary-icon" aria-hidden="true" />
-          <h2 className="h5 mb-0">Spatial proteomics</h2>
-        </div>
+      <SummarySection
+        icon="bi-palette-fill"
+        title="Spatial proteomics"
+        active={activeSection === "proteomics"}
+        onActivate={() => setActiveSection("proteomics")}>
         <CohortRow cohorts={proteomicsCohorts} />
-      </section>
+      </SummarySection>
     </Container>
   );
 }
