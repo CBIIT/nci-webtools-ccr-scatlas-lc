@@ -11,6 +11,10 @@ export default function CohortWidget({ image, title, count, description, to }) {
       to={to}
       className="cohort-widget text-decoration-none"
       aria-label={`${title} cohort`}>
+      {/* transparent overlay over the image area only — hovering it flips the
+          card; it sits outside the rotating inner so the flip stays stable, and
+          hovering the gray body below does not trigger a flip */}
+      <span className="cohort-widget-flip-zone" aria-hidden="true" />
       <div className="cohort-widget-inner shadow">
         <Card className="cohort-widget-face cohort-widget-front border-0">
           {image ? (
