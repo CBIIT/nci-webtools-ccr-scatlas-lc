@@ -14,9 +14,14 @@ const cellTypeColors = ["#3A5FCD", "#FF8C00", "#EE2C2C", "#32CD32"];
 
 export default function TigerLcPlots() {
   const cells = useRecoilValue(cellsQuery);
-  const { size, opacity, gene } = useRecoilValue(plotOptionsState);
+  const { size, opacity, gene, samples } = useRecoilValue(plotOptionsState);
   const geneExpression = useRecoilValue(geneExpressionQuery(gene));
-  const records = gene ? geneExpression : cells;
+  const base = gene ? geneExpression : cells;
+  // samples: null = all; otherwise keep only cells in the selected samples
+  const sampleSet = samples == null ? null : new Set(samples);
+  const records = sampleSet
+    ? base.filter((r) => sampleSet.has(r.sample))
+    : base;
 
   // Spatial scatter: x/y are real slide millimetres, so keep an equal aspect ratio
   // (scaleanchor) to avoid distorting the tissue.

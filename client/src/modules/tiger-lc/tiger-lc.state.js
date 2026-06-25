@@ -34,7 +34,8 @@ export const geneExpressionQuery = selectorFamily({
       : [],
 });
 
-export const defaultPlotOptions = { size: 4, opacity: 0.8, gene: null };
+// samples: null = all samples selected (default); otherwise an array of sample ids
+export const defaultPlotOptions = { size: 4, opacity: 0.8, gene: null, samples: null };
 
 export const plotOptionsState = atom({
   key: "tigerlc.plotOptionsState",

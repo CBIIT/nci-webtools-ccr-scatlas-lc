@@ -4,20 +4,29 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
+import { useMemo } from "react";
 import Select from "../components/select";
+import MultiSelect from "../components/multi-select";
 import {
   plotOptionsState,
+  cellsQuery,
   cellsStatsQuery,
   defaultPlotOptions,
 } from "./tiger-lc.state";
 
 // Plot controls for the TIGER-LC spatial scatter: Cell Size / Cell Opacity
-// (defaults 4 / 0.8) and a gene search. Picking a gene colors the plot by that
-// gene's expression; the gene list comes from the per-gene stats table.
+// (defaults 4 / 0.8), a Samples multi-select (all selected by default), and a gene
+// search. Picking a gene colors the plot by its expression; the gene list comes from
+// the per-gene stats table and the sample list from the cells.
 export default function TigerLcPlotOptions() {
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const [formValues, setFormValues] = useState(plotOptions);
   const lookup = useRecoilValue(cellsStatsQuery);
+  const cells = useRecoilValue(cellsQuery);
+  const sampleOptions = useMemo(
+    () => [...new Set(cells.map((c) => c.sample))].sort(),
+    [cells],
+  );
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
   const mergeFormValues = (obj) => setFormValues({ ...formValues, ...obj });
 
@@ -40,7 +49,7 @@ export default function TigerLcPlotOptions() {
 
   return (
     <form className="row" onReset={handleReset}>
-      <Col md={3}>
+      <Col md={2}>
         <Form.Group controlId="cell-size" className="mb-3">
           <Form.Label>Cell Size</Form.Label>
           <Form.Control
@@ -54,7 +63,7 @@ export default function TigerLcPlotOptions() {
           />
         </Form.Group>
       </Col>
-      <Col md={3}>
+      <Col md={2}>
         <Form.Group controlId="cell-opacity" className="mb-3">
           <Form.Label>Cell Opacity</Form.Label>
           <Form.Control
@@ -66,6 +75,18 @@ export default function TigerLcPlotOptions() {
             step="0.1"
             min="0.1"
             max="1"
+          />
+        </Form.Group>
+      </Col>
+      <Col md={3}>
+        <Form.Group controlId="plot-samples" className="mb-3">
+          <Form.Label>Samples</Form.Label>
+          <MultiSelect
+            label="Samples"
+            allLabel={`All samples (${sampleOptions.length})`}
+            options={sampleOptions}
+            value={plotOptions.samples}
+            onChange={(samples) => mergePlotOptions({ samples })}
           />
         </Form.Group>
       </Col>
@@ -95,7 +116,7 @@ export default function TigerLcPlotOptions() {
         </Form.Group>
       </Col>
 
-      <Col md={3}>
+      <Col md={2}>
         <Form.Group>
           <Form.Label className="d-none d-md-block">&zwj;</Form.Label>
           <InputGroup>
