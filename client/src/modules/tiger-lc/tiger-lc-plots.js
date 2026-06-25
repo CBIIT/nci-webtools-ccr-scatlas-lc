@@ -59,7 +59,10 @@ export default function TigerLcPlots() {
 
   const traceConfig = {
     showlegend: !gene,
-    hoverinfo: !gene ? "name" : "text+name",
+    // show the cell id on hover (AC #4), plus the cell type or gene value
+    hovertemplate: gene
+      ? `Cell ID: %{customdata}<br>${gene}: %{text}<extra></extra>`
+      : `Cell ID: %{customdata}<br>Cell type: %{fullData.name}<extra></extra>`,
     hoverlabel: { namelength: -1 },
     marker: {
       size,
