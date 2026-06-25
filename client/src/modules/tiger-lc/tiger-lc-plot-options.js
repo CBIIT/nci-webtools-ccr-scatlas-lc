@@ -1,16 +1,23 @@
 import { useState } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
-import { plotOptionsState, defaultPlotOptions } from "./tiger-lc.state";
+import Select from "../components/select";
+import {
+  plotOptionsState,
+  cellsStatsQuery,
+  defaultPlotOptions,
+} from "./tiger-lc.state";
 
-// Plot controls for the TIGER-LC spatial scatter. Cell Size / Cell Opacity
-// (defaults 4 / 0.8). Gene search is added in a later step.
+// Plot controls for the TIGER-LC spatial scatter: Cell Size / Cell Opacity
+// (defaults 4 / 0.8) and a gene search. Picking a gene colors the plot by that
+// gene's expression; the gene list comes from the per-gene stats table.
 export default function TigerLcPlotOptions() {
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const [formValues, setFormValues] = useState(plotOptions);
+  const lookup = useRecoilValue(cellsStatsQuery);
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
   const mergeFormValues = (obj) => setFormValues({ ...formValues, ...obj });
 
@@ -62,6 +69,32 @@ export default function TigerLcPlotOptions() {
           />
         </Form.Group>
       </Col>
+      <Col md={3}>
+        <Form.Group controlId="plot-gene" className="mb-3">
+          <Form.Label>Gene</Form.Label>
+          <InputGroup className="flex-nowrap">
+            <Select
+              name="gene"
+              label="Gene"
+              className="form-control"
+              options={lookup.map((e) => e.gene)}
+              onChange={(selectedGene) => {
+                const gene = selectedGene === "All genes" ? null : selectedGene;
+                mergePlotOptions({ gene });
+              }}
+              placeholder="All genes"
+              value={plotOptions.gene}
+            />
+            <Button
+              variant="light"
+              className="bg-transparent border-0 right-0 position-absolute"
+              onClick={(_) => mergePlotOptions({ gene: null })}>
+              &times;
+            </Button>
+          </InputGroup>
+        </Form.Group>
+      </Col>
+
       <Col md={3}>
         <Form.Group>
           <Form.Label className="d-none d-md-block">&zwj;</Form.Label>
