@@ -26,11 +26,11 @@ export default function CohortWidget({ image, title, count, description, to }) {
               <span className="small">Image</span>
             </div>
           )}
-          <Card.Body className="text-center">
+          <Card.Body className="text-center cohort-widget-body-muted">
             <Card.Title as="h3" className="h5 text-dark mb-1">
               {title}
             </Card.Title>
-            {count && <div className="text-muted small">{count}</div>}
+            {count && <div className="text-muted">{count}</div>}
           </Card.Body>
         </Card>
 
@@ -39,7 +39,7 @@ export default function CohortWidget({ image, title, count, description, to }) {
             <Card.Title as="h3" className="h5 mb-2">
               {title}
             </Card.Title>
-            <div className="small overflow-auto">{description}</div>
+            <div className="cohort-widget-desc overflow-auto">{description}</div>
           </Card.Body>
         </Card>
       </div>

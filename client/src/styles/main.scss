@@ -42,6 +42,7 @@
     position: absolute;
     inset: 0;
     height: 100%;
+    overflow: hidden; // clip the (now-colored) body to the card's rounded corners
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -56,10 +57,22 @@
     padding: 0.5rem;
   }
 
-  // placeholder shown when a cohort has no image yet
+  // placeholder shown when a cohort has no image yet — white image area
+  // (the muted gray lives on the body below)
   .cohort-widget-img-placeholder {
-    background-color: #f1f3f5;
+    background-color: #fff;
     border-bottom: 1px solid #e9ecef;
+  }
+
+  // text/body region is always muted gray
+  .cohort-widget-body-muted {
+    background-color: #f1f3f5;
+  }
+
+  // description text on the back face — larger than Bootstrap's `small`
+  .cohort-widget-desc {
+    font-size: 1.05rem;
+    line-height: 1.5;
   }
 }
 
