@@ -1,0 +1,82 @@
+import { useRecoilValue } from "recoil";
+import Plot from "react-plotly.js";
+import merge from "lodash/merge";
+import { getTraces } from "../../services/plot";
+import {
+  plotOptionsState,
+  cellsQuery,
+  geneExpressionQuery,
+} from "./tiger-lc.state";
+
+// Colors for the four cell types, in getTraces' sorted (alphabetical) group order:
+// Epithelial, Immune, Malignant, Stromal.
+const cellTypeColors = ["#3A5FCD", "#FF8C00", "#EE2C2C", "#32CD32"];
+
+export default function TigerLcPlots() {
+  const cells = useRecoilValue(cellsQuery);
+  const { size, opacity, gene } = useRecoilValue(plotOptionsState);
+  const geneExpression = useRecoilValue(geneExpressionQuery(gene));
+  const records = gene ? geneExpression : cells;
+
+  // Spatial scatter: x/y are real slide millimetres, so keep an equal aspect ratio
+  // (scaleanchor) to avoid distorting the tissue.
+  const layout = {
+    xaxis: {
+      title: "Spatial X (mm)",
+      zeroline: false,
+      scaleanchor: "y",
+      scaleratio: 1,
+      constrain: "domain",
+    },
+    yaxis: { title: "Spatial Y (mm)", zeroline: false },
+    legend: { itemsizing: "constant", itemwidth: 40 },
+    hovermode: "closest",
+    uirevision: gene || 1,
+  };
+
+  const config = {
+    displayModeBar: true,
+    displaylogo: false,
+    toImageButtonOptions: {
+      format: "svg",
+      filename: "tigerlc_plot",
+      height: 1000,
+      width: 1000,
+      scale: 1,
+    },
+    modeBarButtonsToRemove: [
+      "select2d",
+      "lasso2d",
+      "hoverCompareCartesian",
+      "hoverClosestCartesian",
+    ],
+  };
+
+  const traceConfig = {
+    showlegend: !gene,
+    hoverinfo: !gene ? "name" : "text+name",
+    hoverlabel: { namelength: -1 },
+    marker: {
+      size,
+      opacity,
+      colorbar: { thickness: 20 },
+      ...(!gene && { showscale: false }),
+    },
+  };
+
+  return (
+    <Plot
+      data={getTraces(records, traceConfig, gene, cellTypeColors)}
+      layout={merge({}, layout, {
+        title: `<b>TIGER-LC${gene ? `: ${gene}` : " — Cell Types"} (n=${records.length})</b>`,
+        legend: {
+          title: { text: gene ? "" : "Cell type", font: { size: 14 } },
+        },
+      })}
+      config={config}
+      useResizeHandler
+      className="w-100"
+      style={{ height: "800px" }}
+    />
+  );
+}

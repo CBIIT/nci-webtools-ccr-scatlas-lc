@@ -10,11 +10,11 @@ import SpatialSummary from "./modules/pages/spatial-summary";
 import {
   SpatialTransMultiRegional,
   SpatialTransEuropean,
-  SpatialTransTigerLc,
   SpatialProtTigerLcIcca,
   SpatialProtTigerLcHcc,
   SpatialProtLciHcc,
 } from "./modules/pages/spatial/spatial-pages";
+import TigerLcPage from "./modules/pages/spatial/tiger-lc";
 
 import "./styles/main.scss";
 import WebglAlert from "./modules/components/webgl-alert";
@@ -52,7 +52,7 @@ export default function App() {
         <Route
           exact
           path="/spatial/transcriptomics/tiger-lc"
-          component={SpatialTransTigerLc}
+          component={TigerLcPage}
         />
         <Route
           exact
