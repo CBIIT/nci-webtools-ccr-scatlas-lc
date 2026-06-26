@@ -143,4 +143,9 @@
       margin-top: 1rem;
     }
   }
+
+  // Total Counts tiles — translucent cards over the hero, like the intro box.
+  .home-count-tile {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
 }

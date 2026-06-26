@@ -1,4 +1,6 @@
 import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import { Link } from "react-router-dom";
 
@@ -16,6 +18,15 @@ const DESCRIPTION =
 const EXPLORE_LINKS = [
   { label: "Explore Single-Cell Atlas", to: "/single-cell" },
   { label: "Explore Spatial Atlas", to: "/spatial" },
+];
+
+// Total Counts — values are placeholders ("XYZ", per the client mockup) until the
+// counts data source is provided; swap in real numbers when available.
+const TOTAL_COUNTS = [
+  { label: "Data Types", value: "XYZ" },
+  { label: "Cohorts", value: "XYZ" },
+  { label: "Cases", value: "XYZ" },
+  { label: "Biospecimen", value: "XYZ" },
 ];
 
 export default function Home() {
@@ -45,7 +56,18 @@ export default function Home() {
             </Button>
           ))}
         </div>
-        {/* Total Counts tiles mount here, below the Explore buttons. */}
+        <Row className="home-counts w-100 justify-content-center g-3">
+          {TOTAL_COUNTS.map((count) => (
+            <Col key={count.label} xs={6} md={3}>
+              <div className="home-count-tile text-center rounded shadow-sm py-3 px-2 h-100">
+                <div className="h2 mb-1 text-primary">{count.value}</div>
+                <div className="text-muted small text-uppercase">
+                  {count.label}
+                </div>
+              </div>
+            </Col>
+          ))}
+        </Row>
       </Container>
     </div>
   );
