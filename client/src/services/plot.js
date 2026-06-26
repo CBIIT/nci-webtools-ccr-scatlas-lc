@@ -31,6 +31,9 @@ export function getTraces(records, config, gene, colorArray = colors) {
           x: values.map((v) => v.x),
           y: values.map((v) => v.y),
           text: values.map((v) => formatNumber(v[valueIndex])),
+          // cell id (when present) for per-point hover; ignored unless a trace
+          // sets a hovertemplate referencing %{customdata}
+          customdata: values.map((v) => v.cell_id),
           mode: "markers",
           type: "scattergl",
           hoverinfo: "text+name",

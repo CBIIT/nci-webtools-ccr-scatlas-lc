@@ -10,9 +10,7 @@ export function SpatialTransMultiRegional() {
 export function SpatialTransEuropean() {
   return <SpatialCohortPage title="European" modality="Transcriptomics" />;
 }
-export function SpatialTransTigerLc() {
-  return <SpatialCohortPage title="TIGER-LC" modality="Transcriptomics" />;
-}
+// TIGER-LC transcriptomics is a real page now — see ../spatial/tiger-lc.js.
 
 // --- Proteomics ---
 export function SpatialProtTigerLcIcca() {
