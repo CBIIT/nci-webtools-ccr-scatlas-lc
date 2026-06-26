@@ -1,183 +1,31 @@
 import Container from "react-bootstrap/Container";
-import Card from "react-bootstrap/Card";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import { Link } from "react-router-dom";
-import { ReactComponent as HomeImage } from "./home.svg";
+
+// Home page — a high-level portal: a full-bleed background image with a centered
+// intro (title + description). The Explore buttons and the Total Counts tiles mount
+// below the intro in later steps, so components can be added without restructuring.
+const TITLE = "Single-Cell and Spatial Multi-Omics Atlas of Liver Cancer";
+const DESCRIPTION =
+  "SpatialAtlasLC is a publicly available multi-omics data portal to construct " +
+  "single-cell and spatial atlases of the transcriptomic, proteomic, and epigenomic " +
+  "features of tumor cell communities in primary liver cancers and cancers metastasized " +
+  "to the liver, with future expansion into 3D and 4D spatial profiling modalities.";
 
 export default function Home() {
   return (
-    <Container className="h-100">
-      <Card className="h-100 shadow rounded-0">
-        <Card.Body>
-          <Row>
-            <Col md={6}>
-              <figure className="figure">
-                <HomeImage className="figure-img img-fluid" />
-                <figcaption className="figure-caption">
-                  CAFs, cancer-associated fibroblasts; TAMs, tumor-associated
-                  macrophages; TECs, tumor-associated endothelial cells.
-                </figcaption>
-              </figure>
-            </Col>
-
-            <Col md={6}>
-              <h1 className="h3">About scAtlasLC</h1>
-              <p>
-                scAtlasLC (single-cell Atlas in Liver Cancer) is a publicly
-                available data portal of single-cell transcriptomic profiles of
-                tumor cell communities in hepatocellular carcinoma and
-                intrahepatic cholangiocarcinoma.
-              </p>
-
-              <p>
-                scAtlasLC can be used to evaluate gene expression in malignant
-                cells and various non-malignant cells in liver cancer. It can be
-                further used to determine gene expression in different subtypes
-                of stromal cells and immune cells.
-              </p>
-
-              {/* <p>
-                The single-cell data used for scAtlasLC can be downloaded from
-                Gene Expression Omnibus:
-                <a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE151530
-                </a>,
-                <a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE189903
-                </a>,
-                <a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE229772
-                </a>
-              </p> */}
-              <p>
-                Current single-cell data used for scAtlasLC includes the
-                following:
-              </p>
-              <ul>
-                <li>
-                  NCI-CLARITY (
-                  <a
-                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530"
-                    className="ms-1"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    GSE151530
-                  </a>
-                  ). This cohort includes single cell transcriptomic profiles of
-                  52,789 cells derived from 46 hepatocellular carcinoma (HCC)
-                  and intrahepatic cholangiocarcinoma (iCCA) biopsies of 37
-                  patients.
-                </li>
-                <li>
-                  Multi-Regional (
-                  <a
-                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903"
-                    className="ms-1"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    GSE189903
-                  </a>
-                  ). This cohort consists of 112,506 cells from four HCC
-                  patients and three iCCA patients. For each tumor, single cells
-                  from five separate regions, i.e., three tumor cores (T1, T2,
-                  and T3), one tumor border (B) and an adjacent normal tissue
-                  (N), were prepared. A total of 34 samples were included in
-                  this study.
-                </li>
-                <li>
-                  Sequential NCI-CLARITY (
-                  <a
-                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772"
-                    className="ms-1"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    GSE229772
-                  </a>
-                  ). This cohort consists of 57,567 cells from nine HCC patients
-                  and two iCCA patients. Tumor biopsies were collected
-                  longitudinally, with two to five samples for each patient.
-                  Overall, 31 samples were collected across all patients.
-                </li>
-              </ul>
-            </Col>
-          </Row>
-          <Row>
-            <Col className="mb-3" xl={4}>
-              <Link to="/nci-clarity" rel="noreferrer">
-                <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img
-                    height="368px"
-                    variant="top"
-                    src={"/images/nci_clarity_HD.svg"}
-                    alt="NCI-CLARITY Image"
-                  />
-                  <Card.Body>
-                    <Card.Text className="d-flex text-center justify-content-center">
-                      <div>
-                        <h2 className="h3">NCI-CLARITY</h2>
-                        <div>52,789 cells</div>
-                      </div>
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Link>
-            </Col>
-            <Col className="mb-3" xl={4}>
-              <Link to="/multi-regional" rel="noreferrer">
-                <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img
-                    height="368px"
-                    variant="top"
-                    src={"/images/multiregional_HD.svg"}
-                    alt="Multi-Regional Image"
-                  />
-                  <Card.Body>
-                    <Card.Text className="d-flex text-center justify-content-center">
-                      <div>
-                        <h2 className="h3">Multi-Regional</h2>
-                        <div>112,506 cells</div>
-                      </div>
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Link>
-            </Col>
-            <Col className="mb-3" xl={4}>
-              <Link to="/sequential" rel="noreferrer">
-                <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img
-                    height="368px"
-                    variant="top"
-                    src={"/images/sequential_nci_clarity_HD.svg"}
-                    alt="Sequential NCI-CLARITY Image"
-                  />
-                  <Card.Body>
-                    <Card.Text className="d-flex text-center justify-content-center">
-                      <div>
-                        <h2 className="h3">Sequential NCI-CLARITY</h2>
-                        <div>57,567 cells</div>
-                      </div>
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Link>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-    </Container>
+    // Background image is the client-provided spatial-tissue micrograph; set inline
+    // from the public folder (CRA serves /images/* at the root) over a dark fallback.
+    <div
+      className="home-hero"
+      style={{
+        backgroundImage: "url(/images/home-hero-spatial-tissue.png)",
+      }}>
+      <Container className="py-5 d-flex flex-column align-items-center">
+        <div className="home-intro text-center bg-white bg-opacity-75 rounded shadow p-4 p-md-5">
+          <h1 className="h3 text-primary mb-3">{TITLE}</h1>
+          <p className="mb-0">{DESCRIPTION}</p>
+        </div>
+        {/* Explore buttons and Total Counts tiles mount here, below the intro. */}
+      </Container>
+    </div>
   );
 }
