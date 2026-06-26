@@ -5,7 +5,7 @@ import { getTraces } from "../../services/plot";
 import {
   plotOptionsState,
   cellsQuery,
-  geneExpressionQuery,
+  featureExpressionQuery,
 } from "./tiger-lc.state";
 
 // Colors for the four cell types, in getTraces' sorted (alphabetical) group order:
@@ -14,14 +14,20 @@ const cellTypeColors = ["#3A5FCD", "#FF8C00", "#EE2C2C", "#32CD32"];
 
 export default function TigerLcPlots() {
   const cells = useRecoilValue(cellsQuery);
-  const { size, opacity, gene, samples } = useRecoilValue(plotOptionsState);
-  const geneExpression = useRecoilValue(geneExpressionQuery(gene));
-  const base = gene ? geneExpression : cells;
+  const { size, opacity, activeFeature, samples } =
+    useRecoilValue(plotOptionsState);
+  // a feature (single gene or gene set) colors the plot by its per-cell mean
+  // (__value); no feature -> color by cell type
+  const genesKey = activeFeature ? activeFeature.genes.join(",") : "";
+  const featureRecords = useRecoilValue(featureExpressionQuery(genesKey));
+  const base = activeFeature ? featureRecords : cells;
   // samples: null = all; otherwise keep only cells in the selected samples
   const sampleSet = samples == null ? null : new Set(samples);
   const records = sampleSet
     ? base.filter((r) => sampleSet.has(r.sample))
     : base;
+  const valueIndex = activeFeature ? "__value" : null;
+  const isSet = activeFeature?.kind === "set";
 
   // Spatial scatter: x/y are real slide millimetres, so keep an equal aspect ratio
   // (scaleanchor) to avoid distorting the tissue.
@@ -36,7 +42,7 @@ export default function TigerLcPlots() {
     yaxis: { title: "Spatial Y (mm)", zeroline: false },
     legend: { itemsizing: "constant", itemwidth: 40 },
     hovermode: "closest",
-    uirevision: gene || 1,
+    uirevision: genesKey || 1,
   };
 
   const config = {
@@ -58,27 +64,32 @@ export default function TigerLcPlots() {
   };
 
   const traceConfig = {
-    showlegend: !gene,
-    // show the cell id on hover (AC #4), plus the cell type or gene value
-    hovertemplate: gene
-      ? `Cell ID: %{customdata}<br>${gene}: %{text}<extra></extra>`
+    showlegend: !activeFeature,
+    // show the cell id on hover (AC #4), plus the cell type or feature value
+    hovertemplate: activeFeature
+      ? `Cell ID: %{customdata}<br>${activeFeature.label}: %{text}<extra></extra>`
       : `Cell ID: %{customdata}<br>Cell type: %{fullData.name}<extra></extra>`,
     hoverlabel: { namelength: -1 },
     marker: {
       size,
       opacity,
       colorbar: { thickness: 20 },
-      ...(!gene && { showscale: false }),
+      ...(!activeFeature && { showscale: false }),
     },
   };
 
+  // label a multi-gene set's coloring as a mean so it isn't read as single-gene expression
+  const featureLabel = activeFeature
+    ? `${activeFeature.label}${isSet ? ` (mean, ${activeFeature.genes.length} genes)` : ""}`
+    : " — Cell Types";
+
   return (
     <Plot
-      data={getTraces(records, traceConfig, gene, cellTypeColors)}
+      data={getTraces(records, traceConfig, valueIndex, cellTypeColors)}
       layout={merge({}, layout, {
-        title: `<b>TIGER-LC${gene ? `: ${gene}` : " — Cell Types"} (n=${records.length})</b>`,
+        title: `<b>TIGER-LC${activeFeature ? `: ${featureLabel}` : featureLabel} (n=${records.length})</b>`,
         legend: {
-          title: { text: gene ? "" : "Cell type", font: { size: 14 } },
+          title: { text: activeFeature ? "" : "Cell type", font: { size: 14 } },
         },
       })}
       config={config}

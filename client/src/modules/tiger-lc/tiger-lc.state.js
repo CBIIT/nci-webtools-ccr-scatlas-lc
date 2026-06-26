@@ -21,21 +21,36 @@ export const cellsStatsQuery = selector({
     }),
 });
 
-// Color-by-expression: same cells, plus the chosen gene's column. Empty until a gene
-// is picked (used by the gene search in a later step).
-export const geneExpressionQuery = selectorFamily({
-  key: "tigerlc.geneExpressionQuery",
-  get: (gene) => async () =>
-    gene
-      ? await query("/api/query", {
-          table: "tigerlc",
-          columns: `x,y,type,sample,cell_id,${gene}`,
-        })
-      : [],
+// Color-by-feature: a "feature" is one or more genes (a single gene, or a gene set).
+// Fetch the feature's gene columns and add a per-cell `__value` = mean across them
+// (mean of one gene = that gene's value). Keyed by a comma-joined gene list so Recoil
+// caches per feature. Empty list -> no rows.
+export const featureExpressionQuery = selectorFamily({
+  key: "tigerlc.featureExpressionQuery",
+  get: (genesKey) => async () => {
+    if (!genesKey) return [];
+    const genes = genesKey.split(",");
+    const rows = await query("/api/query", {
+      table: "tigerlc",
+      columns: `x,y,type,sample,cell_id,${genes.join(",")}`,
+    });
+    return rows.map((r) => {
+      let sum = 0;
+      for (const g of genes) sum += +r[g] || 0;
+      return { ...r, __value: sum / genes.length };
+    });
+  },
 });
 
-// samples: null = all samples selected (default); otherwise an array of sample ids
-export const defaultPlotOptions = { size: 4, opacity: 0.8, gene: null, samples: null };
+// activeFeature: what colors the plot — null (color by cell type) or
+// { kind: "gene" | "set", label, genes: [...] }. A single gene is a 1-gene feature.
+// samples: null = all samples selected (default); otherwise an array of sample ids.
+export const defaultPlotOptions = {
+  size: 4,
+  opacity: 0.8,
+  activeFeature: null,
+  samples: null,
+};
 
 export const plotOptionsState = atom({
   key: "tigerlc.plotOptionsState",

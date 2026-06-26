@@ -100,16 +100,23 @@ export default function TigerLcPlotOptions() {
               className="form-control"
               options={lookup.map((e) => e.gene)}
               onChange={(selectedGene) => {
-                const gene = selectedGene === "All genes" ? null : selectedGene;
-                mergePlotOptions({ gene });
+                const activeFeature =
+                  !selectedGene || selectedGene === "All genes"
+                    ? null
+                    : { kind: "gene", label: selectedGene, genes: [selectedGene] };
+                mergePlotOptions({ activeFeature });
               }}
               placeholder="All genes"
-              value={plotOptions.gene}
+              value={
+                plotOptions.activeFeature?.kind === "gene"
+                  ? plotOptions.activeFeature.label
+                  : null
+              }
             />
             <Button
               variant="light"
               className="bg-transparent border-0 right-0 position-absolute"
-              onClick={(_) => mergePlotOptions({ gene: null })}>
+              onClick={(_) => mergePlotOptions({ activeFeature: null })}>
               &times;
             </Button>
           </InputGroup>
