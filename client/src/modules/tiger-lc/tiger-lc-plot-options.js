@@ -48,7 +48,7 @@ export default function TigerLcPlotOptions() {
   }
 
   return (
-    <form className="row" onReset={handleReset}>
+    <Form className="row" onReset={handleReset}>
       <Col md={2}>
         <Form.Group controlId="cell-size" className="mb-3">
           <Form.Label>Cell Size</Form.Label>
@@ -133,6 +133,6 @@ export default function TigerLcPlotOptions() {
           </InputGroup>
         </Form.Group>
       </Col>
-    </form>
+    </Form>
   );
 }
