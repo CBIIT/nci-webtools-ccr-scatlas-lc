@@ -126,5 +126,21 @@
 
   .home-intro {
     max-width: 720px;
+    background-color: rgba(255, 255, 255, 0.9); // 90% white over the hero
+  }
+
+  // Explore buttons straddle the intro card's bottom edge (half on the card,
+  // half on the hero image) — pulled up by half their own height. Once the
+  // buttons wrap/stack on narrow screens, drop the overlap so they sit below
+  // the card instead of covering the description text.
+  .home-explore {
+    position: relative;
+    z-index: 2;
+    transform: translateY(-50%);
+
+    @media (max-width: 540px) {
+      transform: none;
+      margin-top: 1rem;
+    }
   }
 }
