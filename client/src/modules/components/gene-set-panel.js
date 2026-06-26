@@ -14,7 +14,13 @@ function nextDefaultName(existingNames) {
 // Presentational + prop-driven (sets in, onCreate out) so the proteomics page (10326)
 // can reuse it. Coloring the plot by a set, member add/remove, and delete are wired in
 // later steps. Kept modular so it can move to a right-side rail later if needed.
-export default function GeneSetPanel({ sets, geneOptions, onCreate }) {
+export default function GeneSetPanel({
+  sets,
+  geneOptions,
+  activeSetId,
+  onCreate,
+  onColorBy,
+}) {
   const [showCreate, setShowCreate] = useState(false);
   const existingNames = sets.map((s) => s.name);
 
@@ -40,16 +46,37 @@ export default function GeneSetPanel({ sets, geneOptions, onCreate }) {
         </div>
       ) : (
         <ul className="list-group">
-          {sets.map((set) => (
-            <li
-              key={set.id}
-              className="list-group-item d-flex justify-content-between align-items-center">
-              <span>{set.name}</span>
-              <span className="text-muted small">
-                {set.genes.length} gene{set.genes.length === 1 ? "" : "s"}
-              </span>
-            </li>
-          ))}
+          {sets.map((set) => {
+            const isActive = set.id === activeSetId;
+            const isEmpty = set.genes.length === 0;
+            return (
+              <li
+                key={set.id}
+                className="list-group-item d-flex justify-content-between align-items-center">
+                <div className="d-flex align-items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={isActive ? "primary" : "outline-secondary"}
+                    className="py-0 px-1 lh-1"
+                    disabled={isEmpty}
+                    title={
+                      isEmpty
+                        ? "Add genes to color the plot by this set"
+                        : "Color the plot by this set's mean expression"
+                    }
+                    aria-label={`Color the plot by ${set.name}`}
+                    aria-pressed={isActive}
+                    onClick={() => onColorBy(set)}>
+                    <i className="bi bi-droplet-fill" aria-hidden="true" />
+                  </Button>
+                  <span>{set.name}</span>
+                </div>
+                <span className="text-muted small">
+                  {set.genes.length} gene{set.genes.length === 1 ? "" : "s"}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
       {showCreate && (
