@@ -56,3 +56,12 @@ export const plotOptionsState = atom({
   key: "tigerlc.plotOptionsState",
   default: defaultPlotOptions,
 });
+
+// Gene sets are session-only (in-memory Recoil): an array of { id, name, genes: [] }.
+// They survive in-app navigation but are lost on a full refresh (same as the
+// cellxgene reference). No caps on sets or genes. Coloring the plot by a set's mean
+// expression and member editing are wired through `activeFeature` in later steps.
+export const geneSetsState = atom({
+  key: "tigerlc.geneSetsState",
+  default: [],
+});

@@ -6,6 +6,7 @@ import Loader from "../components/loader";
 import ErrorBoundary from "../components/error-boundary";
 import TigerLcPlots from "./tiger-lc-plots";
 import TigerLcPlotOptions from "./tiger-lc-plot-options";
+import TigerLcGeneSets from "./tiger-lc-gene-sets";
 
 // Spatial TIGER-LC cohort view: controls + a single spatial scatter of the cells,
 // colored by cell type. (Gene search, sample filter, legend/hover, and a counts
@@ -24,6 +25,7 @@ export default function TigerLcCell() {
             }>
             <Suspense fallback={<Loader message="Loading Plots" />}>
               <TigerLcPlotOptions />
+              <TigerLcGeneSets />
               <hr />
               <TigerLcPlots />
             </Suspense>
