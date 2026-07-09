@@ -22,7 +22,9 @@ import MainNav from "./modules/components/main-nav";
 
 export default function App() {
   const { pathname } = useLocation();
-  useEffect((_) => window.scrollTo(0, 0), [pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
     <>
