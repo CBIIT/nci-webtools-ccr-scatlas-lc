@@ -1,5 +1,5 @@
 # ---- build stage: compile the React app (node/npm live here only) ----
-FROM public.ecr.aws/amazonlinux/amazonlinux:2022 AS build
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS build
 
 RUN dnf -y update \
  && dnf -y install \
@@ -24,7 +24,7 @@ ENV REACT_APP_GTAG=${REACT_APP_GTAG}
 RUN npm run build
 
 # ---- runtime stage: serve the static build with httpd (no node_modules) ----
-FROM public.ecr.aws/amazonlinux/amazonlinux:2022
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023
 
 RUN dnf -y update \
  && dnf -y install \
