@@ -12,9 +12,9 @@ RUN mkdir -p /deploy/client
 
 WORKDIR /deploy/client
 
-COPY client/package.json /deploy/client/
+COPY client/package.json client/package-lock.json /deploy/client/
 
-RUN npm install
+RUN npm ci
 
 COPY client /deploy/client/
 
