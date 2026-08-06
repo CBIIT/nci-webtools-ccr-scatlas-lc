@@ -12,7 +12,9 @@ import WebglAlert from "./modules/components/webgl-alert";
 
 export default function App() {
   const { pathname } = useLocation();
-  useEffect((_) => window.scrollTo(0, 0), [pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   const links = [
     {
