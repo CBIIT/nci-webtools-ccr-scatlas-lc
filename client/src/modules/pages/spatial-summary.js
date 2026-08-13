@@ -15,8 +15,8 @@ const LOREM =
 
 const transcriptomicsCohorts = [
   { title: "Multi-Regional", to: "/spatial/transcriptomics/multi-regional" },
-  { title: "European", to: "/spatial/transcriptomics/european" },
-  { title: "TIGER-LC", to: "/spatial/transcriptomics/tiger-lc" },
+  { title: "European iCCA", to: "/spatial/transcriptomics/european" },
+  { title: "TIGER-LC iCCA", to: "/spatial/transcriptomics/tiger-lc" },
 ];
 
 const proteomicsCohorts = [
@@ -63,7 +63,7 @@ export default function SpatialSummary() {
 
       <SummarySection
         icon="bi-grid-1x2-fill"
-        title="Spatial transcriptomics"
+        title="Single-cell spatial transcriptomics"
         active={activeSection === "transcriptomics"}
         onActivate={() => setActiveSection("transcriptomics")}>
         <CohortRow cohorts={transcriptomicsCohorts} />
@@ -71,7 +71,7 @@ export default function SpatialSummary() {
 
       <SummarySection
         icon="bi-palette-fill"
-        title="Spatial proteomics"
+        title="Single-cell spatial proteomics"
         active={activeSection === "proteomics"}
         onActivate={() => setActiveSection("proteomics")}>
         <CohortRow cohorts={proteomicsCohorts} />
