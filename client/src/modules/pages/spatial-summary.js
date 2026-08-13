@@ -13,16 +13,41 @@ const LOREM =
   "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, " +
   "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.";
 
+// widget images per the client's "Images assigned to each widget" map
 const transcriptomicsCohorts = [
-  { title: "Multi-Regional", to: "/spatial/transcriptomics/multi-regional" },
-  { title: "European iCCA", to: "/spatial/transcriptomics/european" },
-  { title: "TIGER-LC iCCA", to: "/spatial/transcriptomics/tiger-lc" },
+  {
+    title: "Multi-Regional",
+    to: "/spatial/transcriptomics/multi-regional",
+    image: "/images/spatial_transcriptomics_multiregional.png",
+  },
+  {
+    title: "European iCCA",
+    to: "/spatial/transcriptomics/european",
+    image: "/images/spatial_transcriptomics_european_icca.png",
+  },
+  {
+    title: "TIGER-LC iCCA",
+    to: "/spatial/transcriptomics/tiger-lc",
+    image: "/images/spatial_transcriptomics_tigerlc_icca.png",
+  },
 ];
 
 const proteomicsCohorts = [
-  { title: "TIGER-LC ICCA", to: "/spatial/proteomics/tiger-lc-icca" },
-  { title: "TIGER-LC HCC", to: "/spatial/proteomics/tiger-lc-hcc" },
-  { title: "LCI HCC", to: "/spatial/proteomics/lci-hcc" },
+  {
+    title: "TIGER-LC ICCA",
+    to: "/spatial/proteomics/tiger-lc-icca",
+    image: "/images/spatial_proteomics_tigerlc_icca.png",
+  },
+  {
+    title: "TIGER-LC HCC",
+    to: "/spatial/proteomics/tiger-lc-hcc",
+    image: "/images/spatial_proteomics_tigerlc_hcc.png",
+  },
+  {
+    title: "LCI HCC",
+    to: "/spatial/proteomics/lci-hcc",
+    image: "/images/spatial_proteomics_lci_hcc.png",
+  },
 ];
 
 function CohortRow({ cohorts }) {
@@ -30,7 +55,12 @@ function CohortRow({ cohorts }) {
     <Row className="mt-3">
       {cohorts.map((cohort) => (
         <Col key={cohort.to} md={4} className="mb-3">
-          <CohortWidget title={cohort.title} to={cohort.to} description={LOREM} />
+          <CohortWidget
+            title={cohort.title}
+            to={cohort.to}
+            image={cohort.image}
+            description={LOREM}
+          />
         </Col>
       ))}
     </Row>
