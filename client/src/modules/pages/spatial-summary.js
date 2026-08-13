@@ -60,7 +60,7 @@ const transcriptomicsCohorts = [
   },
   {
     title: "TIGER-LC iCCA",
-    to: "/spatial/transcriptomics/tiger-lc",
+    to: "/spatial/transcriptomics/tiger-lc-icca",
     image: "/images/spatial_transcriptomics_tigerlc_icca.png",
     description: (
       <>
