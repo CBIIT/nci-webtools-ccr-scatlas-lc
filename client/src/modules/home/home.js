@@ -31,12 +31,14 @@ const TOTAL_COUNTS = [
 
 export default function Home() {
   return (
-    // Background image is the client-provided spatial-tissue micrograph; set inline
-    // from the public folder (CRA serves /images/* at the root) over a dark fallback.
+    // Background is a 2560px web derivative of the client's Homepage_figure.jpg
+    // (original is 18000px/15MB — too heavy to ship; full-res source lives with the
+    // ticket docs); set inline from the public folder (CRA serves /images/* at the
+    // root) over a dark fallback.
     <div
       className="home-hero"
       style={{
-        backgroundImage: "url(/images/home-hero-spatial-tissue.png)",
+        backgroundImage: "url(/images/homepage_figure.jpg)",
       }}>
       <Container className="py-5 d-flex flex-column align-items-center">
         <div className="home-intro text-center rounded shadow p-4 p-md-5">
