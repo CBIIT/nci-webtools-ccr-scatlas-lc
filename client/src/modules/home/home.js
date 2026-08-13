@@ -7,12 +7,13 @@ import { Link } from "react-router-dom";
 // Home page — a high-level portal: a full-bleed background image with a centered
 // intro (title + description), the Explore buttons, and the Total Counts tiles.
 // The buttons are data-driven so more can be added without restructuring the page.
-const TITLE = "Single-Cell and Spatial Multi-Omics Atlas of Liver Cancer";
+const TITLE = "Spatial and Single-Cell Atlas of Liver Cancer";
 const DESCRIPTION =
-  "SpatialAtlasLC is a publicly available multi-omics data portal to construct " +
-  "single-cell and spatial atlases of the transcriptomic, proteomic, and epigenomic " +
-  "features of tumor cell communities in primary liver cancers and cancers metastasized " +
-  "to the liver, with future expansion into 3D and 4D spatial profiling modalities.";
+  "The scAtlasLC is a publicly available multi-omics data portal for characterizing " +
+  "cellular communities in liver cancer at single-cell and spatial resolution. It " +
+  "includes single-cell transcriptomic, spatial transcriptomic, and spatial proteomic " +
+  "data from hepatocellular carcinoma (HCC) and intrahepatic cholangiocarcinoma (iCCA), " +
+  "the two major subtypes of primary liver cancer.";
 
 // Atlas entry points — add an entry here to surface another "Explore" button.
 const EXPLORE_LINKS = [
@@ -20,13 +21,13 @@ const EXPLORE_LINKS = [
   { label: "Explore Spatial Atlas", to: "/spatial" },
 ];
 
-// Total Counts — values are placeholders ("XYZ", per the client mockup) until the
-// counts data source is provided; swap in real numbers when available.
+// Total Counts — client-provided static values, in the client's display order;
+// becomes a query if a dynamic counts source is ever defined.
 const TOTAL_COUNTS = [
-  { label: "Data Types", value: "XYZ" },
-  { label: "Cohorts", value: "XYZ" },
-  { label: "Cases", value: "XYZ" },
-  { label: "Biospecimen", value: "XYZ" },
+  { label: "Cases", value: "463" },
+  { label: "Biospecimens", value: "847" },
+  { label: "Cells", value: "9.2M" },
+  { label: "Cohorts", value: "7" },
 ];
 
 export default function Home() {
