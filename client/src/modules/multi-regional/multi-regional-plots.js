@@ -111,11 +111,6 @@ export default function MultiRegionalCellPlots() {
     ],
   };
 
-  const traceColumns = {
-    groupColumn: "type",
-    valueColumn: gene,
-  };
-
   const traceConfig = {
     showlegend: !gene,
     hoverinfo: !gene ? "name" : "text+name",

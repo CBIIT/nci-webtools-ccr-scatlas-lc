@@ -7,9 +7,6 @@ import {
   cd8StatsQuery,
   tCellStatsQuery,
   plotOptionsState,
-  cd4Query,
-  cd8Query,
-  tCellQuery,
 } from "./t-cell.state";
 
 export default function TCellCounts() {
@@ -40,10 +37,6 @@ export default function TCellCounts() {
     },
     [plotOptions, setPlotOptions],
   );
-  const cd4QueryV = useRecoilValue(cd4Query);
-  const cd8QueryV = useRecoilValue(cd8Query);
-  const tCellQueryV = useRecoilValue(tCellQuery);
-
   const columns = useMemo(
     (_) => [
       {

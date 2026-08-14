@@ -8,11 +8,8 @@ import merge from "lodash/merge";
 import { getTraces } from "../../services/plot";
 import {
   tCellQuery,
-  tCellStatsQuery,
   cd4Query,
-  cd4StatsQuery,
   cd8Query,
-  cd8StatsQuery,
   plotOptionsState,
   tabState,
   tCellGeneExpressionQuery,
@@ -88,11 +85,6 @@ export default function TCellsPlots() {
       "hoverCompareCartesian",
       "hoverClosestCartesian",
     ],
-  };
-
-  const traceColumns = {
-    groupColumn: "type",
-    valueColumn: gene && "value",
   };
 
   const traceConfig = {

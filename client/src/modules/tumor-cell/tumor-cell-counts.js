@@ -6,8 +6,6 @@ import {
   tumorCellsStatsQuery,
   plotOptionsState,
   normalCellsStatsQuery,
-  tumorCellsQuery,
-  normalCellsQuery,
 } from "./tumor-cell.state";
 
 export default function TumorCellCounts() {
@@ -33,8 +31,6 @@ export default function TumorCellCounts() {
     },
     [plotOptions, setPlotOptions],
   );
-  const tumorCell = useRecoilValue(tumorCellsQuery);
-  const normalCell = useRecoilValue(normalCellsQuery);
   const columns = useMemo(
     (_) => [
       {

@@ -68,11 +68,6 @@ export default function TumorCellPlots() {
     ],
   };
 
-  const traceColumns = {
-    groupColumn: "type",
-    valueColumn: gene,
-  };
-
   const traceConfig = {
     showlegend: !gene,
     hoverinfo: !gene ? "name" : "text+name",

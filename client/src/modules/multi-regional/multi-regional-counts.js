@@ -6,8 +6,6 @@ import {
   tumorCellsStatsQuery,
   normalCellsStatsQuery,
   plotOptionsState,
-  tumorCellsQuery,
-  normalCellsQuery,
 } from "./multi-regional.state";
 
 export default function MultiRegionalCellCounts() {
@@ -33,8 +31,6 @@ export default function MultiRegionalCellCounts() {
     },
     [plotOptions, setPlotOptions],
   );
-  const tumorCell = useRecoilValue(tumorCellsQuery);
-  const normalCell = useRecoilValue(normalCellsQuery);
 
   const columns = useMemo(
     (_) => [
