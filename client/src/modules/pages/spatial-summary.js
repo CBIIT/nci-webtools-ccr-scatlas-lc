@@ -2,24 +2,12 @@ import { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import CohortWidget from "../components/cohort-widget";
 import SummarySection from "../components/summary-section";
+import Ref from "../components/ref-link";
 
 // Spatial Atlas Summary page — landing/summary layer above the spatial cohort
 // pages. Mirrors the Single-Cell summary: overview text + modality sections
 // (spatial transcriptomics, spatial proteomics) with cohort widgets under each.
 // All copy below is final client wording — render it verbatim.
-
-// external reference link inside a widget description (back face is primary/white)
-function Ref({ href, children }) {
-  return (
-    <a
-      className="text-white text-decoration-underline"
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer">
-      {children}
-    </a>
-  );
-}
 
 // widget images per the client's "Images assigned to each widget" map;
 // descriptions are the client's exact cohort copy with linked references
