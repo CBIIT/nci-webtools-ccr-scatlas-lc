@@ -53,7 +53,7 @@ export default function App() {
         />
         <Route
           exact
-          path="/spatial/transcriptomics/tiger-lc"
+          path="/spatial/transcriptomics/tiger-lc-icca"
           component={TigerLcPage}
         />
         <Route

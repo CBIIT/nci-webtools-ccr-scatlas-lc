@@ -26,8 +26,8 @@ export const navMenu = [
             title: "Multi-Regional",
             route: "/spatial/transcriptomics/multi-regional",
           },
-          { title: "European", route: "/spatial/transcriptomics/european" },
-          { title: "TIGER-LC", route: "/spatial/transcriptomics/tiger-lc" },
+          { title: "European iCCA", route: "/spatial/transcriptomics/european" },
+          { title: "TIGER-LC iCCA", route: "/spatial/transcriptomics/tiger-lc-icca" },
         ],
       },
       {

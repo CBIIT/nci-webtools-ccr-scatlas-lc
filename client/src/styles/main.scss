@@ -33,8 +33,8 @@
   }
 
   // transparent hover target over the image area only (matches .cohort-widget-img
-  // height). Sits above the card faces so it receives the hover; clicks pass
-  // through to the wrapping link for navigation.
+  // height). Sits above the card faces so it receives the hover that triggers
+  // the flip (state-driven in cohort-widget.js).
   .cohort-widget-flip-zone {
     position: absolute;
     top: 0;
@@ -44,10 +44,16 @@
     z-index: 2;
   }
 
-  // flip when hovering the image zone, or on keyboard focus only
-  // (:focus-visible excludes mouse clicks, so clicking the text area just
+  // once flipped, the zone goes pointer-transparent so links in the back-face
+  // description are clickable; the widget unflips on mouseleave of the card
+  &.cohort-widget-flipped .cohort-widget-flip-zone {
+    pointer-events: none;
+  }
+
+  // flip when the image zone was hovered (state class), or on keyboard focus
+  // only (:focus-visible excludes mouse clicks, so clicking the text area just
   // navigates instead of flipping)
-  .cohort-widget-flip-zone:hover ~ .cohort-widget-inner,
+  &.cohort-widget-flipped .cohort-widget-inner,
   &:focus-visible .cohort-widget-inner {
     transform: rotateY(180deg);
   }

@@ -87,7 +87,7 @@ export default function TigerLcPlots() {
     <Plot
       data={getTraces(records, traceConfig, valueIndex, cellTypeColors)}
       layout={merge({}, layout, {
-        title: `<b>TIGER-LC${activeFeature ? `: ${featureLabel}` : featureLabel} (n=${records.length})</b>`,
+        title: `<b>TIGER-LC iCCA${activeFeature ? `: ${featureLabel}` : featureLabel} (n=${records.length})</b>`,
         legend: {
           title: { text: activeFeature ? "" : "Cell type", font: { size: 14 } },
         },
