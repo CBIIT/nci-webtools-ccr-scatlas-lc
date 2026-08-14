@@ -42,20 +42,18 @@ export default function SingleCellSummary() {
       <hr />
 
       <p>
-        Single-cell Atlas in Liver Cancer is a publicly available data portal of
-        single-cell transcriptomic profiles of tumor cell communities in
-        hepatocellular carcinoma and intrahepatic cholangiocarcinoma.
+        The Single-cell Atlas of Liver Cancer comprises single-cell
+        transcriptomic profiles of tumor cell communities in HCC and iCCA.
       </p>
       <p>
         It can be used to evaluate gene expression in malignant cells and
-        various non-malignant cells in liver cancer. It can be further used to
-        determine gene expression in different subtypes of stromal cells and
-        immune cells.
+        various non-malignant cells. It can be further used to determine gene
+        expression in different subtypes of stromal cells and immune cells.
       </p>
 
       <SummarySection
         icon="bi-diagram-3-fill"
-        title="Single cell RNA sequencing (scRNA-seq)"
+        title="Single-cell RNA sequencing (scRNA-seq)"
         active={activeSection === "scrna"}
         onActivate={() => setActiveSection("scrna")}>
         <Row className="mt-3">
@@ -65,14 +63,6 @@ export default function SingleCellSummary() {
             </Col>
           ))}
         </Row>
-      </SummarySection>
-
-      <SummarySection
-        icon="bi-grid-3x3-gap-fill"
-        title="Single-cell spatial transcriptomics (CosMx SMI)"
-        active={activeSection === "cosmx"}
-        onActivate={() => setActiveSection("cosmx")}>
-        <p className="text-muted mt-3">Coming soon.</p>
       </SummarySection>
     </Container>
   );
