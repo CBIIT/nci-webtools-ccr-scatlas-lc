@@ -14,7 +14,7 @@ export function SpatialTransEuropean() {
 
 // --- Proteomics ---
 export function SpatialProtTigerLcIcca() {
-  return <SpatialCohortPage title="TIGER-LC ICCA" modality="Proteomics" />;
+  return <SpatialCohortPage title="TIGER-LC iCCA" modality="Proteomics" />;
 }
 export function SpatialProtTigerLcHcc() {
   return <SpatialCohortPage title="TIGER-LC HCC" modality="Proteomics" />;

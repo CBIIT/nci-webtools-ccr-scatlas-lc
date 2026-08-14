@@ -16,7 +16,8 @@ const scrnaCohorts = [
     description: (
       <>
         This cohort includes single cell transcriptomic profiles of 52,789
-        cells derived from 46 HCC and iCCA biopsies of 37 patients (
+        cells derived from 46 HCC and iCCA biopsies of 37 patients
+        <br />(
         <Ref href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530">
           GSE151530
         </Ref>
@@ -36,7 +37,8 @@ const scrnaCohorts = [
         iCCA patients. For each tumor, single cells were obtained from five
         separate regions, i.e., three tumor cores (T1, T2, and T3), one tumor
         border (B) and an adjacent normal tissue (N). A total of 34 samples
-        were included in this study (
+        were included in this study
+        <br />(
         <Ref href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903">
           GSE189903
         </Ref>
@@ -55,7 +57,8 @@ const scrnaCohorts = [
         This cohort consists of 57,567 cells from nine HCC patients and two
         iCCA patients. Tumor biopsies were collected longitudinally, with two
         to five samples for each patient. Overall, 31 samples were collected
-        across all patients (
+        across all patients
+        <br />(
         <Ref href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772">
           GSE229772
         </Ref>
