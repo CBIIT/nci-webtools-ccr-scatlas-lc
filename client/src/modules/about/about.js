@@ -7,6 +7,7 @@ export default function About() {
     <Container className="h-100">
       <Card className="h-100 shadow rounded-0">
         <Card.Body>
+          <h2 className="text-primary h4">Parameters</h2>
           <Table bordered hover>
             <thead>
               <tr>
@@ -137,6 +138,76 @@ export default function About() {
                 <td>
                   Enter 2 to filter genes with a maximum average expression of
                   2.
+                </td>
+              </tr>
+              <tr>
+                <td>Create new</td>
+                <td>
+                  <ul className="mb-0 ps-3">
+                    <li>
+                      Create a gene list to explore gene expression profiles.
+                    </li>
+                    <li>
+                      View the spatial distribution of the average expression of
+                      the entire gene list by clicking the water drop icon next
+                      to the gene set name.
+                    </li>
+                    <li>
+                      Explore the expression profile of an individual gene by
+                      clicking the button to the left of the gene name.
+                    </li>
+                    <li>
+                      Add additional genes to the list using the 'Add gene' box.
+                    </li>
+                    <li>
+                      Remove a gene from the list by clicking the '×' button to
+                      the right of the gene name.
+                    </li>
+                  </ul>
+                </td>
+                <td>
+                  <ul className="mb-0 ps-3">
+                    <li>
+                      Set Name as Gene Set 1 and input GLUL, EPCAM in Genes
+                      (optional box)
+                    </li>
+                    <li>
+                      Click on the water drop button beside Gene Set 1 to
+                      explore the spatial distribution of average expression of
+                      the GLUL and EPCAM.
+                    </li>
+                    <li>
+                      Click on the water drop button beside GLUL to explore the
+                      spatial distribution of expression of the GLUL.
+                    </li>
+                    <li>Enter SPP1 in Add gene box to add SPP1 to Gene Set 1.</li>
+                    <li>
+                      Click on the x button right beside GLUL to remove GLUL
+                      from Gene Set 1.
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td>MeanExpression_*</td>
+                <td>
+                  The average expression of a given gene in the specific cell
+                  type.
+                </td>
+                <td>
+                  The mean expression of CD31 in TAMs is 16.15 in the LCI HCC
+                  (spatial proteomics) cohort.
+                </td>
+              </tr>
+              <tr>
+                <td>PercentageExpression_*</td>
+                <td>
+                  The proportion of cells in expressing a given gene in the
+                  specific cell type.
+                </td>
+                <td>
+                  CD31 was expressed in 1.4% of the TAMs LCI HCC (spatial
+                  proteomics) cohort.
                 </td>
               </tr>
             </tbody>
