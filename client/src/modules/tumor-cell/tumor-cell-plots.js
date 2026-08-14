@@ -63,7 +63,6 @@ export default function TumorCellPlots() {
     displaylogo: false,
     modeBarButtonsToRemove: [
       "select2d",
-      "lasso2d",
       "hoverCompareCartesian",
       "hoverClosestCartesian",
     ],

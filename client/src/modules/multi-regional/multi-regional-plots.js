@@ -106,7 +106,6 @@ export default function MultiRegionalCellPlots() {
     displaylogo: false,
     modeBarButtonsToRemove: [
       "select2d",
-      "lasso2d",
       "hoverCompareCartesian",
       "hoverClosestCartesian",
     ],

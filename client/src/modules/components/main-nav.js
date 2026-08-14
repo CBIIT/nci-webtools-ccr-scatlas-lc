@@ -33,12 +33,12 @@ export const navMenu = [
       {
         title: "Proteomics",
         children: [
+          { title: "LCI HCC", route: "/spatial/proteomics/lci-hcc" },
+          { title: "TIGER-LC HCC", route: "/spatial/proteomics/tiger-lc-hcc" },
           {
             title: "TIGER-LC iCCA",
             route: "/spatial/proteomics/tiger-lc-icca",
           },
-          { title: "TIGER-LC HCC", route: "/spatial/proteomics/tiger-lc-hcc" },
-          { title: "LCI HCC", route: "/spatial/proteomics/lci-hcc" },
         ],
       },
     ],
