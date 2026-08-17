@@ -2,33 +2,70 @@ import { useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import CohortWidget from "../components/cohort-widget";
 import SummarySection from "../components/summary-section";
+import Ref from "../components/ref-link";
 
 // Single-Cell Atlas Summary page — a landing/summary layer above the existing
 // single-cell cohort pages. Overview text + modality sections + cohort widgets.
+// Descriptions are the client's exact cohort copy with linked GSE/PMID references.
 const scrnaCohorts = [
   {
     title: "NCI-CLARITY",
     to: "/nci-clarity",
     image: "/images/nci_clarity_HD.svg",
     count: "52,789 cells",
-    description:
-      "52,789 cells from 46 hepatocellular carcinoma (HCC) and intrahepatic cholangiocarcinoma (iCCA) biopsies of 37 patients (GSE151530).",
+    description: (
+      <>
+        This cohort includes single cell transcriptomic profiles of 52,789
+        cells derived from 46 HCC and iCCA biopsies of 37 patients
+        <br />(
+        <Ref href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530">
+          GSE151530
+        </Ref>
+        , PMID:{" "}
+        <Ref href="https://pubmed.ncbi.nlm.nih.gov/34216724/">34216724</Ref>).
+      </>
+    ),
   },
   {
     title: "Multi-Regional",
     to: "/multi-regional",
     image: "/images/multiregional_HD.svg",
     count: "112,506 cells",
-    description:
-      "112,506 cells from four HCC and three iCCA patients. Five regions per tumor — three cores (T1–T3), one border (B), and adjacent normal (N); 34 samples (GSE189903).",
+    description: (
+      <>
+        This cohort consists of 112,506 cells from four HCC patients and three
+        iCCA patients. For each tumor, single cells were obtained from five
+        separate regions, i.e., three tumor cores (T1, T2, and T3), one tumor
+        border (B) and an adjacent normal tissue (N). A total of 34 samples
+        were included in this study
+        <br />(
+        <Ref href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903">
+          GSE189903
+        </Ref>
+        , PMID:{" "}
+        <Ref href="https://pubmed.ncbi.nlm.nih.gov/36476645/">36476645</Ref>).
+      </>
+    ),
   },
   {
     title: "Sequential NCI-CLARITY",
     to: "/sequential",
     image: "/images/sequential_nci_clarity_HD.svg",
     count: "57,567 cells",
-    description:
-      "57,567 cells from nine HCC and two iCCA patients, sampled longitudinally (two to five each); 31 samples (GSE229772).",
+    description: (
+      <>
+        This cohort consists of 57,567 cells from nine HCC patients and two
+        iCCA patients. Tumor biopsies were collected longitudinally, with two
+        to five samples for each patient. Overall, 31 samples were collected
+        across all patients
+        <br />(
+        <Ref href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772">
+          GSE229772
+        </Ref>
+        , PMID:{" "}
+        <Ref href="https://pubmed.ncbi.nlm.nih.gov/38280378/">38280378</Ref>).
+      </>
+    ),
   },
 ];
 
@@ -42,20 +79,18 @@ export default function SingleCellSummary() {
       <hr />
 
       <p>
-        Single-cell Atlas in Liver Cancer is a publicly available data portal of
-        single-cell transcriptomic profiles of tumor cell communities in
-        hepatocellular carcinoma and intrahepatic cholangiocarcinoma.
+        The Single-cell Atlas of Liver Cancer comprises single-cell
+        transcriptomic profiles of tumor cell communities in HCC and iCCA.
       </p>
       <p>
         It can be used to evaluate gene expression in malignant cells and
-        various non-malignant cells in liver cancer. It can be further used to
-        determine gene expression in different subtypes of stromal cells and
-        immune cells.
+        various non-malignant cells. It can be further used to determine gene
+        expression in different subtypes of stromal cells and immune cells.
       </p>
 
       <SummarySection
         icon="bi-diagram-3-fill"
-        title="Single cell RNA sequencing (scRNA-seq)"
+        title="Single-cell RNA sequencing (scRNA-seq)"
         active={activeSection === "scrna"}
         onActivate={() => setActiveSection("scrna")}>
         <Row className="mt-3">
@@ -65,14 +100,6 @@ export default function SingleCellSummary() {
             </Col>
           ))}
         </Row>
-      </SummarySection>
-
-      <SummarySection
-        icon="bi-grid-3x3-gap-fill"
-        title="Single-cell spatial transcriptomics (CosMx SMI)"
-        active={activeSection === "cosmx"}
-        onActivate={() => setActiveSection("cosmx")}>
-        <p className="text-muted mt-3">Coming soon.</p>
       </SummarySection>
     </Container>
   );

@@ -6,8 +6,6 @@ import {
   tumorCellsStatsQuery,
   normalCellsStatsQuery,
   plotOptionsState,
-  tumorCellsQuery,
-  normalCellsQuery,
 } from "./sequential.state";
 
 export default function SequentialCellCounts() {
@@ -33,8 +31,6 @@ export default function SequentialCellCounts() {
     },
     [plotOptions, setPlotOptions],
   );
-  const tumorCell = useRecoilValue(tumorCellsQuery);
-  const normalCell = useRecoilValue(normalCellsQuery);
 
   const columns = useMemo(
     (_) => [

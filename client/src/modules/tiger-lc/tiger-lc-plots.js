@@ -57,7 +57,6 @@ export default function TigerLcPlots() {
     },
     modeBarButtonsToRemove: [
       "select2d",
-      "lasso2d",
       "hoverCompareCartesian",
       "hoverClosestCartesian",
     ],

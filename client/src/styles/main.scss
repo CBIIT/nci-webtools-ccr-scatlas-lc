@@ -16,25 +16,27 @@
   opacity: 0.6;
 }
 
-/* Cohort widget (atlas summary pages) — card flips on hover/focus to reveal the
-   description; clicking still navigates. Shared by both summary pages. */
+/* Cohort widget (atlas summary pages) — the image region flips on hover/focus
+   to reveal the description; the bottom gray segment never flips and is the
+   only click-to-navigate target. Shared by both summary pages. */
 .cohort-widget {
   display: block;
   position: relative; // anchor the flip-zone overlay
   perspective: 1200px;
-  cursor: pointer;
+  border-radius: 0.375rem;
 
+  // the flipping region — image on the front, description on the back; the
+  // footer below is outside it and stays put
   .cohort-widget-inner {
     position: relative;
-    min-height: 360px;
+    height: 240px; // matches .cohort-widget-img
     transition: transform 1s ease;
     transform-style: preserve-3d;
-    border-radius: 0.375rem;
   }
 
-  // transparent hover target over the image area only (matches .cohort-widget-img
-  // height). Sits above the card faces so it receives the hover that triggers
-  // the flip (state-driven in cohort-widget.js).
+  // transparent hover target over the flip region. Sits above the card faces
+  // so it receives the hover that triggers the flip (state-driven in
+  // cohort-widget.js).
   .cohort-widget-flip-zone {
     position: absolute;
     top: 0;
@@ -50,11 +52,11 @@
     pointer-events: none;
   }
 
-  // flip when the image zone was hovered (state class), or on keyboard focus
-  // only (:focus-visible excludes mouse clicks, so clicking the text area just
-  // navigates instead of flipping)
+  // flip when the image zone was hovered (state class), or while keyboard
+  // focus is inside the widget (the footer link, or a back-face description
+  // link mid-tab) so the revealed side is always the one being read
   &.cohort-widget-flipped .cohort-widget-inner,
-  &:focus-visible .cohort-widget-inner {
+  &:focus-within .cohort-widget-inner {
     transform: rotateY(180deg);
   }
 
@@ -62,13 +64,21 @@
     position: absolute;
     inset: 0;
     height: 100%;
-    overflow: hidden; // clip the (now-colored) body to the card's rounded corners
+    overflow: hidden; // clip the (now-colored) back to the rounded top corners
+    border-radius: 0.375rem 0.375rem 0 0; // the footer carries the bottom corners
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
   .cohort-widget-back {
     transform: rotateY(180deg);
+
+    // the body and description are flex items inside the fixed-height face;
+    // without min-height: 0 they refuse to shrink below their content, so the
+    // description's overflow-auto never engages and long text just clips
+    .card-body {
+      min-height: 0;
+    }
   }
 
   .cohort-widget-img {
@@ -78,21 +88,46 @@
   }
 
   // placeholder shown when a cohort has no image yet — white image area
-  // (the muted gray lives on the body below)
+  // (the muted gray lives on the footer below)
   .cohort-widget-img-placeholder {
     background-color: #fff;
-    border-bottom: 1px solid #e9ecef;
   }
 
-  // text/body region is always muted gray
-  .cohort-widget-body-muted {
+  // non-flipping bottom gray segment: title + count, and the navigation target
+  .cohort-widget-footer {
     background-color: #f1f3f5;
+    border-radius: 0 0 0.375rem 0.375rem;
+    cursor: pointer;
   }
 
   // description text on the back face — larger than Bootstrap's `small`
   .cohort-widget-desc {
+    flex: 1 1 auto;
+    min-height: 0;
     font-size: 1.05rem;
     line-height: 1.5;
+
+    // slim translucent-white scrollbar so it blends with the primary-blue
+    // back face (scrollbar-color for Chrome/Firefox, ::-webkit-* for Safari)
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.45);
+      border-radius: 3px;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.7);
+      }
+    }
   }
 }
 

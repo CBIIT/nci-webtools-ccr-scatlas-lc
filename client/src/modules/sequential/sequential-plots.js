@@ -109,15 +109,9 @@ export default function SequentialCellPlots() {
     displaylogo: false,
     modeBarButtonsToRemove: [
       "select2d",
-      "lasso2d",
       "hoverCompareCartesian",
       "hoverClosestCartesian",
     ],
-  };
-
-  const traceColumns = {
-    groupColumn: "type",
-    valueColumn: gene,
   };
 
   const traceConfig = {
