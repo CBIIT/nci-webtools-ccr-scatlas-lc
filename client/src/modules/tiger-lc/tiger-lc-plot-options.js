@@ -99,14 +99,16 @@ export default function TigerLcPlotOptions() {
               label="Gene"
               className="form-control"
               options={lookup.map((e) => e.gene)}
+              allOption={null}
               onChange={(selectedGene) => {
-                const activeFeature =
-                  !selectedGene || selectedGene === "All genes"
-                    ? null
-                    : { kind: "gene", label: selectedGene, genes: [selectedGene] };
+                // clearing snaps back to the EPCAM default — the expression
+                // plots always have a feature (reopened AC)
+                const activeFeature = !selectedGene
+                  ? defaultPlotOptions.activeFeature
+                  : { kind: "gene", label: selectedGene, genes: [selectedGene] };
                 mergePlotOptions({ activeFeature });
               }}
-              placeholder="All genes"
+              placeholder="EPCAM"
               value={
                 plotOptions.activeFeature?.kind === "gene"
                   ? plotOptions.activeFeature.label
@@ -116,7 +118,12 @@ export default function TigerLcPlotOptions() {
             <Button
               variant="light"
               className="bg-transparent border-0 right-0 position-absolute"
-              onClick={(_) => mergePlotOptions({ activeFeature: null })}>
+              title="Reset to the default gene (EPCAM)"
+              onClick={(_) =>
+                mergePlotOptions({
+                  activeFeature: defaultPlotOptions.activeFeature,
+                })
+              }>
               &times;
             </Button>
           </InputGroup>

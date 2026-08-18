@@ -42,13 +42,16 @@ export const featureExpressionQuery = selectorFamily({
   },
 });
 
-// activeFeature: what colors the plot — null (color by cell type) or
-// { kind: "gene" | "set", label, genes: [...] }. A single gene is a 1-gene feature.
+// activeFeature: what colors the expression (right) plots —
+// { kind: "gene" | "set", label, genes: [...] }. A single gene is a 1-gene
+// feature; a set may carry a toggled subset (genes ⊆ the set, setSize = full
+// size). Per the reopened AC, EPCAM is the default selected gene and clearing
+// a selection snaps back to it — activeFeature is never null in practice.
 // samples: null = all samples selected (default); otherwise an array of sample ids.
 export const defaultPlotOptions = {
   size: 4,
   opacity: 0.8,
-  activeFeature: null,
+  activeFeature: { kind: "gene", label: "EPCAM", genes: ["EPCAM"] },
   samples: null,
 };
 

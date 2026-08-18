@@ -4,6 +4,7 @@ import {
   geneSetsState,
   cellsStatsQuery,
   plotOptionsState,
+  defaultPlotOptions,
 } from "./tiger-lc.state";
 
 // Connects the shared GeneSetPanel to TIGER-LC state: the session-only geneSetsState
@@ -32,7 +33,7 @@ export default function TigerLcGeneSets() {
       ...plotOptions,
       activeFeature:
         genes.length === 0
-          ? null
+          ? defaultPlotOptions.activeFeature // snap back to the EPCAM default
           : {
               kind: "set",
               setId: set.id,
@@ -53,8 +54,8 @@ export default function TigerLcGeneSets() {
   }
 
   // Per-gene teardrop: toggles the gene in the active subset. On an inactive
-  // set it starts a fresh subset of just that gene; emptying the subset
-  // reverts to cell-type coloring.
+  // set it starts a fresh subset of just that gene; emptying the subset snaps
+  // back to the EPCAM default.
   function handleToggleGene(set, gene) {
     if (activeSetId !== set.id) {
       setFeature(set, [gene]);
@@ -70,7 +71,7 @@ export default function TigerLcGeneSets() {
 
   // Update a set's members and, if it is the one currently coloring the plot,
   // recompute live: full-set coloring follows the edit; a partial subset keeps
-  // only members that still exist. Emptied → fall back to cell-type coloring.
+  // only members that still exist. Emptied → snap back to the EPCAM default.
   function commitGenes(setId, genes) {
     const next = sets.map((s) => (s.id === setId ? { ...s, genes } : s));
     setSets(next);
@@ -85,7 +86,7 @@ export default function TigerLcGeneSets() {
           ...prev,
           activeFeature:
             nextGenes.length === 0
-              ? null
+              ? defaultPlotOptions.activeFeature
               : {
                   kind: "set",
                   setId,
@@ -112,9 +113,12 @@ export default function TigerLcGeneSets() {
 
   function handleDelete(set) {
     setSets(sets.filter((s) => s.id !== set.id));
-    // deleting the active set reverts the plot to cell-type coloring
+    // deleting the active set snaps back to the EPCAM default
     if (activeSetId === set.id) {
-      setPlotOptions((prev) => ({ ...prev, activeFeature: null }));
+      setPlotOptions((prev) => ({
+        ...prev,
+        activeFeature: defaultPlotOptions.activeFeature,
+      }));
     }
   }
 

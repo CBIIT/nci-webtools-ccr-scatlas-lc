@@ -17,7 +17,6 @@ export default function Select({
 }) {
   const updatedOptions = allOption ? [allOption, ...options] : options;
   const [inputItems, setInputItems] = useState(options);
-  const [isInputFocused, setIsInputFocused] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   // rendered window into inputItems — the full list (6k+ genes) is too many DOM
   // nodes to mount at once, so more rows are appended as the user scrolls
@@ -40,7 +39,6 @@ export default function Select({
 
     // Rest of your code
     selectItem(selectedItem);
-    setIsInputFocused(false);
   };
 
   const {
@@ -63,11 +61,13 @@ export default function Select({
         ),
       ]);
       setInputValue(inputValue);
-      if (isInputFocused) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-      }
+      // open only when the change comes from the user typing in THIS input.
+      // The value also changes programmatically (e.g. activating a gene set
+      // clears the box) — checking live DOM focus instead of a tracked flag
+      // keeps those resets from popping the dropdown open with focus
+      // elsewhere, where no blur could ever close it again.
+      const active = document.activeElement;
+      setIsOpen(!!active && active.getAttribute("name") === name);
     },
 
     // Add onSelectedItemChange here
@@ -80,14 +80,9 @@ export default function Select({
   // Wired to click as well as focus — selection keeps focus in the input, so a
   // re-click fires no focus event.
   const handleInputFocus = (event) => {
-    setIsInputFocused(true);
     setIsOpen(true);
     setInputItems(updatedOptions);
     event.target.select();
-  };
-
-  const handleInputBlur = () => {
-    setIsInputFocused(false);
   };
 
   const handleDropdownBlur = () => {
@@ -112,7 +107,6 @@ export default function Select({
           placeholder={placeholder}
           onFocus={handleInputFocus}
           onClick={handleInputFocus}
-          onBlur={handleInputBlur}
           {...getInputProps()}
         />
       </div>
