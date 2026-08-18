@@ -77,9 +77,20 @@ export default function TigerLcPlots() {
     },
   };
 
-  // label a multi-gene set's coloring as a mean so it isn't read as single-gene expression
+  // label set coloring by what is actually plotted: the full set's mean, a
+  // toggled subset's mean, or a single toggled gene — so the reader always
+  // knows whether they're looking at set-level or gene-level expression
+  const setLabel = () => {
+    const { label, genes, setSize } = activeFeature;
+    if (genes.length === 1) return `${label}: ${genes[0]}`;
+    if (setSize && genes.length < setSize)
+      return `${label} (mean, ${genes.length} of ${setSize} genes)`;
+    return `${label} (mean, ${genes.length} genes)`;
+  };
   const featureLabel = activeFeature
-    ? `${activeFeature.label}${isSet ? ` (mean, ${activeFeature.genes.length} genes)` : ""}`
+    ? isSet
+      ? setLabel()
+      : activeFeature.label
     : " — Cell Types";
 
   return (

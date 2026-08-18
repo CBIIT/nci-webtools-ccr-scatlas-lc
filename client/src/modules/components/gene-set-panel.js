@@ -20,8 +20,10 @@ export default function GeneSetPanel({
   sets,
   geneOptions,
   activeSetId,
+  activeGenes,
   onCreate,
   onColorBy,
+  onToggleGene,
   onAddGene,
   onRemoveGene,
   onDelete,
@@ -112,20 +114,45 @@ export default function GeneSetPanel({
                       <div className="text-muted small mb-2">No genes yet.</div>
                     ) : (
                       <div className="d-flex flex-wrap gap-1 mb-2">
-                        {set.genes.map((gene) => (
-                          <span
-                            key={gene}
-                            className="badge text-bg-light border d-inline-flex align-items-center gap-1">
-                            {gene}
-                            <button
-                              type="button"
-                              className="btn-close"
-                              style={{ fontSize: "0.5rem" }}
-                              aria-label={`Remove ${gene}`}
-                              onClick={() => onRemoveGene(set, gene)}
-                            />
-                          </span>
-                        ))}
+                        {set.genes.map((gene) => {
+                          // toggled = part of the subset coloring the plot
+                          const toggled =
+                            isActive && activeGenes.includes(gene);
+                          return (
+                            <span
+                              key={gene}
+                              className="badge text-bg-light border d-inline-flex align-items-center gap-1">
+                              <button
+                                type="button"
+                                className={`btn p-0 border-0 lh-1 ${
+                                  toggled ? "text-primary" : "text-secondary"
+                                }`}
+                                title={
+                                  toggled
+                                    ? `Remove ${gene} from the plotted subset`
+                                    : `Color the plot by ${gene} (toggle more genes to build a subset)`
+                                }
+                                aria-pressed={toggled}
+                                aria-label={`Toggle ${gene} in the plotted subset of ${set.name}`}
+                                onClick={() => onToggleGene(set, gene)}>
+                                <i
+                                  className={`bi ${
+                                    toggled ? "bi-droplet-fill" : "bi-droplet"
+                                  }`}
+                                  aria-hidden="true"
+                                />
+                              </button>
+                              {gene}
+                              <button
+                                type="button"
+                                className="btn-close"
+                                style={{ fontSize: "0.5rem" }}
+                                aria-label={`Remove ${gene}`}
+                                onClick={() => onRemoveGene(set, gene)}
+                              />
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                     <div
