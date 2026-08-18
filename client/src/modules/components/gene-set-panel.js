@@ -138,8 +138,9 @@ export default function GeneSetPanel({
                         options={geneOptions}
                         placeholder="Add gene…"
                         value={null}
+                        allOption={null}
                         onChange={(gene) => {
-                          if (gene && gene !== "All genes") onAddGene(set, gene);
+                          if (gene) onAddGene(set, gene);
                         }}
                       />
                     </div>
