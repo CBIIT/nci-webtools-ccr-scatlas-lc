@@ -20,7 +20,7 @@ export const navMenu = [
     route: "/spatial", // Spatial Atlas Summary (full page: NCIATWP-10325)
     children: [
       {
-        title: "Transcriptomics",
+        title: "Single-cell spatial transcriptomics",
         children: [
           {
             title: "Multi-Regional",
@@ -31,7 +31,7 @@ export const navMenu = [
         ],
       },
       {
-        title: "Proteomics",
+        title: "Single-cell spatial proteomics",
         children: [
           { title: "LCI HCC", route: "/spatial/proteomics/lci-hcc" },
           { title: "TIGER-LC HCC", route: "/spatial/proteomics/tiger-lc-hcc" },
