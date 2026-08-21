@@ -21,6 +21,20 @@ export const cellsStatsQuery = selector({
     }),
 });
 
+// The client-provided per-cell-type statistics table (verbatim from
+// stats_table_tigerlc.csv): Feature + MeanExpression_<type> +
+// PercentageExpression_<type> for Malignant/Immune/Stromal/Epithelial.
+// Display source for the statistics table below the plots.
+export const statsTableQuery = selector({
+  key: "tigerlc.statsTableQuery",
+  get: () =>
+    query("/api/query", {
+      table: "tigerlc_stats_table",
+      columns:
+        "Feature,MeanExpression_Malignant,MeanExpression_Immune,MeanExpression_Stromal,MeanExpression_Epithelial,PercentageExpression_Malignant,PercentageExpression_Immune,PercentageExpression_Stromal,PercentageExpression_Epithelial",
+    }),
+});
+
 // Color-by-feature: a "feature" is one or more genes (a single gene, or a gene set).
 // Fetch the feature's gene columns and add a per-cell `__value` = mean across them
 // (mean of one gene = that gene's value). Keyed by a comma-joined gene list so Recoil

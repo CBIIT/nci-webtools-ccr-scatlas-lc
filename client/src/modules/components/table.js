@@ -47,7 +47,16 @@ export function RangeFilter({
   );
 }
 
-export default function Table({ columns, data, options, selectedGene }) {
+export default function Table({
+  columns,
+  data,
+  options,
+  selectedGene,
+  // multi-select variant (e.g. a gene set): every listed gene's row is
+  // highlighted and the table pages to the FIRST one. Interim behavior for
+  // selections spanning pages — pending research under NCIATWP-11121.
+  selectedGenes,
+}) {
   const [highlightedRowIndex, setHighlightedRowIndex] = useState(null);
   const navigationRef = useRef(null); // Add this line to create navigationRef
   const [gotoPageTimes, setGoToPageTimes] = useState(0);
@@ -80,9 +89,14 @@ export default function Table({ columns, data, options, selectedGene }) {
   );
   const tableRef = useRef(null);
 
+  const selected = useMemo(
+    () => selectedGenes ?? (selectedGene != null ? [selectedGene] : []),
+    [selectedGenes, selectedGene],
+  );
+
   useEffect(() => {
-    const newHighlightedRowIndex = rows.findIndex(
-      (row) => row.original.gene === selectedGene,
+    const newHighlightedRowIndex = rows.findIndex((row) =>
+      selected.includes(row.original.gene),
     );
 
     if (newHighlightedRowIndex !== highlightedRowIndex) {
@@ -100,7 +114,7 @@ export default function Table({ columns, data, options, selectedGene }) {
 
     // Update the highlighted row index after the navigation is complete
     setHighlightedRowIndex(newHighlightedRowIndex);
-  }, [selectedGene, pageIndex, pageSize, rows, gotoPage, highlightedRowIndex]);
+  }, [selected, pageIndex, pageSize, rows, gotoPage, highlightedRowIndex]);
 
   return (
     <>
@@ -142,7 +156,7 @@ export default function Table({ columns, data, options, selectedGene }) {
           <tbody {...getTableBodyProps()}>
             {page.map((row) => {
               prepareRow(row);
-              const isHighlighted = row.original.gene === selectedGene;
+              const isHighlighted = selected.includes(row.original.gene);
 
               return (
                 <tr {...row.getRowProps()}>
