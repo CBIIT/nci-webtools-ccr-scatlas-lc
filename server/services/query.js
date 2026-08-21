@@ -51,15 +51,28 @@ export function validate(schema, table, columns) {
 }
 
 /**
- * Generate an escaped SQL query string for the given table and columns
+ * Generate an escaped SQL query for the given table and columns, optionally
+ * filtered to a single sample. The filter is only valid for tables that have
+ * a `sample` column; the value is bound as a query parameter, never
+ * interpolated into the SQL.
  * @param {any} schema
  * @param {string} table
  * @param {string[]} columns
- * @returns {string} An escaped SQL query string
+ * @param {string} [sample]
+ * @returns {{sql: string, params: string[]}}
  */
-export function getQuery(schema, table, columns) {
+export function getQuery(schema, table, columns, sample) {
   const valid = validate(schema, table, columns);
   const validColumns = valid.columns.map(quote).join(", ");
   const validTable = quote(valid.table);
-  return `select ${validColumns} from ${validTable}`;
+  let sql = `select ${validColumns} from ${validTable}`;
+  const params = [];
+  if (sample != null && sample !== "") {
+    if (!schema[valid.table].includes("sample")) {
+      throw new Error(`Invalid filter`);
+    }
+    sql += ` where ${quote("sample")} = ?`;
+    params.push(sample);
+  }
+  return { sql, params };
 }
