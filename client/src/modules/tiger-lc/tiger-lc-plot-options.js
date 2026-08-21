@@ -146,6 +146,15 @@ export default function TigerLcPlotOptions() {
               Reset
             </Button>
           </InputGroup>
+          <Form.Check
+            type="switch"
+            id="free-zoom"
+            className="mt-2"
+            label="Free-form zoom"
+            title="Zoom to the exact drawn rectangle without preserving the 1:1 mm aspect (allows stretching)"
+            checked={plotOptions.freeZoom}
+            onChange={(e) => mergePlotOptions({ freeZoom: e.target.checked })}
+          />
         </Form.Group>
       </Col>
     </Form>
