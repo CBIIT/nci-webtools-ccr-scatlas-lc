@@ -1,9 +1,10 @@
-// Load a CLIENT-provided per-cell-type stats CSV into a named table in an
-// existing DuckDB file — the cohort-parameterized version of
-// load_tigerlc_stats_table.mjs. Kept verbatim (Feature + MeanExpression_<type> +
-// PercentageExpression_<type> columns; cell-type names may contain spaces),
-// separate from our computed per-gene stats tables. Narrow (a few thousand
-// rows), so plain read_csv_auto — no chunking.
+// Load a narrow stats CSV verbatim into a named table in an existing DuckDB
+// file — the cohort-parameterized version of load_tigerlc_stats_table.mjs /
+// load_tigerlc_stats.mjs. Serves both the CLIENT-provided per-cell-type stats
+// CSVs (Feature + MeanExpression_<type> + PercentageExpression_<type>) and our
+// computed per-gene stats from stats_cohort.R (gene/count/percent/mean/...).
+// Column names may contain spaces or dots (cell-type names are verbatim).
+// Narrow (a few thousand rows), so plain read_csv_auto — no chunking.
 //
 // Run under node 18 with duckdb 0.9.x, backend stopped (read-write needs
 // exclusive access):
