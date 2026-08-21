@@ -3,7 +3,13 @@ import BootstrapTable from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import Pagination from "react-bootstrap/Pagination";
-import { useTable, useFilters, usePagination, useSortBy } from "react-table";
+import {
+  useTable,
+  useFilters,
+  usePagination,
+  useSortBy,
+  defaultOrderByFn,
+} from "react-table";
 import classNames from "classnames";
 import { useEffect, useRef } from "react";
 
@@ -61,6 +67,27 @@ export default function Table({
   const navigationRef = useRef(null); // Add this line to create navigationRef
   const [gotoPageTimes, setGoToPageTimes] = useState(0);
 
+  const selected = useMemo(
+    () => selectedGenes ?? (selectedGene != null ? [selectedGene] : []),
+    [selectedGenes, selectedGene],
+  );
+
+  // Multi-select pinning (NCIATWP-11121): when a genes ARRAY is supplied, the
+  // selected rows are pinned to the top of the table (in the current sort
+  // order) so a gene set's members are never separated across pages. The
+  // single selectedGene path keeps the classic highlight + jump-to-page.
+  const orderByFn = useMemo(() => {
+    if (!selectedGenes?.length) return defaultOrderByFn;
+    const pinned = new Set(selectedGenes);
+    return (sortedRows, sortFns, directions) => {
+      const ordered = defaultOrderByFn(sortedRows, sortFns, directions);
+      return [
+        ...ordered.filter((row) => pinned.has(row.original.gene)),
+        ...ordered.filter((row) => !pinned.has(row.original.gene)),
+      ];
+    };
+  }, [selectedGenes]);
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -81,6 +108,7 @@ export default function Table({
     {
       columns: useMemo((_) => columns, [columns]),
       data: useMemo((_) => data, [data]),
+      orderByFn,
       ...options,
     },
     useFilters,
@@ -89,10 +117,6 @@ export default function Table({
   );
   const tableRef = useRef(null);
 
-  const selected = useMemo(
-    () => selectedGenes ?? (selectedGene != null ? [selectedGene] : []),
-    [selectedGenes, selectedGene],
-  );
 
   useEffect(() => {
     const newHighlightedRowIndex = rows.findIndex((row) =>

@@ -98,7 +98,7 @@ export default function TigerLcPlotOptions() {
               name="gene"
               label="Gene"
               className="form-control"
-              options={lookup.map((e) => e.gene)}
+              options={lookup.map((e) => e.gene).sort((a, b) => a.localeCompare(b))}
               allOption={null}
               onChange={(selectedGene) => {
                 // clearing snaps back to the EPCAM default — the expression
