@@ -66,6 +66,7 @@ function SamplePairRow({
   samplesLabel,
   cmin,
   cmax,
+  freeZoom,
 }) {
   const [ref, near] = useNearViewport();
   // shared view for the pair: zoom/pan/reset on either plot mirrors to the
@@ -100,9 +101,10 @@ function SamplePairRow({
     xaxis: {
       title: { text: "Spatial X (mm)", font: { size: 11 } },
       zeroline: false,
-      scaleanchor: "y",
-      scaleratio: 1,
-      constrain: "domain",
+      // aspect lock is optional (experimental "Free-form zoom" switch): locked
+      // keeps 1:1 mm so tissue isn't distorted; free zooms to the exact drawn
+      // rectangle at the cost of stretch
+      ...(!freeZoom && { scaleanchor: "y", scaleratio: 1, constrain: "domain" }),
       ...(viewRange?.x && { range: [...viewRange.x], autorange: false }),
     },
     yaxis: {
@@ -246,7 +248,7 @@ function SamplePairRow({
 }
 
 export default function TigerLcPlots() {
-  const { size, opacity, activeFeature, samples } =
+  const { size, opacity, activeFeature, samples, freeZoom } =
     useRecoilValue(plotOptionsState);
   // stable base records (coords/types/samples): drives the row list and the
   // left plots, and never re-fetches on gene changes
@@ -346,6 +348,7 @@ export default function TigerLcPlots() {
           samplesLabel={samplesLabel}
           cmin={cmin}
           cmax={cmax}
+          freeZoom={freeZoom}
         />
       ))}
     </div>

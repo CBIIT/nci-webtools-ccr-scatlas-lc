@@ -74,6 +74,9 @@ export const defaultPlotOptions = {
   opacity: 0.8,
   activeFeature: { kind: "gene", label: "EPCAM", genes: ["EPCAM"] },
   samples: null,
+  // experimental: when true, drag-zoom goes to the exact drawn rectangle
+  // instead of snapping to the 1:1 mm aspect (allows stretch distortion)
+  freeZoom: false,
 };
 
 export const plotOptionsState = atom({
