@@ -71,6 +71,28 @@ export default function Home() {
             </Col>
           ))}
         </Row>
+        {/* credit + disclaimer at the page bottom — moved here from the site
+            footer's References section, which NCIATWP-11120 removes; the Home
+            page is the only place these display */}
+        <div className="home-credit text-center rounded shadow-sm mt-4 p-3">
+          <p className="mb-2">
+            The scAtlasLC is developed by MA Lab at the Cancer Data Science
+            Laboratory and{" "}
+            <a
+              href="https://ccr.cancer.gov/liver-cancer-program"
+              target="_blank"
+              rel="noopener noreferrer">
+              Liver Cancer Program
+            </a>
+            .
+          </p>
+          <p className="h6 mb-1">Disclaimer</p>
+          <p className="mb-0 small">
+            Each dataset was normalized independently. Gene expression levels
+            may not be comparable between datasets. Illustrations were created
+            using BioRender.
+          </p>
+        </div>
       </Container>
     </div>
   );
