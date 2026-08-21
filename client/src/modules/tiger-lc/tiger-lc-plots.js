@@ -17,6 +17,23 @@ import {
 // Epithelial, Immune, Malignant, Stromal.
 const cellTypeColors = ["#3A5FCD", "#FF8C00", "#EE2C2C", "#32CD32"];
 
+// Project the lassoed cell ids onto a trace list as per-trace selectedpoints
+// indices — shared by both plots of a pair (Plotly selections are otherwise
+// per-plot). With no lasso active, selectedpoints is EXPLICITLY nulled: the
+// plot the user drew on keeps an internal selection of its own, and only an
+// explicit null clears it (autoscale/reset/deselect would otherwise leave
+// that plot still filtered).
+function withLasso(traces, lassoCells) {
+  if (!lassoCells)
+    return traces.map((trace) => ({ ...trace, selectedpoints: null }));
+  return traces.map((trace) => ({
+    ...trace,
+    selectedpoints: trace.customdata
+      .map((cellId, i) => (lassoCells.has(cellId) ? i : -1))
+      .filter((i) => i >= 0),
+  }));
+}
+
 const PLOT_HEIGHT = 340;
 const ROW_MIN_HEIGHT = PLOT_HEIGHT + 56; // plots + heading, keeps scroll stable
 
@@ -74,10 +91,15 @@ function SamplePairRow({
   // uirevision is the (constant) sample id, so the view also survives gene
   // changes — only the coloring swaps.
   const [viewRange, setViewRange] = useState(null);
+  // cell ids inside the drawn lasso — applied to BOTH plots' traces so the
+  // pair consistently shows only the lassoed cells (outside cells render at
+  // opacity 0). null = no lasso active, everything visible.
+  const [lassoCells, setLassoCells] = useState(null);
 
   function handleRelayout(event) {
     if (event["xaxis.autorange"] || event["yaxis.autorange"]) {
       setViewRange(null); // double-click / reset-axes on one resets both
+      setLassoCells(null); // ...and brings all cells back
       return;
     }
     if (
@@ -96,6 +118,29 @@ function SamplePairRow({
       }));
     }
   }
+
+  // Experimental (the open lasso-behavior question from the NCIATWP-10324
+  // comment): the lasso acts as a free-shape ZOOM into just the drawn cells —
+  // the pair zooms to the outline's bounding box and every cell OUTSIDE the
+  // lasso is hidden (opacity 0) on both plots, so the view shows exactly the
+  // lassoed region. Double-click resets view + visibility. With the aspect
+  // lock on the box widens to keep 1:1 mm; with Free-form zoom it is exact.
+  function handleSelected(event) {
+    if (!event) return; // deselect / programmatic clears
+    const outline = event.lassoPoints ?? event.range;
+    if (!outline?.x?.length || !outline?.y?.length) return;
+    setViewRange({
+      x: [Math.min(...outline.x), Math.max(...outline.x)],
+      y: [Math.min(...outline.y), Math.max(...outline.y)],
+    });
+    setLassoCells(
+      event.points?.length
+        ? new Set(event.points.map((pt) => pt.customdata))
+        : null,
+    );
+  }
+
+
 
   const axes = {
     xaxis: {
@@ -150,6 +195,9 @@ function SamplePairRow({
             "Cell ID: %{customdata}<br>Cell type: %{fullData.name}<extra></extra>",
           hoverlabel: { namelength: -1 },
           marker: { size, opacity, showscale: false },
+          // lasso-zoom: cells outside the drawn shape disappear entirely
+          selected: { marker: { opacity } },
+          unselected: { marker: { opacity: 0 } },
         },
         null,
         cellTypeColors,
@@ -176,11 +224,23 @@ function SamplePairRow({
                 cmax,
                 colorbar: { thickness: 12, tickfont: { size: 9 } },
               },
+              // see the cell-type plot: outside-lasso cells are hidden
+              selected: { marker: { opacity } },
+              unselected: { marker: { opacity: 0 } },
             },
             "__value",
           )
         : null,
     [rightRecords, size, opacity, cmin, cmax, featureLabel],
+  );
+
+  const leftShown = useMemo(
+    () => withLasso(leftData, lassoCells),
+    [leftData, lassoCells],
+  );
+  const rightShown = useMemo(
+    () => (rightData ? withLasso(rightData, lassoCells) : null),
+    [rightData, lassoCells],
   );
 
   return (
@@ -197,7 +257,7 @@ function SamplePairRow({
         <Row className="g-2">
           <Col xl={6}>
             <Plot
-              data={leftData}
+              data={leftShown}
               layout={merge({}, axes, {
                 title: { text: "Cell type", font: { size: 13 } },
                 legend: {
@@ -208,6 +268,8 @@ function SamplePairRow({
               })}
               config={config}
               onRelayout={handleRelayout}
+              onSelected={handleSelected}
+              onDeselect={() => setLassoCells(null)}
               useResizeHandler
               className="w-100"
               style={{ height: `${PLOT_HEIGHT}px` }}
@@ -216,12 +278,14 @@ function SamplePairRow({
           <Col xl={6}>
             {rightData ? (
               <Plot
-                data={rightData}
+                data={rightShown}
                 layout={merge({}, axes, {
                   title: { text: featureLabel, font: { size: 13 } },
                 })}
                 config={config}
                 onRelayout={handleRelayout}
+                onSelected={handleSelected}
+                onDeselect={() => setLassoCells(null)}
                 useResizeHandler
                 className="w-100"
                 style={{ height: `${PLOT_HEIGHT}px` }}
