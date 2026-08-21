@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Button from "react-bootstrap/Button";
-import Select from "./select";
 import CreateGeneSetModal from "./create-gene-set-modal";
+import GeneMultiSelect from "./gene-multi-select";
 
 // Smallest "Gene Set N" (N >= 1) not already taken, used to prefill the create modal.
 function nextDefaultName(existingNames) {
@@ -24,7 +24,7 @@ export default function GeneSetPanel({
   onCreate,
   onColorBy,
   onToggleGene,
-  onAddGene,
+  onSetGenes,
   onRemoveGene,
   onDelete,
 }) {
@@ -155,20 +155,13 @@ export default function GeneSetPanel({
                         })}
                       </div>
                     )}
-                    <div
-                      className="position-relative"
-                      style={{ maxWidth: "280px" }}>
-                      <Select
-                        name={`add-gene-${set.id}`}
-                        label="Add gene"
-                        className="form-control form-control-sm"
+                    {/* same picker as the create modal: members show checked;
+                        toggling on adds, toggling off removes */}
+                    <div style={{ maxWidth: "280px" }}>
+                      <GeneMultiSelect
                         options={geneOptions}
-                        placeholder="Add gene…"
-                        value={null}
-                        allOption={null}
-                        onChange={(gene) => {
-                          if (gene) onAddGene(set, gene);
-                        }}
+                        value={set.genes}
+                        onChange={(genes) => onSetGenes(set, genes)}
                       />
                     </div>
                   </div>

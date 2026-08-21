@@ -16,7 +16,8 @@ export default function TigerLcGeneSets() {
   const [sets, setSets] = useRecoilState(geneSetsState);
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const stats = useRecoilValue(cellsStatsQuery);
-  const geneOptions = stats.map((s) => s.gene);
+  // alphabetical everywhere the panel is offered (stats order isn't guaranteed)
+  const geneOptions = stats.map((s) => s.gene).sort((a, b) => a.localeCompare(b));
 
   const active = plotOptions.activeFeature;
   const activeSetId = active?.kind === "set" ? active.setId : null;
@@ -99,9 +100,10 @@ export default function TigerLcGeneSets() {
     }
   }
 
-  function handleAddGene(set, gene) {
-    if (set.genes.includes(gene)) return; // already a member
-    commitGenes(set.id, [...set.genes, gene]);
+  // full-membership updates from the panel's multi-select picker (checking
+  // adds, unchecking removes); membership adopts the picker's alphabetical order
+  function handleSetGenes(set, genes) {
+    commitGenes(set.id, genes);
   }
 
   function handleRemoveGene(set, gene) {
@@ -131,7 +133,7 @@ export default function TigerLcGeneSets() {
       onCreate={handleCreate}
       onColorBy={handleColorBy}
       onToggleGene={handleToggleGene}
-      onAddGene={handleAddGene}
+      onSetGenes={handleSetGenes}
       onRemoveGene={handleRemoveGene}
       onDelete={handleDelete}
     />
