@@ -55,6 +55,7 @@ function SamplePairRow({
   size,
   opacity,
   featureLabel,
+  samplesLabel,
   cmin,
   cmax,
   uirevision,
@@ -124,8 +125,13 @@ function SamplePairRow({
 
   return (
     <div ref={ref} style={{ minHeight: ROW_MIN_HEIGHT }} className="mb-3">
-      <h3 className="h6 mb-1">
-        {sample} <span className="text-muted fw-normal">(n={records.length})</span>
+      {/* AC3: center-aligned row header — SampleID + the active Gene/Gene Set
+          and Samples filter selections */}
+      <h3 className="h6 mb-1 text-center">
+        {sample}{" "}
+        <span className="text-muted fw-normal">
+          · {featureLabel} · {samplesLabel} · n={records.length}
+        </span>
       </h3>
       {near ? (
         <Row className="g-2">
@@ -216,6 +222,12 @@ export default function TigerLcPlots() {
     : featureRecords;
   const bySample = groupBy(records, "sample");
   const sampleIds = Object.keys(bySample).sort();
+  // echoed in each row header: "All samples (N)" or "k of N samples"
+  const totalSamples = new Set(featureRecords.map((r) => r.sample)).size;
+  const samplesLabel =
+    samples == null
+      ? `All samples (${totalSamples})`
+      : `${sampleIds.length} of ${totalSamples} samples`;
 
   // global expression range across every shown sample (fixed colorbar scale)
   let cmin = Infinity;
@@ -239,7 +251,7 @@ export default function TigerLcPlots() {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-baseline mb-2">
+      <div className="text-center mb-2">
         <h2 className="h5 mb-0">
           TIGER-LC iCCA <span className="text-muted fw-normal">— {featureLabel}</span>
         </h2>
@@ -256,6 +268,7 @@ export default function TigerLcPlots() {
           size={size}
           opacity={opacity}
           featureLabel={featureLabel}
+          samplesLabel={samplesLabel}
           cmin={cmin}
           cmax={cmax}
           uirevision={genesKey}
