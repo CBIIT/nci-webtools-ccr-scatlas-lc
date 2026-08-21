@@ -16,11 +16,11 @@
   opacity: 0.6;
 }
 
-/* TIGER-LC statistics table — nine columns squeeze the range-filter inputs, so
-   give the value columns enough minimum width that the "Enter min/max"
-   placeholders stay readable; the surrounding .table-responsive wrapper turns
-   the extra width into horizontal scroll. */
-.tigerlc-stats-table {
+/* Spatial cohort statistics table — many value columns squeeze the
+   range-filter inputs, so give them enough minimum width that the
+   "Enter min/max" placeholders stay readable; the surrounding
+   .table-responsive wrapper turns the extra width into horizontal scroll. */
+.spatial-stats-table {
   overflow-x: auto; // the min-widths push the table wider than the card — scroll it
 
   // macOS overlay scrollbars stay invisible until scrolled; the ::-webkit-*

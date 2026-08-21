@@ -1,59 +1,32 @@
-import { Suspense } from "react";
-import Container from "react-bootstrap/Container";
-import Card from "react-bootstrap/Card";
-import Alert from "react-bootstrap/Alert";
-import Loader from "../components/loader";
-import ErrorBoundary from "../components/error-boundary";
-import TigerLcPlots from "./tiger-lc-plots";
-import TigerLcPlotOptions from "./tiger-lc-plot-options";
-import TigerLcGeneSets from "./tiger-lc-gene-sets";
-import TigerLcStatsTable from "./tiger-lc-stats-table";
+import { createSpatialCohortState } from "../spatial-cohort/spatial-cohort-state";
+import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
 
-// Spatial TIGER-LC cohort view: controls + a single spatial scatter of the cells,
-// colored by cell type. (Gene search, sample filter, legend/hover, and a counts
-// table are added in later steps.)
+// Spatial TIGER-LC iCCA cohort — a configuration of the shared spatial-cohort
+// template. The cohort is small enough (~270k cells over ~130 samples) to
+// download whole, so it uses full fetch with a global expression color scale,
+// and SVG scatter rendering (~2k points per sample; WebGL contexts are
+// browser-capped and were silently evicted with this many mounted rows).
+const state = createSpatialCohortState({
+  id: "tigerlc",
+  title: "TIGER-LC iCCA",
+  tables: {
+    cells: "tigerlc",
+    stats: "tigerlc_stats",
+    statsTable: "tigerlc_stats_table",
+  },
+  cellTypeColors: {
+    Epithelial: "#3A5FCD",
+    Immune: "#FF8C00",
+    Malignant: "#EE2C2C",
+    Stromal: "#32CD32",
+  },
+  statsTableTypes: ["Malignant", "Immune", "Stromal", "Epithelial"],
+  defaultGene: "EPCAM",
+  fetch: "full",
+  samples: null,
+  renderer: "scatter",
+});
+
 export default function TigerLcCell() {
-  return (
-    <Container>
-      <Card className="shadow mb-4">
-        <Card.Body className="position-relative" style={{ minHeight: "800px" }}>
-          <ErrorBoundary
-            fallback={
-              <Alert variant="danger">
-                An internal error prevented plots from loading. Please contact
-                the website administrator if this problem persists.
-              </Alert>
-            }>
-            <Suspense fallback={<Loader message="Loading Plots" />}>
-              <TigerLcPlotOptions />
-              <TigerLcGeneSets />
-              <hr />
-              <TigerLcPlots />
-            </Suspense>
-          </ErrorBoundary>
-        </Card.Body>
-      </Card>
-
-      <Card className="shadow mb-4">
-        <Card.Header className="bg-primary text-white">
-          <Card.Title className="my-1">Cell Counts</Card.Title>
-        </Card.Header>
-        <Card.Body
-          className="p-0 position-relative"
-          style={{ minHeight: "600px" }}>
-          <ErrorBoundary
-            fallback={
-              <Alert variant="danger" className="m-3">
-                An internal error prevented cell counts from loading. Please
-                contact the website administrator if this problem persists.
-              </Alert>
-            }>
-            <Suspense fallback={<Loader message="Loading Cell Counts" />}>
-              <TigerLcStatsTable />
-            </Suspense>
-          </ErrorBoundary>
-        </Card.Body>
-      </Card>
-    </Container>
-  );
+  return <SpatialCohortPage state={state} />;
 }
