@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import GeneMultiSelect from "./gene-multi-select";
 
 // Modal to create a named gene set. The name is required, prefilled (editable) and
 // must be unique (case-insensitive) among existing sets. Genes are optional: pasted
@@ -19,6 +20,9 @@ export default function CreateGeneSetModal({
 }) {
   const [name, setName] = useState(defaultName);
   const [genesText, setGenesText] = useState("");
+  // genes chosen via the multi-select list (AC2's second creation path);
+  // merged with the pasted genes on create
+  const [picked, setPicked] = useState([]);
 
   // canonical-symbol lookup, lowercased -> as-listed in the panel
   const geneIndex = useMemo(() => {
@@ -58,9 +62,15 @@ export default function CreateGeneSetModal({
       ? "A gene set with this name already exists."
       : null;
 
+  // the two creation paths are mutually exclusive: whichever has content
+  // disables the other, and the set takes its genes from the active one
+  const pasting = genesText.trim().length > 0;
+  const picking = picked.length > 0;
+  const genes = pasting ? matched : picked;
+
   function handleCreate() {
     if (nameError) return;
-    onCreate({ name: trimmedName, genes: matched });
+    onCreate({ name: trimmedName, genes });
   }
 
   return (
@@ -83,18 +93,32 @@ export default function CreateGeneSetModal({
           </Form.Control.Feedback>
         </Form.Group>
         <Form.Group className="mb-2" controlId="gene-set-genes">
-          <Form.Label>Genes (optional)</Form.Label>
+          <Form.Label>Paste a gene list</Form.Label>
           <Form.Control
             as="textarea"
             rows={4}
             value={genesText}
             onChange={(e) => setGenesText(e.target.value)}
             placeholder="Paste gene symbols separated by commas, spaces, or new lines"
+            disabled={picking}
           />
         </Form.Group>
-        {matched.length > 0 && (
+        <Form.Group className="mb-2" controlId="gene-set-picker">
+          <Form.Label>Select from the gene panel</Form.Label>
+          <GeneMultiSelect
+            options={geneOptions}
+            value={picked}
+            onChange={setPicked}
+            disabled={pasting}
+          />
+          <Form.Text muted>
+            Add genes one way or the other — filling either field disables the
+            other. Both are optional.
+          </Form.Text>
+        </Form.Group>
+        {genes.length > 0 && (
           <div className="small text-muted">
-            {matched.length} gene{matched.length === 1 ? "" : "s"} matched.
+            {genes.length} gene{genes.length === 1 ? "" : "s"} selected.
           </div>
         )}
         {unknown.length > 0 && (

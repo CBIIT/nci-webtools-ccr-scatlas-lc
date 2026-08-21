@@ -98,27 +98,42 @@ export default function TigerLcPlotOptions() {
               name="gene"
               label="Gene"
               className="form-control"
-              options={lookup.map((e) => e.gene)}
+              options={lookup.map((e) => e.gene).sort((a, b) => a.localeCompare(b))}
+              allOption={null}
               onChange={(selectedGene) => {
-                const activeFeature =
-                  !selectedGene || selectedGene === "All genes"
-                    ? null
-                    : { kind: "gene", label: selectedGene, genes: [selectedGene] };
+                // clearing snaps back to the EPCAM default — the expression
+                // plots always have a feature (reopened AC)
+                const activeFeature = !selectedGene
+                  ? defaultPlotOptions.activeFeature
+                  : { kind: "gene", label: selectedGene, genes: [selectedGene] };
                 mergePlotOptions({ activeFeature });
               }}
-              placeholder="All genes"
+              placeholder={
+                plotOptions.activeFeature?.kind === "set"
+                  ? "Gene set active"
+                  : "Search genes…"
+              }
               value={
                 plotOptions.activeFeature?.kind === "gene"
                   ? plotOptions.activeFeature.label
                   : null
               }
             />
-            <Button
-              variant="light"
-              className="bg-transparent border-0 right-0 position-absolute"
-              onClick={(_) => mergePlotOptions({ activeFeature: null })}>
-              &times;
-            </Button>
+            {/* the reset-× only renders while a single gene is active — with a
+                set coloring the plots it read as a live gene selection */}
+            {plotOptions.activeFeature?.kind === "gene" && (
+              <Button
+                variant="light"
+                className="bg-transparent border-0 right-0 position-absolute"
+                title="Reset to the default gene (EPCAM)"
+                onClick={(_) =>
+                  mergePlotOptions({
+                    activeFeature: defaultPlotOptions.activeFeature,
+                  })
+                }>
+                &times;
+              </Button>
+            )}
           </InputGroup>
         </Form.Group>
       </Col>
@@ -131,6 +146,15 @@ export default function TigerLcPlotOptions() {
               Reset
             </Button>
           </InputGroup>
+          <Form.Check
+            type="switch"
+            id="free-zoom"
+            className="mt-2"
+            label="Free-form zoom"
+            title="Zoom to the exact drawn rectangle without preserving the 1:1 mm aspect (allows stretching)"
+            checked={plotOptions.freeZoom}
+            onChange={(e) => mergePlotOptions({ freeZoom: e.target.checked })}
+          />
         </Form.Group>
       </Col>
     </Form>

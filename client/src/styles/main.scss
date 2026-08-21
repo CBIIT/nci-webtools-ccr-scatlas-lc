@@ -16,6 +16,50 @@
   opacity: 0.6;
 }
 
+/* TIGER-LC statistics table — nine columns squeeze the range-filter inputs, so
+   give the value columns enough minimum width that the "Enter min/max"
+   placeholders stay readable; the surrounding .table-responsive wrapper turns
+   the extra width into horizontal scroll. */
+.tigerlc-stats-table {
+  overflow-x: auto; // the min-widths push the table wider than the card — scroll it
+
+  // macOS overlay scrollbars stay invisible until scrolled; the ::-webkit-*
+  // rules force a persistent classic scrollbar so the horizontal overflow is
+  // discoverable without a trackpad. NOTE: do not add the standard
+  // scrollbar-width/scrollbar-color properties here — Chrome 121+ treats them
+  // as opting into the standard styling path and then ignores ::-webkit-*,
+  // reverting to hidden overlay scrollbars.
+  .table-responsive {
+    &::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f3f5;
+      border-radius: 5px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #adb5bd;
+      border-radius: 5px;
+
+      &:hover {
+        background-color: #868e96;
+      }
+    }
+  }
+
+  th,
+  td {
+    min-width: 360px;
+  }
+
+  th:first-child,
+  td:first-child {
+    min-width: 140px;
+  }
+}
+
 /* Cohort widget (atlas summary pages) — the image region flips on hover/focus
    to reveal the description; the bottom gray segment never flips and is the
    only click-to-navigate target. Shared by both summary pages. */
