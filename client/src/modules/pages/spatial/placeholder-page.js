@@ -1,10 +1,11 @@
 import { Container } from "react-bootstrap";
 
 // Blank Spatial Atlas cohort page — mirrors the single-cell page layout
-// (Container → h1 title → hr → body). The interactive spatial plots are built in
-// future tickets (NCIATWP-10326 Multi-Regional, NCIATWP-10327 TIGER-LC); for now
-// each cohort renders this placeholder so the menu has real targets.
-export default function SpatialCohortPage({ title, modality }) {
+// (Container → h1 title → hr → body). Cohorts render this placeholder until
+// their real page is built on the spatial-cohort template; each then gets its
+// own wrapper here (see tiger-lc.js, multi-regional.js) so the menu always has
+// real targets.
+export default function PlaceholderPage({ title, modality }) {
   return (
     <Container className="py-3">
       <h1 className="text-primary h3 mt-2">{title}</h1>

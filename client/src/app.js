@@ -8,13 +8,13 @@ import About from "./modules/about/about";
 import SingleCellSummary from "./modules/pages/single-cell-summary";
 import SpatialSummary from "./modules/pages/spatial-summary";
 import {
-  SpatialTransMultiRegional,
   SpatialTransEuropean,
   SpatialProtTigerLcIcca,
   SpatialProtTigerLcHcc,
   SpatialProtLciHcc,
 } from "./modules/pages/spatial/spatial-pages";
 import TigerLcPage from "./modules/pages/spatial/tiger-lc";
+import SpatialMultiRegionalPage from "./modules/pages/spatial/multi-regional";
 
 import "./styles/main.scss";
 import WebglAlert from "./modules/components/webgl-alert";
@@ -44,7 +44,7 @@ export default function App() {
         <Route
           exact
           path="/spatial/transcriptomics/multi-regional"
-          component={SpatialTransMultiRegional}
+          component={SpatialMultiRegionalPage}
         />
         <Route
           exact
