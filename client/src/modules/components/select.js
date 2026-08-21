@@ -74,6 +74,19 @@ export default function Select({
     onSelectedItemChange: handleSelectedItemChange,
   });
 
+  // Keep the visible text in sync with the controlled selection: when the
+  // selection is cleared externally (e.g. a gene set takes over the plot
+  // coloring), empty the box so a stale gene name doesn't read as still
+  // active. Skipped while the user is typing in this input.
+  useEffect(() => {
+    if (
+      value == null &&
+      document.activeElement?.getAttribute("name") !== name
+    ) {
+      setInputValue("");
+    }
+  }, [value, name, setInputValue]);
+
   // Reopen with the FULL option list: a previously selected value narrows the
   // filtered list to just itself, so without this reset the dropdown only ever
   // shows the active selection again. Selecting the text lets typing replace it.

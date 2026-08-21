@@ -108,24 +108,32 @@ export default function TigerLcPlotOptions() {
                   : { kind: "gene", label: selectedGene, genes: [selectedGene] };
                 mergePlotOptions({ activeFeature });
               }}
-              placeholder="EPCAM"
+              placeholder={
+                plotOptions.activeFeature?.kind === "set"
+                  ? "Gene set active"
+                  : "Search genes…"
+              }
               value={
                 plotOptions.activeFeature?.kind === "gene"
                   ? plotOptions.activeFeature.label
                   : null
               }
             />
-            <Button
-              variant="light"
-              className="bg-transparent border-0 right-0 position-absolute"
-              title="Reset to the default gene (EPCAM)"
-              onClick={(_) =>
-                mergePlotOptions({
-                  activeFeature: defaultPlotOptions.activeFeature,
-                })
-              }>
-              &times;
-            </Button>
+            {/* the reset-× only renders while a single gene is active — with a
+                set coloring the plots it read as a live gene selection */}
+            {plotOptions.activeFeature?.kind === "gene" && (
+              <Button
+                variant="light"
+                className="bg-transparent border-0 right-0 position-absolute"
+                title="Reset to the default gene (EPCAM)"
+                onClick={(_) =>
+                  mergePlotOptions({
+                    activeFeature: defaultPlotOptions.activeFeature,
+                  })
+                }>
+                &times;
+              </Button>
+            )}
           </InputGroup>
         </Form.Group>
       </Col>
