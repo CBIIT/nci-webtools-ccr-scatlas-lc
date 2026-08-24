@@ -1,31 +1,28 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
-import { useMemo } from "react";
 import Select from "../components/select";
 import MultiSelect from "../components/multi-select";
-import {
-  plotOptionsState,
-  cellsQuery,
-  cellsStatsQuery,
-  defaultPlotOptions,
-} from "./tiger-lc.state";
+import { useSpatialCohort } from "./spatial-cohort-context";
 
-// Plot controls for the TIGER-LC spatial scatter: Cell Size / Cell Opacity
-// (defaults 4 / 0.8), a Samples multi-select (all selected by default), and a gene
-// search. Picking a gene colors the plot by its expression; the gene list comes from
-// the per-gene stats table and the sample list from the cells.
-export default function TigerLcPlotOptions() {
+// Plot controls for a spatial cohort's scatter pairs: Cell Size / Cell Opacity
+// (defaults 4 / 0.8), a Samples multi-select (all selected by default), and a
+// gene search. Picking a gene colors the plots by its expression; the gene list
+// comes from the per-gene stats table and the sample list from samplesQuery
+// (configured, or derived from the cells).
+export default function SpatialCohortPlotOptions() {
+  const { config, plotOptionsState, cellsStatsQuery, samplesQuery, defaultPlotOptions } =
+    useSpatialCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const [formValues, setFormValues] = useState(plotOptions);
   const lookup = useRecoilValue(cellsStatsQuery);
-  const cells = useRecoilValue(cellsQuery);
-  const sampleOptions = useMemo(
-    () => [...new Set(cells.map((c) => c.sample))].sort(),
-    [cells],
+  const sampleOptions = useRecoilValue(samplesQuery);
+  const geneOptions = useMemo(
+    () => lookup.map((e) => e.gene).sort((a, b) => a.localeCompare(b)),
+    [lookup],
   );
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
   const mergeFormValues = (obj) => setFormValues({ ...formValues, ...obj });
@@ -98,11 +95,11 @@ export default function TigerLcPlotOptions() {
               name="gene"
               label="Gene"
               className="form-control"
-              options={lookup.map((e) => e.gene).sort((a, b) => a.localeCompare(b))}
+              options={geneOptions}
               allOption={null}
               onChange={(selectedGene) => {
-                // clearing snaps back to the EPCAM default — the expression
-                // plots always have a feature (reopened AC)
+                // clearing snaps back to the cohort's default gene — the
+                // expression plots always have a feature
                 const activeFeature = !selectedGene
                   ? defaultPlotOptions.activeFeature
                   : { kind: "gene", label: selectedGene, genes: [selectedGene] };
@@ -125,7 +122,7 @@ export default function TigerLcPlotOptions() {
               <Button
                 variant="light"
                 className="bg-transparent border-0 right-0 position-absolute"
-                title="Reset to the default gene (EPCAM)"
+                title={`Reset to the default gene (${config.defaultGene})`}
                 onClick={(_) =>
                   mergePlotOptions({
                     activeFeature: defaultPlotOptions.activeFeature,
@@ -148,7 +145,7 @@ export default function TigerLcPlotOptions() {
           </InputGroup>
           <Form.Check
             type="switch"
-            id="free-zoom"
+            id={`${config.id}-free-zoom`}
             className="mt-2"
             label="Free-form zoom"
             title="Zoom to the exact drawn rectangle without preserving the 1:1 mm aspect (allows stretching)"

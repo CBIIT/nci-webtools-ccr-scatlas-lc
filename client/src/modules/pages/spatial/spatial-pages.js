@@ -1,24 +1,22 @@
-import SpatialCohortPage from "./spatial-cohort-page";
+import PlaceholderPage from "./placeholder-page";
 
 // Spatial Atlas cohort pages. Blank placeholders that reuse the single-cell page
 // layout with a per-cohort title; routed from the Spatial Atlas submenu in main-nav.js.
 
 // --- Transcriptomics ---
-export function SpatialTransMultiRegional() {
-  return <SpatialCohortPage title="Multi-Regional" modality="Transcriptomics" />;
-}
-export function SpatialTransEuropean() {
-  return <SpatialCohortPage title="European iCCA" modality="Transcriptomics" />;
-}
+// Multi-Regional is a real page now — see ../spatial/multi-regional.js.
 // TIGER-LC transcriptomics is a real page now — see ../spatial/tiger-lc.js.
+export function SpatialTransEuropean() {
+  return <PlaceholderPage title="European iCCA" modality="Transcriptomics" />;
+}
 
 // --- Proteomics ---
 export function SpatialProtTigerLcIcca() {
-  return <SpatialCohortPage title="TIGER-LC iCCA" modality="Proteomics" />;
+  return <PlaceholderPage title="TIGER-LC iCCA" modality="Proteomics" />;
 }
 export function SpatialProtTigerLcHcc() {
-  return <SpatialCohortPage title="TIGER-LC HCC" modality="Proteomics" />;
+  return <PlaceholderPage title="TIGER-LC HCC" modality="Proteomics" />;
 }
 export function SpatialProtLciHcc() {
-  return <SpatialCohortPage title="LCI HCC" modality="Proteomics" />;
+  return <PlaceholderPage title="LCI HCC" modality="Proteomics" />;
 }

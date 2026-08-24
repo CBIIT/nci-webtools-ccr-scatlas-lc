@@ -1,18 +1,16 @@
 import { useRecoilState, useRecoilValue } from "recoil";
 import GeneSetPanel from "../components/gene-set-panel";
-import {
-  geneSetsState,
-  cellsStatsQuery,
-  plotOptionsState,
-  defaultPlotOptions,
-} from "./tiger-lc.state";
+import { useSpatialCohort } from "./spatial-cohort-context";
 
-// Connects the shared GeneSetPanel to TIGER-LC state: the session-only geneSetsState
-// atom, the known gene list (from the per-gene stats table, used to validate genes
-// pasted into the create modal), and the shared activeFeature that colors the plot.
-// Coloring by a set and the single Gene box write the same activeFeature, so they are
-// mutually exclusive by construction — activating one visually clears the other.
-export default function TigerLcGeneSets() {
+// Connects the shared GeneSetPanel to a cohort's state: the session-only
+// geneSetsState atom, the known gene list (from the per-gene stats table, used
+// to validate genes pasted into the create modal), and the shared activeFeature
+// that colors the plot. Coloring by a set and the single Gene box write the
+// same activeFeature, so they are mutually exclusive by construction —
+// activating one visually clears the other.
+export default function SpatialCohortGeneSets() {
+  const { geneSetsState, plotOptionsState, cellsStatsQuery, defaultPlotOptions } =
+    useSpatialCohort();
   const [sets, setSets] = useRecoilState(geneSetsState);
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const stats = useRecoilValue(cellsStatsQuery);
@@ -34,7 +32,7 @@ export default function TigerLcGeneSets() {
       ...plotOptions,
       activeFeature:
         genes.length === 0
-          ? defaultPlotOptions.activeFeature // snap back to the EPCAM default
+          ? defaultPlotOptions.activeFeature // snap back to the default gene
           : {
               kind: "set",
               setId: set.id,
@@ -56,7 +54,7 @@ export default function TigerLcGeneSets() {
 
   // Per-gene teardrop: toggles the gene in the active subset. On an inactive
   // set it starts a fresh subset of just that gene; emptying the subset snaps
-  // back to the EPCAM default.
+  // back to the default gene.
   function handleToggleGene(set, gene) {
     if (activeSetId !== set.id) {
       setFeature(set, [gene]);
@@ -72,7 +70,7 @@ export default function TigerLcGeneSets() {
 
   // Update a set's members and, if it is the one currently coloring the plot,
   // recompute live: full-set coloring follows the edit; a partial subset keeps
-  // only members that still exist. Emptied → snap back to the EPCAM default.
+  // only members that still exist. Emptied → snap back to the default gene.
   function commitGenes(setId, genes) {
     const next = sets.map((s) => (s.id === setId ? { ...s, genes } : s));
     setSets(next);
@@ -115,7 +113,7 @@ export default function TigerLcGeneSets() {
 
   function handleDelete(set) {
     setSets(sets.filter((s) => s.id !== set.id));
-    // deleting the active set snaps back to the EPCAM default
+    // deleting the active set snaps back to the default gene
     if (activeSetId === set.id) {
       setPlotOptions((prev) => ({
         ...prev,

@@ -2,19 +2,18 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
-import { statsTableQuery, plotOptionsState } from "./tiger-lc.state";
+import { useSpatialCohort } from "./spatial-cohort-context";
 
-const CELL_TYPES = ["Malignant", "Immune", "Stromal", "Epithelial"];
-
-// Statistics table below the TIGER-LC plots: the client-provided per-cell-type
-// stats sourced verbatim from stats_table_tigerlc.csv; headers are prettified
+// Statistics table below a cohort's plots: the client-provided per-cell-type
+// stats sourced verbatim from its stats_table CSV; headers are prettified
 // (MeanExpression_X -> "Normalized Expression (X)", PercentageExpression_X ->
-// "% Expression (X)" \u2014 matching the Single-cell tables' wording). Same
-// pagination/filtering as the Single-cell Cell Counts tables. Rows of the active selection are highlighted — single
-// gene, or every gene of the active set/subset (the table pages to the first;
-// multi-page behavior refinement pending NCIATWP-11121). Clicking a Feature
-// makes it the active single gene, mirroring the Single-cell tables.
-export default function TigerLcStatsTable() {
+// "% Expression (X)" — matching the Single-cell tables' wording, percentages
+// first). Same pagination/filtering as the Single-cell Cell Counts tables.
+// Rows of the active selection pin to the top — single gene, or every gene of
+// the active set/subset. Clicking a gene makes it the active single gene,
+// mirroring the Single-cell tables.
+export default function SpatialCohortStatsTable() {
+  const { config, statsTableQuery, plotOptionsState } = useSpatialCohort();
   const stats = useRecoilValue(statsTableQuery);
   const [, setPlotOptions] = useRecoilState(plotOptionsState);
 
@@ -48,8 +47,10 @@ export default function TigerLcStatsTable() {
           </Button>
         ),
       },
-      ...CELL_TYPES.map((type) => ({
+      ...config.statsTableTypes.map((type) => ({
         Header: `% Expression (${type})`,
+        // cell-type names may contain spaces ("T cell") — fine for DuckDB and
+        // react-table alike, as long as they contain no dots (path accessors)
         accessor: `PercentageExpression_${type}`,
         Filter: RangeFilter,
         filter: "between",
@@ -58,7 +59,7 @@ export default function TigerLcStatsTable() {
         aria: `Percentage Expression ${type}`,
         Cell: ({ value }) => <span>{Number(value).toFixed(1)}</span>,
       })),
-      ...CELL_TYPES.map((type) => ({
+      ...config.statsTableTypes.map((type) => ({
         Header: `Normalized Expression (${type})`,
         accessor: `MeanExpression_${type}`,
         Filter: RangeFilter,
@@ -69,14 +70,14 @@ export default function TigerLcStatsTable() {
         Cell: ({ value }) => <span>{Number(value).toFixed(2)}</span>,
       })),
     ],
-    [setGene],
+    [setGene, config.statsTableTypes],
   );
 
   const sortBy = useMemo(() => [{ id: "gene", desc: false }], []);
   const activeGenes = useRecoilValue(plotOptionsState).activeFeature?.genes;
 
   return (
-    <div className="tigerlc-stats-table">
+    <div className="spatial-stats-table">
       <Table
         columns={columns}
         data={data}
