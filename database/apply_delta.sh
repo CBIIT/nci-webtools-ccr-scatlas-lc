@@ -8,16 +8,11 @@
 # new file — the backend reads the schema once at startup.
 #
 # Env: DELTA_S3_URI  s3://... of the delta file (built by copy_tables.mjs)
-#      TABLES        space-separated tables to copy out of the delta
+#      TABLES        space-separated tables to copy out of the delta; empty =
+#                    every table the delta carries
 #      DATABASE_PATH the live database (e.g. /data/scatlaslc.db)
 set -eu
-: "${DELTA_S3_URI:?}" "${TABLES:?}" "${DATABASE_PATH:?}"
-
-for t in $TABLES; do
-  case "$t" in
-    *[!a-z0-9_]*) echo "table name must be lower_snake_case: $t" >&2; exit 1 ;;
-  esac
-done
+: "${DELTA_S3_URI:?}" "${DATABASE_PATH:?}"
 
 DELTA=/tmp/delta.db
 NEW="${DATABASE_PATH}.new"
@@ -25,6 +20,19 @@ BAK="${DATABASE_PATH}.bak"
 
 echo "downloading $DELTA_S3_URI"
 aws s3 cp "$DELTA_S3_URI" "$DELTA" --no-progress
+
+if [ -z "${TABLES:-}" ]; then
+  TABLES=$(duckdb -readonly -csv -noheader "$DELTA" \
+    "SELECT table_name FROM information_schema.tables WHERE table_schema='main' ORDER BY table_name" \
+    | tr '\n' ' ')
+  echo "no TABLES given - applying every table in the delta: $TABLES"
+fi
+[ -n "$(echo "$TABLES" | tr -d ' ')" ] || { echo "the delta contains no tables" >&2; exit 1; }
+for t in $TABLES; do
+  case "$t" in
+    *[!a-z0-9_]*) echo "table name must be lower_snake_case: $t" >&2; exit 1 ;;
+  esac
+done
 
 echo "copying live database aside"
 rm -f "$NEW"

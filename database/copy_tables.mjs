@@ -1,8 +1,8 @@
-// Copy whole tables from one DuckDB file into another (used to ship new cohort
-// tables to a tier's database without replacing the file wholesale — the tier
-// DB and the local dev DB differ in the single-cell tables, so only the listed
-// tables move). Each table is dropped and recreated in the target; the source
-// is attached read-only and never modified.
+// Copy whole tables from one DuckDB file into another (used to build "delta"
+// files that ship new cohort tables to a tier's database — only the listed
+// tables move, so nothing else on the tier file is disturbed). Each table is
+// dropped and recreated in the target; the source is attached read-only and
+// never modified.
 //
 // MUST be run with duckdb 0.9.x (the version the backend reads) so the target
 // file's on-disk format stays compatible — a newer duckdb would upgrade the
