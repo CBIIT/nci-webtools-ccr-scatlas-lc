@@ -20,6 +20,8 @@ import { query } from "../../services/query";
 //                   from the fetched cells)
 //   renderer        Plotly trace type: "scatter" (SVG) or "scattergl" (WebGL)
 //   mountMargin / unmountMargin   lazy-mount hysteresis distances
+//   maxLiveRows     hard cap on simultaneously mounted rows (WebGL cohorts —
+//                   a pixel margin scales with viewport height, a cap does not)
 //   sampleCacheSize how many samples' records to keep (perSample). Covering the
 //                   live rows is NOT the goal — a mounted row holds its own
 //                   reference and hands it to fetchSampleFeature, so nothing on

@@ -8,14 +8,14 @@ import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
 // per-row expression color scale) and WebGL rendering — SVG scatter cannot hold
 // 100k+ points per plot.
 //
-// The mount window is sized against the browser's WebGL context cap (~16 per
-// page in Chrome; exceeding it silently evicts the oldest contexts and blanks
-// those plots). A row is ~412px tall at xl and up and holds 2 contexts, and
-// stays mounted while within unmountMargin of the viewport, so the live band
-// is viewport + 2 x unmountMargin: at 600px that is ~6 rows / 12 contexts on a
-// 900px viewport and ~7 rows / 14 on a 1400px one. A viewport tall enough to
-// hold more rows than that still approaches the cap — worth re-checking
-// empirically on the widest supported display.
+// Two settings govern what is mounted. unmountMargin sets the window — how
+// early a row loads and how late it is released — and maxLiveRows sets the
+// ceiling, because a pixel margin alone does not bound anything: the live band
+// is viewport + 2 x unmountMargin, so a rotated 4K panel would mount three
+// times what a laptop does and blow the browser's ~16-WebGL-context-per-page
+// cap, whose failure mode is silently blanked plots. With 2 contexts per row
+// the cap is what keeps the page at 12. Re-check both if the plots-per-row
+// count changes.
 const state = createSpatialCohortState({
   id: "spatialMultiRegional",
   title: "Multi-Regional",
@@ -58,6 +58,9 @@ const state = createSpatialCohortState({
   // mountMargin the moment it unmounted.
   mountMargin: "200px",
   unmountMargin: "600px",
+  // the margin sets the window, this sets the ceiling: 6 rows x 2 scattergl
+  // contexts = 12, clear of the ~16-per-page cap on any viewport height
+  maxLiveRows: 6,
   // Samples retained by the state module's caches (cells and expression each
   // keep this many), for cheap scroll-back. Sized under the cohort's 15
   // samples on purpose: holding most of them would reconstitute the

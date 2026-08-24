@@ -28,6 +28,139 @@ function withLasso(traces, lassoCells) {
   }));
 }
 
+// how long the page must be still before a near row fetches
+const SCROLL_SETTLE_MS = 150;
+
+// A pixel margin cannot bound how many rows are mounted at once: the live band
+// is viewport + 2 x unmountMargin, so a tall panel (a rotated 4K monitor is
+// ~3800px) mounts twice what a laptop does. For a WebGL cohort that overruns
+// the browser's ~16-context-per-page cap, and the excess plots go silently
+// blank — no error, just white. Cohorts that need it therefore cap the number
+// of live rows outright: rows claim a slot, and when the budget is full the
+// least-recently-entered row yields — so the rows the user just scrolled to
+// always render, and a row without a slot shows the same "scroll to load"
+// placeholder it showed before it was reached. One budget per cohort, keyed by
+// config id, since the cap is a per-page resource.
+const mountBudgets = new Map();
+
+function createMountBudget(maxLive) {
+  const rows = new Map(); // id -> { el, notify }
+  const claimed = new Set();
+  let frame = 0;
+
+  // Rank by distance from the viewport centre, NOT by claim order: a row only
+  // claims when it enters the band, so claim order is scroll order, and on a
+  // viewport tall enough to hold more than maxLive rows that hands the slots
+  // to the rows FURTHEST along and blanks the ones the user is looking at.
+  const settle = () => {
+    frame = 0;
+    const middle = window.innerHeight / 2;
+    const live = new Set(
+      [...claimed]
+        .map((id) => {
+          const el = rows.get(id)?.el;
+          if (!el) return null;
+          const box = el.getBoundingClientRect();
+          return { id, distance: Math.abs((box.top + box.bottom) / 2 - middle) };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, maxLive)
+        .map((row) => row.id),
+    );
+    for (const [id, row] of rows) row.notify(live.has(id));
+  };
+
+  // distances go stale as the page moves, so re-rank on scroll (coalesced to
+  // one measurement per frame, since getBoundingClientRect forces layout)
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(settle);
+  };
+
+  return {
+    subscribe(id, el, notify) {
+      if (!rows.size) {
+        window.addEventListener("scroll", schedule, { passive: true });
+        window.addEventListener("resize", schedule, { passive: true });
+      }
+      rows.set(id, { el, notify });
+      return () => {
+        rows.delete(id);
+        claimed.delete(id);
+        if (!rows.size) {
+          window.removeEventListener("scroll", schedule);
+          window.removeEventListener("resize", schedule);
+        }
+      };
+    },
+    claim(id) {
+      claimed.add(id);
+      settle();
+    },
+    release(id) {
+      if (!claimed.delete(id)) return;
+      settle();
+    },
+  };
+}
+
+function getMountBudget(id, maxLive) {
+  if (!mountBudgets.has(id)) mountBudgets.set(id, createMountBudget(maxLive));
+  return mountBudgets.get(id);
+}
+
+// Narrows `near` to `near AND holding a slot`. Cohorts without a maxLiveRows
+// cap (the SVG ones, which have no context budget to blow) pass through.
+function useMountSlot(config, rowId, near, elementRef) {
+  const maxLive = config.maxLiveRows;
+  const [granted, setGranted] = useState(false);
+  useEffect(() => {
+    if (!maxLive) return;
+    const budget = getMountBudget(config.id, maxLive);
+    const unsubscribe = budget.subscribe(rowId, elementRef.current, setGranted);
+    if (near) budget.claim(rowId);
+    else budget.release(rowId);
+    return () => {
+      budget.release(rowId);
+      unsubscribe();
+    };
+  }, [config.id, maxLive, rowId, near, elementRef]);
+  return maxLive ? near && granted : near;
+}
+
+// Gate per-sample fetching on the page having stopped moving. A flick down the
+// cohort crosses every row's mount window, and an in-flight request cannot be
+// cancelled (the LRU shares one promise between rows, so aborting for one
+// would break the others). A fixed delay from when the row became near does
+// not help — the near band is viewport + 2 x unmountMargin (~2100px for the
+// Multi-Regional cohort on a laptop), so even a fast flick leaves each row
+// inside it for several hundred milliseconds. Re-arming on every scroll event
+// does: only the rows the user actually lands on issue a query.
+function useScrollSettled(active, delay = SCROLL_SETTLE_MS) {
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!active) {
+      setSettled(false);
+      return;
+    }
+    let timer;
+    const arm = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        setSettled(true);
+        window.removeEventListener("scroll", arm); // settled once, then idle
+      }, delay);
+    };
+    arm();
+    window.addEventListener("scroll", arm, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", arm);
+    };
+  }, [active, delay]);
+  return settled;
+}
+
 const PLOT_HEIGHT = 340;
 const ROW_MIN_HEIGHT = PLOT_HEIGHT + 56; // plots + heading, keeps scroll stable
 
@@ -112,6 +245,22 @@ function SamplePairRow({
   // pair consistently shows only the lassoed cells (outside cells render at
   // opacity 0). null = no lasso active, everything visible.
   const [lassoCells, setLassoCells] = useState(null);
+
+  // A perSample row's records are released when it leaves the mount window;
+  // the lasso's cell-id Set has to go with them, or it pins up to ~330k
+  // strings per lassoed row for the life of the page — the strings are
+  // otherwise unreachable once the records are dropped. The view it zoomed to
+  // resets with it, since showing a lasso's bounding box without its filtering
+  // would misrepresent the plot; a plain drag-zoom (four numbers) is left
+  // alone. Full-fetch cohorts keep their records pinned by the shared
+  // cellsQuery either way, so there is nothing to release and the selection
+  // must survive scrolling between samples, as it always has.
+  const releasesRecords = config.fetch === "perSample";
+  useEffect(() => {
+    if (!releasesRecords || near || !lassoCells) return;
+    setLassoCells(null);
+    setViewRange(null);
+  }, [releasesRecords, near, lassoCells]);
 
   function handleRelayout(event) {
     if (event["xaxis.autorange"] || event["yaxis.autorange"]) {
@@ -512,7 +661,9 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
   const state = useSpatialCohort();
   const { config } = state;
   const { size, opacity, freeZoom } = useRecoilValue(state.plotOptionsState);
-  const [ref, near] = useNearViewport(config);
+  const [ref, nearViewport] = useNearViewport(config);
+  const near = useMountSlot(config, sample, nearViewport, ref);
+  const settled = useScrollSettled(near);
 
   const [leftRecords, setLeftRecords] = useState(null);
   const [cellCount, setCellCount] = useState(null);
@@ -558,6 +709,7 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
       setCellsError(null); // scrolled away: drop the alert, the placeholder
       return; //              speaks for the row until it is re-fetched
     }
+    if (!settled) return;
     let live = true;
     state.fetchSampleCells(sample).then(
       (records) => {
@@ -575,7 +727,7 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
     return () => {
       live = false;
     };
-  }, [state, near, sample, attempt]);
+  }, [state, near, settled, sample, attempt]);
 
   useEffect(() => {
     if (!near) {
@@ -584,6 +736,7 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
       setFeatureError(null);
       return;
     }
+    if (!settled) return;
     let live = true;
     setPending(true);
     state.fetchSampleFeature(sample, genesKey, cellsRef.current).then(
@@ -608,7 +761,7 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
     return () => {
       live = false;
     };
-  }, [state, near, sample, genesKey, attempt]);
+  }, [state, near, settled, sample, genesKey, attempt]);
 
   const rightRecords = shown?.records ?? null;
   // Compare the key the shown records were FETCHED under, not `pending`:
