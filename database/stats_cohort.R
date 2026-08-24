@@ -33,6 +33,11 @@ cat("reading meta + expr...\n")
 meta <- readRDS(meta_rds)
 expr <- readRDS(matrix_rds) # genes x cells
 stopifnot(ncol(expr) == nrow(meta))
+# Per-cell-type stats select matrix columns POSITIONALLY from meta row order
+# (see the loop below), so a meta shipped in a different order than the matrix
+# columns would silently assign cells to the wrong cell type. Assert the 1:1
+# order join the same way import_cohort.R does.
+stopifnot(identical(colnames(expr), meta$cell_id))
 genes <- rownames(expr)
 
 # Row-wise (per-gene) stats over a set of cell columns of the sparse matrix.

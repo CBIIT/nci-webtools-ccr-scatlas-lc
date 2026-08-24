@@ -3,6 +3,8 @@ import { useRecoilValue, useRecoilValueLoadable } from "recoil";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
+import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
 import Plot from "react-plotly.js";
 import merge from "lodash/merge";
 import groupBy from "lodash/groupBy";
@@ -84,6 +86,9 @@ function SamplePairRow({
   near,
   sample,
   leftRecords,
+  // perSample rows pass the count separately: their records are released when
+  // the row scrolls out of the mount window, but the header keeps reading n=…
+  cellCount = leftRecords?.length ?? null,
   rightRecords,
   size,
   opacity,
@@ -93,6 +98,9 @@ function SamplePairRow({
   cmin,
   cmax,
   freeZoom,
+  cellsError,
+  featureError,
+  onRetry,
 }) {
   const { config } = useSpatialCohort();
   // shared view for the pair: zoom/pan/reset on either plot mirrors to the
@@ -263,6 +271,17 @@ function SamplePairRow({
     [rightData, lassoCells],
   );
 
+  const errorBox = (err) => (
+    <Alert variant="danger" className="d-flex align-items-center gap-3">
+      <div className="flex-grow-1 small">
+        Could not load this sample. {err.message}
+      </div>
+      <Button size="sm" variant="outline-danger" onClick={onRetry}>
+        Retry
+      </Button>
+    </Alert>
+  );
+
   const loadingBox = (message) => (
     <div
       className="bg-light border rounded d-flex align-items-center justify-content-center text-muted"
@@ -280,7 +299,7 @@ function SamplePairRow({
         {sample}{" "}
         <span className="text-muted fw-normal">
           · {featureLabel} · {samplesLabel}
-          {leftRecords && <> · n={leftRecords.length}</>}
+          {cellCount != null && <> · n={cellCount}</>}
         </span>
         {updating && (
           <Spinner
@@ -291,7 +310,12 @@ function SamplePairRow({
           />
         )}
       </h3>
-      {near ? (
+      {/* the cells drive BOTH plots, so their failure replaces the row; an
+          expression failure leaves the cell-type plot standing and reports in
+          the column it belongs to */}
+      {cellsError ? (
+        errorBox(cellsError)
+      ) : near ? (
         leftShown ? (
           <Row className="g-2">
             <Col xl={6}>
@@ -330,7 +354,11 @@ function SamplePairRow({
                   style={{ height: `${PLOT_HEIGHT}px` }}
                 />
               ) : (
-                loadingBox("Loading expression…")
+                featureError ? (
+                  errorBox(featureError)
+                ) : (
+                  loadingBox("Loading expression…")
+                )
               )}
             </Col>
           </Row>
@@ -473,45 +501,127 @@ function FullFetchRow(props) {
 // each row fetches its own cells + expression only once scrolled near the
 // viewport — nothing ever downloads the whole cells table. The expression
 // color scale is per row (a global scale would require all samples' data).
+//
+// A row holds its records only while it is inside the mount window: scrolling
+// away drops them, leaving the sample retained solely by the state module's
+// bounded LRU. (An earlier `started` latch kept every visited row's records
+// alive, which put the whole cohort back in memory after one pass down the
+// page — the exact cost perSample fetching exists to avoid.) Only the cell
+// count survives, so a revisited row's header still reads n=… immediately.
 function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
   const state = useSpatialCohort();
   const { config } = state;
   const { size, opacity, freeZoom } = useRecoilValue(state.plotOptionsState);
   const [ref, near] = useNearViewport(config);
-  // once near, fetching is latched on: scrolling away unmounts the plots but
-  // keeps the row's cached records (and its header count) for instant remount
-  const [started, setStarted] = useState(false);
+
+  const [leftRecords, setLeftRecords] = useState(null);
+  const [cellCount, setCellCount] = useState(null);
+  // keep-previous: a gene change keeps the old coloring (and ITS label) on
+  // screen until the new expression arrives, so the row never blanks mid-scroll
+  const [shown, setShown] = useState(null);
+  const [pending, setPending] = useState(false);
+  // A failed fetch is reported inside the row rather than thrown to the page
+  // error boundary: rows re-fetch on every scroll pass now, and one flaky
+  // response must not replace the whole panel (options, gene sets, all rows)
+  // with an unrecoverable alert. `attempt` re-runs both effects on Retry. The
+  // alert renders INSIDE SamplePairRow so the element carrying the viewport
+  // ref never changes type — swapping it would detach the observers and strand
+  // the row at near=false, leaving Retry with nothing to re-run.
+  // The two fetches carry SEPARATE errors: they share a row but not a fate, and
+  // a single slot let the slower one's success erase the other's failure —
+  // leaving the row with no alert, no Retry and a plot that never arrives.
+  const [cellsError, setCellsError] = useState(null);
+  const [featureError, setFeatureError] = useState(null);
+  const [attempt, setAttempt] = useState(0);
+  // the label these records were fetched under, captured at resolve time so a
+  // label-only change (same genes under a new set name) does not re-run the
+  // effect; it is only read while a newer fetch is in flight
+  const labelRef = useRef(currentLabel);
   useEffect(() => {
-    if (near) setStarted(true);
-  }, [near]);
+    labelRef.current = currentLabel; // committed renders only, never mid-render
+  });
+  // The row's own cells, handed to the feature fetch so it never re-derives
+  // them from the cells cache. Held in a ref rather than read from state: as a
+  // dependency it would re-run the effect on the one null -> array transition
+  // every row makes, issuing a second identical expression query and
+  // discarding the first. On a row's first pass this is still null, and the
+  // fetch falls back to the cells cache — where the row's own request is
+  // already in flight under the same key, so the two share one query.
+  const cellsRef = useRef(null);
+  useEffect(() => {
+    cellsRef.current = leftRecords;
+  }, [leftRecords]);
 
-  const cellsLoadable = useRecoilValueLoadable(
-    state.sampleCellsQuery(started ? sample : null),
-  );
-  if (cellsLoadable.state === "hasError") throw cellsLoadable.contents;
-  const leftRecords =
-    started && cellsLoadable.state === "hasValue" ? cellsLoadable.contents : null;
+  useEffect(() => {
+    if (!near) {
+      setLeftRecords(null);
+      setCellsError(null); // scrolled away: drop the alert, the placeholder
+      return; //              speaks for the row until it is re-fetched
+    }
+    let live = true;
+    state.fetchSampleCells(sample).then(
+      (records) => {
+        if (!live) return;
+        setLeftRecords(records);
+        setCellCount(records.length);
+        setCellsError(null);
+      },
+      (err) => {
+        if (!live) return;
+        setCellCount(null); // a stale n= would outlive the data it counted
+        setCellsError(err);
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [state, near, sample, attempt]);
 
-  // per-row keep-previous: gene changes keep the old coloring (and ITS label)
-  // on screen until the new expression arrives
-  const featureLoadable = useRecoilValueLoadable(
-    state.sampleFeatureQuery(
-      started ? { sample, genesKey } : { sample: null, genesKey: "" },
-    ),
-  );
-  if (featureLoadable.state === "hasError") throw featureLoadable.contents;
-  const lastRef = useRef(null);
-  if (started && featureLoadable.state === "hasValue") {
-    lastRef.current = { records: featureLoadable.contents, label: currentLabel };
-  }
-  const shown =
-    started && featureLoadable.state === "hasValue"
-      ? { records: featureLoadable.contents, label: currentLabel }
-      : lastRef.current;
+  useEffect(() => {
+    if (!near) {
+      setShown(null);
+      setPending(false);
+      setFeatureError(null);
+      return;
+    }
+    let live = true;
+    setPending(true);
+    state.fetchSampleFeature(sample, genesKey, cellsRef.current).then(
+      (records) => {
+        if (!live) return;
+        setShown({ records, label: labelRef.current, genesKey });
+        setPending(false);
+        setFeatureError(null);
+      },
+      (err) => {
+        if (!live) return;
+        setPending(false); // or the header spinner outlives the failure
+        // Drop the kept-previous records too. They belong to the OLD gene, so
+        // leaving them up would show that gene's points under its own label
+        // with no sign anything failed, and `updating` — which compares
+        // shown.genesKey to the requested one — would spin forever. Clearing
+        // them lets the right column report the error and offer Retry.
+        setShown(null);
+        setFeatureError(err);
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [state, near, sample, genesKey, attempt]);
+
   const rightRecords = shown?.records ?? null;
-  const featureLabel = shown?.label ?? currentLabel;
-  const updating =
-    started && featureLoadable.state === "loading" && !!lastRef.current;
+  // Compare the key the shown records were FETCHED under, not `pending`:
+  // `pending` is set inside an effect, which runs after paint, so the render
+  // that a gene change triggers would otherwise paint one frame of the new
+  // gene's label over the previous gene's data — and re-derive the traces
+  // three times per change instead of once.
+  const updating = !!shown && (pending || shown.genesKey !== genesKey);
+  // while a new gene's expression is in flight the row still shows the OLD
+  // records, so it must show the label they were fetched under; otherwise the
+  // records match the current selection, and reading currentLabel directly
+  // keeps a label-only change (same genes under a new set name) in sync
+  const featureLabel = updating ? shown.label : currentLabel;
 
   // expression range across this row only (per-row colorbar scale)
   const [cmin, cmax] = useMemo(() => {
@@ -525,12 +635,14 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
     return [min, max];
   }, [rightRecords]);
 
+
   return (
     <SamplePairRow
       innerRef={ref}
       near={near}
       sample={sample}
       leftRecords={leftRecords}
+      cellCount={cellCount}
       rightRecords={rightRecords}
       size={size}
       opacity={opacity}
@@ -540,6 +652,13 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
       cmin={cmin}
       cmax={cmax}
       freeZoom={freeZoom}
+      cellsError={cellsError}
+      featureError={featureError}
+      onRetry={() => {
+        setCellsError(null);
+        setFeatureError(null);
+        setAttempt((n) => n + 1);
+      }}
     />
   );
 }

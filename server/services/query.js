@@ -68,6 +68,13 @@ export function getQuery(schema, table, columns, sample) {
   let sql = `select ${validColumns} from ${validTable}`;
   const params = [];
   if (sample != null && sample !== "") {
+    // Express's extended query parser turns ?sample=a&sample=b into an array
+    // and ?sample[x]=1 into an object; either would reach the driver as a bind
+    // value and surface as an opaque driver exception rather than a rejected
+    // filter.
+    if (typeof sample !== "string") {
+      throw new Error(`Invalid filter`);
+    }
     if (!schema[valid.table].includes("sample")) {
       throw new Error(`Invalid filter`);
     }

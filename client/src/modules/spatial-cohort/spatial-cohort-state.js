@@ -20,7 +20,43 @@ import { query } from "../../services/query";
 //                   from the fetched cells)
 //   renderer        Plotly trace type: "scatter" (SVG) or "scattergl" (WebGL)
 //   mountMargin / unmountMargin   lazy-mount hysteresis distances
+//   sampleCacheSize how many samples' records to keep (perSample). Covering the
+//                   live rows is NOT the goal — a mounted row holds its own
+//                   reference and hands it to fetchSampleFeature, so nothing on
+//                   screen depends on the cache. It buys cheap scroll-back, and
+//                   trades directly against the footprint this mode exists to
+//                   bound, so it belongs well under the cohort's sample count.
 const META_COLUMNS = "x,y,type,sample,cell_id";
+
+// Bounded promise cache for the perSample fetchers. A Recoil selectorFamily
+// cannot do this job: 0.7.7 hardcodes eviction "keep-all" for a family's params
+// cache (cachePolicyForParams_UNSTABLE only tunes key equality), so every
+// sample a user scrolled past would be retained for the life of the page —
+// the whole-table footprint that perSample fetching exists to avoid. An
+// insertion-ordered Map gives LRU for free: re-reading a key re-inserts it at
+// the end, and the oldest key is always the first one out.
+function createLruCache(maxSize) {
+  const entries = new Map();
+  return function load(key, fetcher) {
+    if (entries.has(key)) {
+      const hit = entries.get(key);
+      entries.delete(key);
+      entries.set(key, hit);
+      return hit;
+    }
+    const pending = fetcher();
+    entries.set(key, pending);
+    // a failed fetch must not be cached — the row retries on its next remount.
+    // Only drop the entry if it is still THIS promise: a slow rejection can
+    // land long after its key was evicted and re-fetched, and must not take
+    // the newer successful entry down with it.
+    pending.catch(() => {
+      if (entries.get(key) === pending) entries.delete(key);
+    });
+    while (entries.size > maxSize) entries.delete(entries.keys().next().value);
+    return pending;
+  };
+}
 
 export function createSpatialCohortState(config) {
   const { id, tables } = config;
@@ -34,18 +70,21 @@ export function createSpatialCohortState(config) {
       query("/api/query", { table: tables.cells, columns: META_COLUMNS }),
   });
 
-  // One sample's cells (perSample mode); null = not yet requested -> no fetch.
-  const sampleCellsQuery = selectorFamily({
-    key: `${id}.sampleCellsQuery`,
-    get: (sample) => () =>
-      sample == null
-        ? []
-        : query("/api/query", {
-            table: tables.cells,
-            columns: META_COLUMNS,
-            sample,
-          }),
-  });
+  // One sample's cells (perSample mode), fetched on demand and retained only
+  // by the LRU below — rows drop their own reference when they scroll out of
+  // the mount window, so the page never holds every sample at once. The cache
+  // exists for cheap scroll-back, NOT for correctness: a live row holds its own
+  // reference, so the budget can stay well under the cohort's sample count.
+  const cacheSize = config.sampleCacheSize ?? 6;
+  const loadSampleCells = createLruCache(cacheSize);
+  const fetchSampleCells = (sample) =>
+    loadSampleCells(sample, () =>
+      query("/api/query", {
+        table: tables.cells,
+        columns: META_COLUMNS,
+        sample,
+      }),
+    );
 
   // The sample id list drives the row list and the Samples filter. Configured
   // cohorts (perSample) list them statically; otherwise derive from the cells.
@@ -115,23 +154,38 @@ export function createSpatialCohortState(config) {
       },
   });
 
-  // perSample-mode variant: fetches and joins one sample's expression only.
-  const sampleFeatureQuery = selectorFamily({
-    key: `${id}.sampleFeatureQuery`,
-    get:
-      ({ sample, genesKey }) =>
-      async ({ get }) => {
-        if (sample == null || !genesKey) return [];
-        const cells = get(sampleCellsQuery(sample));
-        const genes = genesKey.split(",");
-        const rows = await query("/api/query", {
+  // perSample-mode variant: fetches and joins one sample's expression only,
+  // keyed by sample + gene list. `cells` is the caller's already-loaded records
+  // for this sample; passing them keeps the two caches independent, which is
+  // what lets both stay small. Deriving the cells here instead would make the
+  // cells budget a correctness constraint — it would have to outnumber the
+  // live rows or a gene change would re-download cells the rows are still
+  // displaying. Falls back to the cells cache for a row that has not resolved
+  // its own copy yet (the row's fetch is already in flight under the same key,
+  // so this shares that promise rather than issuing a second query).
+  //
+  // Sized to match the cells budget rather than under it. Its entries ARE a
+  // second full copy of the records (joinFeature rebuilds each cell), but an
+  // entry for a live row is the same array that row already holds, so the
+  // marginal cost is only the recently-departed rows — and undersizing it
+  // meant a scroll-back re-queried and re-joined every sample, which is the
+  // work the cache exists to skip.
+  const loadSampleFeature = createLruCache(cacheSize);
+  const fetchSampleFeature = (sample, genesKey, cells) => {
+    if (!genesKey) return Promise.resolve([]); // as featureExpressionQuery
+    return loadSampleFeature(`${sample}\u0000${genesKey}`, async () => {
+      const genes = genesKey.split(",");
+      const [baseCells, rows] = await Promise.all([
+        cells ?? fetchSampleCells(sample),
+        query("/api/query", {
           table: tables.cells,
           columns: `cell_id,${genes.join(",")}`,
           sample,
-        });
-        return joinFeature(cells, rows, genes);
-      },
-  });
+        }),
+      ]);
+      return joinFeature(baseCells, rows, genes);
+    });
+  };
 
   // activeFeature: what colors the expression (right) plots —
   // { kind: "gene" | "set", label, genes: [...] }. A single gene is a 1-gene
@@ -169,12 +223,12 @@ export function createSpatialCohortState(config) {
   return {
     config,
     cellsQuery,
-    sampleCellsQuery,
+    fetchSampleCells,
     samplesQuery,
     cellsStatsQuery,
     statsTableQuery,
     featureExpressionQuery,
-    sampleFeatureQuery,
+    fetchSampleFeature,
     defaultPlotOptions,
     plotOptionsState,
     geneSetsState,

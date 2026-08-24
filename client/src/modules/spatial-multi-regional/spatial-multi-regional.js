@@ -6,8 +6,16 @@ import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
 // each) the cohort is far too large to download whole, so it uses per-sample
 // fetching (each row loads on scroll via the query API's sample filter, with a
 // per-row expression color scale) and WebGL rendering — SVG scatter cannot hold
-// 100k+ points per plot. The mount window is tighter than the SVG default to
-// keep concurrently mounted plots under the browser's WebGL context cap.
+// 100k+ points per plot.
+//
+// The mount window is sized against the browser's WebGL context cap (~16 per
+// page in Chrome; exceeding it silently evicts the oldest contexts and blanks
+// those plots). A row is ~412px tall at xl and up and holds 2 contexts, and
+// stays mounted while within unmountMargin of the viewport, so the live band
+// is viewport + 2 x unmountMargin: at 600px that is ~6 rows / 12 contexts on a
+// 900px viewport and ~7 rows / 14 on a 1400px one. A viewport tall enough to
+// hold more rows than that still approaches the cap — worth re-checking
+// empirically on the widest supported display.
 const state = createSpatialCohortState({
   id: "spatialMultiRegional",
   title: "Multi-Regional",
@@ -43,8 +51,20 @@ const state = createSpatialCohortState({
     "4HB", "4HN", "4HT",
   ],
   renderer: "scattergl",
+  // The hysteresis band (unmountMargin - mountMargin) must exceed the height a
+  // row GAINS when it mounts, or the two thresholds oscillate: below the xl
+  // breakpoint the pair of plots stacks, so a mounted row is ~736px against a
+  // 396px placeholder — a 340px jump that would push the row back inside
+  // mountMargin the moment it unmounted.
   mountMargin: "200px",
-  unmountMargin: "1000px",
+  unmountMargin: "600px",
+  // Samples retained by the state module's caches (cells and expression each
+  // keep this many), for cheap scroll-back. Sized under the cohort's 15
+  // samples on purpose: holding most of them would reconstitute the
+  // whole-table footprint this fetch mode avoids. Entries for mounted rows are
+  // the same arrays those rows already hold, so only the recently-departed
+  // rows cost anything.
+  sampleCacheSize: 6,
 });
 
 export default function SpatialMultiRegional() {
