@@ -1,0 +1,193 @@
+name: scAtlasLC Data Import
+permissions:
+  id-token: write
+  contents: read
+
+# Applies a delta DuckDB file (built locally with database/copy_tables.mjs and
+# staged in S3) onto the tier database on EFS, via a one-off Fargate task in
+# the VPC — no more hand-copying onto the EFS host. The task copies the live
+# file aside, merges the listed tables in, swaps atomically, and keeps the
+# previous file as .bak; the workflow then restarts the web service so the
+# backend re-reads the schema.
+on:
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: "Tier whose database to update"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - qa
+          - stage
+          - prod
+      delta_s3_uri:
+        description: "S3 URI of the delta DuckDB file (s3://bucket/key.db)"
+        required: true
+        type: string
+      tables:
+        description: "Space-separated tables to copy out of the delta"
+        required: true
+        default: "tigerlc_stats_table multiregional multiregional_stats multiregional_stats_table"
+        type: string
+      restart_web:
+        description: "Restart the web service afterwards (required for the backend to see new tables)"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  DataImport:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.tier }}
+    env:
+      APP: scatlaslc
+      TZ: America/New_York
+      AWS_REGION: us-east-1
+      TASK_DEFINITION_TEMPLATE_PATH: .github/aws
+      ECS_DATA_IMPORT_CPU_UNITS: "2048"
+      ECS_DATA_IMPORT_MEMORY_UNITS: "8192"
+      TIER: ${{ inputs.tier }}
+      DELTA_S3_URI: ${{ inputs.delta_s3_uri }}
+      TABLES: ${{ inputs.tables }}
+      CICD_ROLE_ARN: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/power-user-github-actions-cicd
+
+    steps:
+      - uses: "actions/checkout@v6.0.2"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.0.0
+        with:
+          role-to-assume: ${{ env.CICD_ROLE_ARN }}
+          role-session-name: ${{ env.TIER }}-${{ env.APP }}-data-import-${{ github.ref_name }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set dynamic environment variables
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d%H%M%S")
+          REPO="${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$APP"
+          echo "DATA_IMPORT_IMAGE=$REPO:data-import-${{ github.ref_name }}-$TIMESTAMP" >> $GITHUB_ENV
+          echo "DATA_IMPORT_IMAGE_LATEST=$REPO:data-import-${{ github.ref_name }}-latest" >> $GITHUB_ENV
+          echo "ENVIRONMENT_TIER=${TIER^^}" >> $GITHUB_ENV
+
+      - name: Retrieve SSM parameters
+        run: |
+          PARAMETER_PATH="/analysistools/${TIER}/${APP}"
+
+          declare -A PARAMS=(
+            ["ecs_cluster"]="ECS_CLUSTER"
+            ["ecs_web_service"]="ECS_WEB_SERVICE"
+            ["subnet_ids"]="SUBNET_IDS"
+            ["security_group_ids"]="SECURITY_GROUP_IDS"
+            ["role_arn"]="ROLE_ARN"
+            ["efs_filesystem_id"]="EFS_FILESYSTEM_ID"
+            ["efs_access_point_id"]="EFS_ACCESS_POINT_ID"
+          )
+
+          for ssm_name in "${!PARAMS[@]}"; do
+            env_var="${PARAMS[$ssm_name]}"
+            value=$(aws ssm get-parameter \
+              --name "${PARAMETER_PATH}/${ssm_name}" \
+              --with-decryption \
+              --query "Parameter.Value" \
+              --output text)
+            echo "${env_var}=${value}" >> $GITHUB_ENV
+            echo "Retrieved ${ssm_name} -> ${env_var}"
+          done
+
+          # the data-import task family has no SSM parameter yet — use it if
+          # present, otherwise fall back to a conventional name
+          if value=$(aws ssm get-parameter \
+            --name "${PARAMETER_PATH}/ecs_data_import_task" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text 2>/dev/null); then
+            echo "ECS_DATA_IMPORT_TASK=${value}" >> $GITHUB_ENV
+          else
+            echo "ECS_DATA_IMPORT_TASK=${TIER}-${APP}-data-import" >> $GITHUB_ENV
+          fi
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2.1.0
+        with:
+          mask-password: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.0.0
+
+      - name: Build data-import image ${{ env.DATA_IMPORT_IMAGE }}
+        uses: docker/build-push-action@v7.0.0
+        with:
+          context: .
+          file: docker/data-import.dockerfile
+          pull: true
+          push: true
+          tags: |
+            ${{ env.DATA_IMPORT_IMAGE }}
+            ${{ env.DATA_IMPORT_IMAGE_LATEST }}
+          cache-from: type=registry,ref=${{ env.DATA_IMPORT_IMAGE_LATEST }}
+          cache-to: type=inline
+
+      - name: Substitute data-import task definition variables
+        run: |
+          envsubst < $TASK_DEFINITION_TEMPLATE_PATH/data-import.yml > data-import.yml
+          echo "Rendered data-import Task Definition:"
+          cat data-import.yml
+
+      - name: Register task definition
+        run: |
+          aws ecs register-task-definition --cli-input-yaml file://data-import.yml
+
+      - name: Run data-import task
+        run: |
+          TASK_ARN=$(aws ecs run-task \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --count 1 \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ env.SUBNET_IDS }}],securityGroups=[${{ env.SECURITY_GROUP_IDS }}]}" \
+            --task-definition ${{ env.ECS_DATA_IMPORT_TASK }} \
+            --query "tasks[0].taskArn" \
+            --output text)
+          echo "TASK_ARN=$TASK_ARN" >> $GITHUB_ENV
+          echo "Started task $TASK_ARN"
+
+      - name: Wait for task to finish
+        run: |
+          # the built-in tasks-stopped waiter gives up after ~10 minutes; a
+          # large delta can take longer, so poll for up to 45 minutes
+          STATUS=""
+          for i in $(seq 1 90); do
+            STATUS=$(aws ecs describe-tasks \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --tasks $TASK_ARN \
+              --query "tasks[0].lastStatus" \
+              --output text)
+            echo "task status: $STATUS"
+            [ "$STATUS" = "STOPPED" ] && break
+            sleep 30
+          done
+          [ "$STATUS" = "STOPPED" ]
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --tasks $TASK_ARN \
+            --query "tasks[0].containers[?name=='data-import'] | [0].exitCode" \
+            --output text)
+          STOP_REASON=$(aws ecs describe-tasks \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --tasks $TASK_ARN \
+            --query "tasks[0].stoppedReason" \
+            --output text)
+          echo "data-import exit code: $EXIT_CODE ($STOP_REASON)"
+          [ "$EXIT_CODE" = "0" ]
+
+      - name: Restart web service
+        if: ${{ inputs.restart_web }}
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_WEB_SERVICE }} \
+            --desired-count 1 \
+            --force-new-deployment

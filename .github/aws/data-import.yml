@@ -1,0 +1,73 @@
+family: "$ECS_DATA_IMPORT_TASK"
+networkMode: awsvpc
+cpu: "$ECS_DATA_IMPORT_CPU_UNITS"
+memory: "$ECS_DATA_IMPORT_MEMORY_UNITS"
+executionRoleArn: "$ROLE_ARN"
+taskRoleArn: "$ROLE_ARN"
+requiresCompatibilities:
+  - FARGATE
+volumes:
+  - name: data
+    efsVolumeConfiguration:
+      fileSystemId: "$EFS_FILESYSTEM_ID"
+      authorizationConfig:
+        accessPointId: "$EFS_ACCESS_POINT_ID"
+        iam: ENABLED
+      transitEncryption: ENABLED
+containerDefinitions:
+  - name: logs
+    image: public.ecr.aws/aws-observability/aws-for-fluent-bit:stable
+    firelensConfiguration:
+      type: fluentbit
+    memoryReservation: 50
+    logConfiguration:
+      logDriver: awslogs
+      options:
+        awslogs-group: "/analysistools/$TIER/$APP/web"
+        awslogs-region: "$AWS_REGION"
+        awslogs-stream-prefix: data-import
+
+  - name: data-import
+    image: "$DATA_IMPORT_IMAGE"
+    environment:
+      - name: AWS_DEFAULT_REGION
+        value: "$AWS_REGION"
+      - name: DELTA_S3_URI
+        value: "$DELTA_S3_URI"
+      - name: TABLES
+        value: "$TABLES"
+    secrets:
+      - name: DATABASE_PATH
+        valueFrom: "/analysistools/$TIER/$APP/database_path"
+    mountPoints:
+      - sourceVolume: data
+        containerPath: "/data"
+        readOnly: false
+    logConfiguration:
+      logDriver: awsfirelens
+      options:
+        Name: datadog
+        tls: "on"
+        tls.verify: "off"
+        dd_service: "$TIER-$APP-data-import"
+        dd_source: "shell"
+        dd_tags: "project:$APP tier:$TIER"
+        provider: ecs
+      secretOptions:
+        - name: Host
+          valueFrom: /analysistools/$TIER/datadog/log_endpoint_host
+        - name: apikey
+          valueFrom: /analysistools/$TIER/datadog/api_key
+tags:
+  - key: Project
+    value: "$APP"
+  - key: ApplicationName
+    value: "$APP"
+  - key: ResourceName
+    value: "$TIER-$APP-data-import-ecs-task"
+  - key: EnvironmentTier
+    value: "$ENVIRONMENT_TIER"
+  - key: ResourceFunction
+    value: compute
+  - key: Creator
+    value: TF
