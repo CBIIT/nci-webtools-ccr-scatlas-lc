@@ -31,6 +31,8 @@ containerDefinitions:
         value: "${DELTA_S3_URI}"
       - name: TABLES
         value: "${TABLES}"
+      - name: DUCKDB_MEMORY_LIMIT
+        value: "${DUCKDB_MEMORY_LIMIT}"
     secrets:
       - name: DATABASE_PATH
         valueFrom: "${PARAMETER_PATH}/database_path"

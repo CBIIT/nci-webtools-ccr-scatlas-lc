@@ -10,6 +10,7 @@
 //   node database/copy_tables.mjs <target_db> <source_db> <table> [table...]
 // No process may hold the TARGET open (read-write needs exclusive access);
 // readers on the source are fine.
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 const require = createRequire(new URL("../server/package.json", import.meta.url));
 const duckdb = require("duckdb");
@@ -26,8 +27,16 @@ for (const t of tables) {
   }
 }
 
+// a leftover write-ahead log means an earlier build died mid-way; shipping
+// the .db without it would silently carry that build's stale tables
+if (existsSync(`${targetDb}.wal`)) {
+  console.error(`${targetDb}.wal exists from an interrupted build - delete the target and rebuild`);
+  process.exit(1);
+}
+
 const db = new duckdb.Database(targetDb); // read-write; creates if missing
 const run = (sql) => new Promise((res, rej) => db.all(sql, (e, r) => (e ? rej(e) : res(r))));
+const close = () => new Promise((res, rej) => db.close((e) => (e ? rej(e) : res())));
 const q = (id) => `"${id.replace(/"/g, '""')}"`;
 
 // very wide tables (1,000+ gene columns) exceed the memory cap while copying —
@@ -36,12 +45,18 @@ await run(`SET memory_limit='${process.env.DUCKDB_MEMORY_LIMIT || "8GB"}'`);
 await run(`SET temp_directory='${(process.env.DUCKDB_TEMP_DIR || targetDb + ".tmp").replace(/'/g, "''")}'`);
 await run("SET threads TO 2");
 await run("SET preserve_insertion_order=false");
-await run(`ATTACH '${sourceDb.replace(/'/g, "''")}' AS src (READ_ONLY)`);
-for (const t of tables) {
-  await run(`DROP TABLE IF EXISTS ${q(t)}`);
-  await run(`CREATE TABLE ${q(t)} AS SELECT * FROM src.${q(t)}`);
-  await run("CHECKPOINT");
-  const [{ c }] = await run(`SELECT count(*) AS c FROM ${q(t)}`);
-  console.log(`copied ${t}: ${Number(c)} rows`);
+try {
+  await run(`ATTACH '${sourceDb.replace(/'/g, "''")}' AS src (READ_ONLY)`);
+  for (const t of tables) {
+    await run(`DROP TABLE IF EXISTS ${q(t)}`);
+    await run(`CREATE TABLE ${q(t)} AS SELECT * FROM src.${q(t)}`);
+    await run("CHECKPOINT");
+    const [{ c }] = await run(`SELECT count(*) AS c FROM ${q(t)}`);
+    console.log(`copied ${t}: ${Number(c)} rows`);
+  }
+} catch (e) {
+  console.error("copy failed:", e.message);
+  await close(); // checkpoint-on-close so no .wal is left behind
+  process.exit(1);
 }
-db.close(() => {});
+await close();

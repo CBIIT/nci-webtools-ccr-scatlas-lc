@@ -47,6 +47,11 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     environment: ${{ inputs.tier }}
+    # one import per tier at a time: concurrent runs share the task family and
+    # the .new/.bak working files on EFS; other tiers still run independently
+    concurrency:
+      group: data-import-${{ inputs.tier }}
+      cancel-in-progress: false
     env:
       APP: scatlaslc
       AWS_REGION: us-east-1
@@ -57,8 +62,12 @@ jobs:
       PARAMETER_PATH: /analysistools/${{ inputs.tier }}/scatlaslc
       ECS_DATA_IMPORT_TASK: ${{ inputs.tier }}-scatlaslc-data-import
       ECS_DATA_IMPORT_CPU_UNITS: "2048"
-      ECS_DATA_IMPORT_MEMORY_UNITS: "8192"
+      ECS_DATA_IMPORT_MEMORY_UNITS: "16384"
       TABLES: ${{ inputs.tables }}
+      # dispatch inputs and the ref reach the shell only through env (never
+      # interpolated into run: scripts) and are validated below
+      DELTA_FILE: ${{ inputs.delta_file }}
+      REF_NAME: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v6.0.2
@@ -71,15 +80,33 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-duration-seconds: 3600
 
+      - name: Validate inputs
+        run: |
+          case "$DELTA_FILE" in
+            ""|.*|*[!A-Za-z0-9._-]*) echo "::error::delta_file must be a plain file name (letters, digits, . _ -): '$DELTA_FILE'"; exit 1 ;;
+          esac
+          # same grammar apply_delta.sh accepts; also keeps the value a plain
+          # scalar when it is substituted into the task-definition YAML
+          case "$TABLES" in
+            *[!a-z0-9_\ ]*) echo "::error::tables must be space-separated lower_snake_case names: '$TABLES'"; exit 1 ;;
+          esac
+          # normalise whitespace so a blank box means "every table in the delta"
+          echo "TABLES=$(echo $TABLES)" >> "$GITHUB_ENV"
+
       - name: Set derived variables
         run: |
           TIMESTAMP=$(date +"%Y%m%d%H%M%S")
           REPO="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$APP"
+          REF_SLUG=$(printf '%s' "$REF_NAME" | tr -c 'A-Za-z0-9._-' '-')
+          # DuckDB's buffer cap only bounds part of its footprint: keep it well
+          # under the container limit (about 60%) so the task is never OOM-killed
+          DUCKDB_MEMORY_LIMIT="$((ECS_DATA_IMPORT_MEMORY_UNITS * 6 / 10 / 1024))GB"
           {
+            echo "DUCKDB_MEMORY_LIMIT=$DUCKDB_MEMORY_LIMIT"
             echo "TIER_UPPER=$(echo "$TIER" | tr '[:lower:]' '[:upper:]')"
-            echo "DELTA_S3_URI=s3://$DATA_BUCKET/scatlas/data/deltas/${{ inputs.delta_file }}"
-            echo "DATA_IMPORT_IMAGE=$REPO:data-import-${{ github.ref_name }}-$TIMESTAMP"
-            echo "DATA_IMPORT_IMAGE_LATEST=$REPO:data-import-${{ github.ref_name }}-latest"
+            echo "DELTA_S3_URI=s3://$DATA_BUCKET/scatlas/data/deltas/$DELTA_FILE"
+            echo "DATA_IMPORT_IMAGE=$REPO:data-import-$REF_SLUG-$TIMESTAMP"
+            echo "DATA_IMPORT_IMAGE_LATEST=$REPO:data-import-$REF_SLUG-latest"
           } >> "$GITHUB_ENV"
 
       - name: Retrieve infra values from SSM
@@ -139,7 +166,6 @@ jobs:
         run: aws ecs register-task-definition --cli-input-yaml file://ecs-tasks/data-import.yml
 
       - name: Run data-import task
-        id: run
         run: |
           TASK_ARN=$(aws ecs run-task \
             --cluster "$ECS_CLUSTER" \
@@ -149,26 +175,48 @@ jobs:
             --task-definition "$ECS_DATA_IMPORT_TASK" \
             --query 'tasks[0].taskArn' --output text)
           test -n "$TASK_ARN" && test "$TASK_ARN" != "None" || { echo "::error::run-task did not return a task ARN"; exit 1; }
-          echo "task_arn=$TASK_ARN" >> "$GITHUB_OUTPUT"
+          echo "TASK_ARN=$TASK_ARN" >> "$GITHUB_ENV"
           echo "Started $TASK_ARN"
 
       - name: Wait for task to stop
         run: |
           # the built-in tasks-stopped waiter gives up after ~10 minutes; a
-          # multi-GB delta can take longer, so poll for up to 45 minutes
+          # multi-GB delta can take longer, so poll for up to 45 minutes.
+          # A transient describe error must not abort the step (bash -e), and
+          # a task that no longer exists reports "None" - treat that as gone.
           STATUS=""
           for i in $(seq 1 90); do
-            STATUS=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "${{ steps.run.outputs.task_arn }}" \
-              --query 'tasks[0].lastStatus' --output text)
+            STATUS=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
+              --query 'tasks[0].lastStatus' --output text 2>/dev/null || echo "UNKNOWN")
             echo "task status: $STATUS"
-            [ "$STATUS" = "STOPPED" ] && break
+            case "$STATUS" in
+              STOPPED) break ;;
+              None) echo "::error::task $TASK_ARN no longer exists"; exit 1 ;;
+            esac
             sleep 30
           done
           test "$STATUS" = "STOPPED" || { echo "::error::data-import task still running after 45 minutes"; exit 1; }
+          echo "TASK_DONE=true" >> "$GITHUB_ENV"
+
+      # runs on every exit path (timeout, describe failure, cancel, job
+      # timeout): never leave a detached task that could swap the database later
+      - name: Stop the task if it is still running
+        if: ${{ always() && env.TASK_ARN != '' && env.TASK_DONE != 'true' }}
+        run: |
+          STATUS=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
+            --query 'tasks[0].lastStatus' --output text 2>/dev/null || echo "UNKNOWN")
+          if [ "$STATUS" != "STOPPED" ] && [ "$STATUS" != "None" ]; then
+            if aws ecs stop-task --cluster "$ECS_CLUSTER" --task "$TASK_ARN" --reason "data-import workflow ended before the task finished" >/dev/null; then
+              echo "stop requested for $TASK_ARN (was $STATUS)"
+            else
+              echo "::error::could not stop $TASK_ARN (was $STATUS) - stop it manually before retrying"
+              exit 1
+            fi
+          fi
 
       - name: Check exit code
         run: |
-          DESC=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "${{ steps.run.outputs.task_arn }}" --output json)
+          DESC=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" --output json)
           echo "$DESC" | jq -r '.tasks[0] | "stoppedReason: \(.stoppedReason // "n/a")"'
           CODE=$(echo "$DESC" | jq -r '.tasks[0].containers[] | select(.name=="data-import") | .exitCode // "null"')
           echo "data-import container exit code: $CODE"
@@ -178,8 +226,9 @@ jobs:
       - name: Restart web service
         if: ${{ inputs.restart_web }}
         run: |
+          # no --desired-count: restart whatever is running without overriding
+          # the scheduled non-prod scale-in or any autoscaling minimum
           aws ecs update-service \
             --cluster "$ECS_CLUSTER" \
             --service "$ECS_WEB_SERVICE" \
-            --desired-count 1 \
             --force-new-deployment
