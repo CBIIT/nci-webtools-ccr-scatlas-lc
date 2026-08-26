@@ -185,7 +185,7 @@ jobs:
           # A transient describe error must not abort the step (bash -e), and
           # a task that no longer exists reports "None" - treat that as gone.
           STATUS=""
-          for i in $(seq 1 90); do
+          for i in $(seq 1 91); do
             STATUS=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
               --query 'tasks[0].lastStatus' --output text 2>/dev/null || echo "UNKNOWN")
             echo "task status: $STATUS"
@@ -193,7 +193,8 @@ jobs:
               STOPPED) break ;;
               None) echo "::error::task $TASK_ARN no longer exists"; exit 1 ;;
             esac
-            sleep 30
+            # 90 sleeps then a final check at the 45-minute boundary (no sleep after it)
+            [ "$i" -lt 91 ] && sleep 30
           done
           test "$STATUS" = "STOPPED" || { echo "::error::data-import task still running after 45 minutes"; exit 1; }
           echo "TASK_DONE=true" >> "$GITHUB_ENV"
