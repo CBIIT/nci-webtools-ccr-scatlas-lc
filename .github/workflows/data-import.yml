@@ -207,7 +207,12 @@ jobs:
             --query 'tasks[0].lastStatus' --output text 2>/dev/null || echo "UNKNOWN")
           if [ "$STATUS" != "STOPPED" ] && [ "$STATUS" != "None" ]; then
             if aws ecs stop-task --cluster "$ECS_CLUSTER" --task "$TASK_ARN" --reason "data-import workflow ended before the task finished" >/dev/null; then
-              echo "stop requested for $TASK_ARN (was $STATUS)"
+              echo "stop requested for $TASK_ARN (was $STATUS); waiting for it to stop"
+              # hold the per-tier concurrency lock until the task has really
+              # stopped, so a queued retry can never overlap it on the EFS files
+              aws ecs wait tasks-stopped --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
+                || { echo "::error::$TASK_ARN did not stop within the wait window - confirm it is stopped before retrying"; exit 1; }
+              echo "task stopped"
             else
               echo "::error::could not stop $TASK_ARN (was $STATUS) - stop it manually before retrying"
               exit 1
@@ -231,4 +236,10 @@ jobs:
           aws ecs update-service \
             --cluster "$ECS_CLUSTER" \
             --service "$ECS_WEB_SERVICE" \
-            --force-new-deployment
+            --force-new-deployment >/dev/null
+          echo "waiting for the web service to stabilise on the new deployment"
+          # only report success once replacement tasks are running and healthy
+          # (i.e. the backend has opened the updated database)
+          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_WEB_SERVICE" \
+            || { echo "::error::web service did not stabilise after the restart - check the service events and task logs"; exit 1; }
+          echo "web service restarted on the updated database"
