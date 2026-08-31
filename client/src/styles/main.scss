@@ -16,6 +16,14 @@
   opacity: 0.6;
 }
 
+/* the navbar is static, so its open dropdown menus (z-index ~1000) would slip
+   under the pinned spatial plot controls (1020) — give the whole navbar a
+   stacking context above them */
+.navbar {
+  position: relative;
+  z-index: 1030;
+}
+
 /* Spatial cohort pages — the plot controls (gene/set pickers, samples filter,
    size/opacity) stay pinned to the viewport top while the per-sample plot rows
    scroll beneath them. Bleeds over the card body's padding so scrolling rows
