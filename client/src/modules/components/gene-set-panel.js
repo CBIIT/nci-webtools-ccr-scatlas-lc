@@ -43,13 +43,16 @@ export default function GeneSetPanel({
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-2">
-        <h6 className="mb-0">Gene Sets</h6>
+      <div className="d-flex align-items-center gap-3 mb-2">
+        {/* form-label on a plain div: literally the same styling as the "Gene"
+            label beside it (an h6's weight/line-height read differently) */}
+        <div className="form-label mb-0">Gene Sets</div>
+        {/* link-styled so it hugs its text — a bordered button read too wide */}
         <Button
-          size="sm"
-          variant="outline-primary"
+          variant="link"
+          className="p-0 border-0 lh-base"
           onClick={() => setShowCreate(true)}>
-          Create new
+          Add new
         </Button>
       </div>
       {sets.length === 0 ? (
@@ -63,7 +66,8 @@ export default function GeneSetPanel({
             const isEmpty = set.genes.length === 0;
             const isOpen = !!expanded[set.id];
             return (
-              <li key={set.id} className="list-group-item">
+              // gene-set-row matches a collapsed row's height to the form inputs
+              <li key={set.id} className="list-group-item gene-set-row">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center gap-2">
                     <Button
@@ -81,9 +85,12 @@ export default function GeneSetPanel({
                       onClick={() => onColorBy(set)}>
                       <i className="bi bi-droplet-fill" aria-hidden="true" />
                     </Button>
+                    {/* border-0: the button's 1px borders would push the
+                        collapsed row's 24px content line to 26px and the row
+                        past the inputs' 38px */}
                     <Button
                       variant="link"
-                      className="p-0 text-decoration-none text-reset"
+                      className="p-0 border-0 text-decoration-none text-reset"
                       aria-expanded={isOpen}
                       onClick={() => toggleExpanded(set.id)}>
                       <i
@@ -100,7 +107,7 @@ export default function GeneSetPanel({
                     <Button
                       size="sm"
                       variant="outline-danger"
-                      className="py-0 px-1 lh-1"
+                      className="py-0 px-1 lh-1 fs-5"
                       title="Delete set"
                       aria-label={`Delete ${set.name}`}
                       onClick={() => onDelete(set)}>

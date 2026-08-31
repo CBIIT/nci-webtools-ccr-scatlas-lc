@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRecoilValue, useRecoilValueLoadable } from "recoil";
+import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
+import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
@@ -320,10 +321,17 @@ function SamplePairRow({
     xaxis: {
       title: { text: "Spatial X (mm)", font: { size: 11 } },
       zeroline: false,
-      // aspect lock is optional (experimental "Free-form zoom" switch): locked
-      // keeps 1:1 mm so tissue isn't distorted; free zooms to the exact drawn
-      // rectangle at the cost of stretch
-      ...(!freeZoom && { scaleanchor: "y", scaleratio: 1, constrain: "domain" }),
+      // aspect lock is optional (the "Enable rectangular zoom" checkbox):
+      // locked keeps 1:1 mm so tissue isn't distorted; rectangular zooms to
+      // the exact drawn rectangle at the cost of stretch. The lock stays on
+      // while UNZOOMED even in rectangular mode, so toggling the checkbox
+      // never distorts the full view — and constrain:"domain" makes the drag
+      // report the exact drawn ranges, which the next render shows unlocked.
+      ...((!freeZoom || !viewRange) && {
+        scaleanchor: "y",
+        scaleratio: 1,
+        constrain: "domain",
+      }),
       ...(viewRange?.x && { range: [...viewRange.x], autorange: false }),
     },
     yaxis: {
@@ -535,8 +543,12 @@ function SamplePairRow({
   );
 }
 
-// Shared plots heading: cohort title + what the expression plots show.
+// Shared plots heading: cohort title + what the expression plots show, with
+// the Free-form zoom switch beneath (moved out of the plot options row — it
+// acts on the graphs, so it lives with them).
 function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle }) {
+  const { config, plotOptionsState } = useSpatialCohort();
+  const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   return (
     <div className="text-center mb-2">
       <h2 className="h5 mb-0">
@@ -551,6 +563,19 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
         )}
       </h2>
       <span className="text-muted small">{subtitle}</span>
+      {/* centered under the title */}
+      <div className="d-flex justify-content-center">
+        <Form.Check
+          type="checkbox"
+          id={`${config.id}-free-zoom`}
+          label="Enable rectangular zoom"
+          title="Zoom to the exact drawn rectangle without preserving the square 1:1 mm aspect (allows stretching)"
+          checked={plotOptions.freeZoom}
+          onChange={(e) =>
+            setPlotOptions({ ...plotOptions, freeZoom: e.target.checked })
+          }
+        />
+      </div>
     </div>
   );
 }
