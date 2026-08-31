@@ -17,11 +17,22 @@ import { useSpatialCohort } from "./spatial-cohort-context";
 // plot the user drew on keeps an internal selection of its own, and only an
 // explicit null clears it (autoscale/reset/deselect would otherwise leave
 // that plot still filtered).
-function withLasso(traces, lassoCells) {
+//
+// The unselected style is decided here, not in the base traces: while a lasso
+// is still being DRAWN Plotly already styles everything outside the path as
+// unselected, so a fixed opacity 0 would blank the plot mid-draw. Until a
+// selection is applied, outside cells only dim; once applied they disappear
+// (the lasso-zoom effect).
+function withLasso(traces, lassoCells, opacity) {
   if (!lassoCells)
-    return traces.map((trace) => ({ ...trace, selectedpoints: null }));
+    return traces.map((trace) => ({
+      ...trace,
+      selectedpoints: null,
+      unselected: { marker: { opacity: opacity * 0.2 } },
+    }));
   return traces.map((trace) => ({
     ...trace,
+    unselected: { marker: { opacity: 0 } },
     selectedpoints: trace.customdata
       .map((cellId, i) => (lassoCells.has(cellId) ? i : -1))
       .filter((i) => i >= 0),
@@ -370,9 +381,8 @@ function SamplePairRow({
                 "Cell ID: %{customdata}<br>Cell type: %{fullData.name}<extra></extra>",
               hoverlabel: { namelength: -1 },
               marker: { size, opacity, showscale: false },
-              // lasso-zoom: cells outside the drawn shape disappear entirely
+              // lasso-zoom: withLasso hides/dims outside cells via `unselected`
               selected: { marker: { opacity } },
-              unselected: { marker: { opacity: 0 } },
             },
             null,
             rowColors,
@@ -400,9 +410,8 @@ function SamplePairRow({
                 cmax,
                 colorbar: { thickness: 12, tickfont: { size: 9 } },
               },
-              // see the cell-type plot: outside-lasso cells are hidden
+              // see the cell-type plot: withLasso owns the unselected style
               selected: { marker: { opacity } },
-              unselected: { marker: { opacity: 0 } },
             },
             "__value",
           )
@@ -411,12 +420,12 @@ function SamplePairRow({
   );
 
   const leftShown = useMemo(
-    () => (leftData ? withLasso(leftData, lassoCells) : null),
-    [leftData, lassoCells],
+    () => (leftData ? withLasso(leftData, lassoCells, opacity) : null),
+    [leftData, lassoCells, opacity],
   );
   const rightShown = useMemo(
-    () => (rightData ? withLasso(rightData, lassoCells) : null),
-    [rightData, lassoCells],
+    () => (rightData ? withLasso(rightData, lassoCells, opacity) : null),
+    [rightData, lassoCells, opacity],
   );
 
   const errorBox = (err) => (
