@@ -29,9 +29,13 @@ export default function SpatialCohortPage({ state }) {
                 </Alert>
               }>
               <Suspense fallback={<Loader message="Loading Plots" />}>
-                <SpatialCohortPlotOptions />
-                <SpatialCohortGeneSets />
-                <hr />
+                {/* controls stay pinned to the viewport top while the sample
+                    rows scroll beneath them */}
+                <div className="spatial-controls-sticky">
+                  <SpatialCohortPlotOptions />
+                  <SpatialCohortGeneSets />
+                  <hr className="mb-0" />
+                </div>
                 <SpatialCohortPlots />
               </Suspense>
             </ErrorBoundary>

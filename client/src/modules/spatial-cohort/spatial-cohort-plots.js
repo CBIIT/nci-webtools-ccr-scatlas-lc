@@ -226,7 +226,6 @@ function SamplePairRow({
   size,
   opacity,
   featureLabel,
-  samplesLabel,
   updating,
   cmin,
   cmax,
@@ -442,14 +441,14 @@ function SamplePairRow({
 
   return (
     <div ref={innerRef} style={{ minHeight: ROW_MIN_HEIGHT }} className="mb-3">
-      {/* AC3: center-aligned row header — SampleID + the active Gene/Gene Set
-          and Samples filter selections */}
+      {/* center-aligned row header — SampleID + cell count (the gene/sample
+          filter echoes 10326's AC3 asked for were dropped per client feedback;
+          those selections still show in the page-level header and plot titles) */}
       <h3 className="h6 mb-1 text-center">
-        {sample}{" "}
-        <span className="text-muted fw-normal">
-          · {featureLabel} · {samplesLabel}
-          {cellCount != null && <> · n={cellCount}</>}
-        </span>
+        {sample}
+        {cellCount != null && (
+          <span className="text-muted fw-normal"> · n={cellCount}</span>
+        )}
         {updating && (
           <Spinner
             animation="border"
@@ -492,7 +491,9 @@ function SamplePairRow({
                 <Plot
                   data={rightShown}
                   layout={merge({}, axes, {
-                    title: { text: featureLabel, font: { size: 13 } },
+                    // general name to mirror the left plot's "Cell type" — the
+                    // active gene/set still shows in the page header and hover
+                    title: { text: "Gene expression", font: { size: 13 } },
                   })}
                   config={plotConfig}
                   onRelayout={handleRelayout}
@@ -587,16 +588,9 @@ function FullFetchPlots() {
     () => (featureRecords ? groupBy(featureRecords, "sample") : null),
     [featureRecords],
   );
-  const totalSamples = Object.keys(cellsBySample).length;
   const sampleIds = Object.keys(cellsBySample)
     .filter((s) => !sampleSet || sampleSet.has(s))
     .sort();
-  // echoed in each row header: "All samples (N)" or "k of N samples"
-  const samplesLabel =
-    samples == null
-      ? `All samples (${totalSamples})`
-      : `${sampleIds.length} of ${totalSamples} samples`;
-
   // global expression range across every shown sample (fixed colorbar scale)
   let cmin = Infinity;
   let cmax = -Infinity;
@@ -629,7 +623,6 @@ function FullFetchPlots() {
           size={size}
           opacity={opacity}
           featureLabel={featureLabel}
-          samplesLabel={samplesLabel}
           cmin={cmin}
           cmax={cmax}
           freeZoom={freeZoom}
@@ -657,7 +650,7 @@ function FullFetchRow(props) {
 // alive, which put the whole cohort back in memory after one pass down the
 // page — the exact cost perSample fetching exists to avoid.) Only the cell
 // count survives, so a revisited row's header still reads n=… immediately.
-function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
+function PerSampleRow({ sample, currentLabel, genesKey }) {
   const state = useSpatialCohort();
   const { config } = state;
   const { size, opacity, freeZoom } = useRecoilValue(state.plotOptionsState);
@@ -800,7 +793,6 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
       size={size}
       opacity={opacity}
       featureLabel={featureLabel}
-      samplesLabel={samplesLabel}
       updating={updating}
       cmin={cmin}
       cmax={cmax}
@@ -828,11 +820,6 @@ function PerSamplePlots() {
   const sampleIds = allSamples
     .filter((s) => !sampleSet || sampleSet.has(s))
     .sort();
-  const samplesLabel =
-    samples == null
-      ? `All samples (${allSamples.length})`
-      : `${sampleIds.length} of ${allSamples.length} samples`;
-
   return (
     <div>
       <PlotsHeader
@@ -844,7 +831,6 @@ function PerSamplePlots() {
         <PerSampleRow
           key={sample}
           sample={sample}
-          samplesLabel={samplesLabel}
           currentLabel={currentLabel}
           genesKey={genesKey}
         />
