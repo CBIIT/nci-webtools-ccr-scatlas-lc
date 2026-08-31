@@ -41,7 +41,7 @@ export default function Home() {
       style={{
         backgroundImage: "url(/images/homepage_figure.jpg)",
       }}>
-      <Container className="py-5 d-flex flex-column align-items-center">
+      <Container className="pt-5 d-flex flex-column align-items-center align-self-stretch">
         <div className="home-intro text-center rounded shadow p-4 p-md-5">
           <h1 className="h3 text-primary mb-3">{TITLE}</h1>
           <p className="mb-0">{DESCRIPTION}</p>
@@ -59,12 +59,14 @@ export default function Home() {
             </Button>
           ))}
         </div>
-        <Row className="home-counts w-100 justify-content-center g-3">
+        {/* mb-4 keeps a floor under the counts→credit gap once the viewport is
+            short enough that the credit card's auto margin collapses to zero */}
+        <Row className="home-counts w-100 justify-content-center g-3 mb-4">
           {TOTAL_COUNTS.map((count) => (
             <Col key={count.label} xs={6} md={3}>
               <div className="home-count-tile text-center rounded shadow-sm py-3 px-2 h-100">
                 <div className="h2 mb-1 text-primary">{count.value}</div>
-                <div className="text-muted small text-uppercase">
+                <div className="small text-uppercase">
                   {count.label}
                 </div>
               </div>
@@ -74,7 +76,8 @@ export default function Home() {
         {/* credit + disclaimer at the page bottom — moved here from the site
             footer's References section, which NCIATWP-11120 removes; the Home
             page is the only place these display */}
-        <div className="home-credit text-center rounded shadow-sm mt-4 p-3">
+        {/* flush against the hero's bottom edge, so only the top corners round */}
+        <div className="home-credit text-center rounded-top shadow-sm mt-auto p-3">
           <p className="mb-2">
             The scAtlasLC is developed by MA Lab at the Cancer Data Science
             Laboratory and{" "}

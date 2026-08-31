@@ -201,7 +201,7 @@
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 56px); // fill the viewport below the navbar
-  padding: 2rem 0;
+  padding: 2rem 0 0; // no bottom padding — the credit card sits flush on the hero's bottom edge
   background-color: #0b1020; // dark fallback that matches the micrograph
   // background-image is set inline in home.js from the public asset
   // (/images/homepage_figure.jpg) — CRA doesn't resolve public files via CSS url()
@@ -210,7 +210,8 @@
   background-repeat: no-repeat;
 
   .home-intro {
-    max-width: 720px;
+    max-width: 800px;
+    margin-top: 5rem; // drop the main group below the navbar per client feedback
     background-color: rgba(255, 255, 255, 0.9); // 90% white over the hero
   }
 
@@ -237,7 +238,7 @@
   // credit sentence + disclaimer at the page bottom (moved from the footer's
   // References section — see NCIATWP-11120) — same translucent card treatment
   .home-credit {
-    max-width: 720px;
+    max-width: 800px;
     background-color: rgba(255, 255, 255, 0.9);
   }
 }
