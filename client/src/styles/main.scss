@@ -236,14 +236,30 @@
     position: relative;
     z-index: 2;
     transform: translateY(-50%);
+    // auto-width grid with equal (1fr) columns: both buttons take the widest
+    // label's width, so the gap between them lands exactly on the center line
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+
+    // sized up beyond btn-lg
+    .btn {
+      padding: 1rem 2.25rem;
+      font-size: 1.55rem;
+    }
 
     @media (max-width: 540px) {
       transform: none;
       margin-top: 1rem;
+      grid-auto-flow: row; // stack the buttons instead of overflowing
     }
   }
 
   // Total Counts tiles — translucent cards over the hero, like the intro box.
+  .home-counts {
+    margin-top: 2rem;
+  }
+
   .home-count-tile {
     background-color: rgba(255, 255, 255, 0.9);
   }

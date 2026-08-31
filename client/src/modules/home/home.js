@@ -47,7 +47,7 @@ export default function Home() {
           <p className="mb-0">{DESCRIPTION}</p>
         </div>
         {/* buttons straddle the intro card's bottom edge (half on card, half on hero) */}
-        <div className="home-explore d-flex flex-wrap justify-content-center gap-3">
+        <div className="home-explore gap-3">
           {EXPLORE_LINKS.map((link) => (
             <Button
               key={link.to}
@@ -76,8 +76,8 @@ export default function Home() {
         {/* credit + disclaimer at the page bottom — moved here from the site
             footer's References section, which NCIATWP-11120 removes; the Home
             page is the only place these display */}
-        {/* flush against the hero's bottom edge, so only the top corners round */}
-        <div className="home-credit text-center rounded-top shadow-sm mt-auto p-3">
+        {/* mt-auto pins it near the hero's bottom edge; mb-4 floats it a bit up */}
+        <div className="home-credit text-center rounded shadow-sm mt-auto mb-4 p-3">
           <p className="mb-2">
             The scAtlasLC is developed by MA Lab at the Cancer Data Science
             Laboratory and{" "}
