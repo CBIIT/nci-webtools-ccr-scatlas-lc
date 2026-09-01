@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRecoilValue, useRecoilValueLoadable } from "recoil";
+import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
+import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
@@ -17,11 +18,22 @@ import { useSpatialCohort } from "./spatial-cohort-context";
 // plot the user drew on keeps an internal selection of its own, and only an
 // explicit null clears it (autoscale/reset/deselect would otherwise leave
 // that plot still filtered).
-function withLasso(traces, lassoCells) {
+//
+// The unselected style is decided here, not in the base traces: while a lasso
+// is still being DRAWN Plotly already styles everything outside the path as
+// unselected, so a fixed opacity 0 would blank the plot mid-draw. Until a
+// selection is applied, outside cells only dim; once applied they disappear
+// (the lasso-zoom effect).
+function withLasso(traces, lassoCells, opacity) {
   if (!lassoCells)
-    return traces.map((trace) => ({ ...trace, selectedpoints: null }));
+    return traces.map((trace) => ({
+      ...trace,
+      selectedpoints: null,
+      unselected: { marker: { opacity: opacity * 0.2 } },
+    }));
   return traces.map((trace) => ({
     ...trace,
+    unselected: { marker: { opacity: 0 } },
     selectedpoints: trace.customdata
       .map((cellId, i) => (lassoCells.has(cellId) ? i : -1))
       .filter((i) => i >= 0),
@@ -226,7 +238,6 @@ function SamplePairRow({
   size,
   opacity,
   featureLabel,
-  samplesLabel,
   updating,
   cmin,
   cmax,
@@ -310,10 +321,17 @@ function SamplePairRow({
     xaxis: {
       title: { text: "Spatial X (mm)", font: { size: 11 } },
       zeroline: false,
-      // aspect lock is optional (experimental "Free-form zoom" switch): locked
-      // keeps 1:1 mm so tissue isn't distorted; free zooms to the exact drawn
-      // rectangle at the cost of stretch
-      ...(!freeZoom && { scaleanchor: "y", scaleratio: 1, constrain: "domain" }),
+      // aspect lock is optional (the "Enable rectangular zoom" checkbox):
+      // locked keeps 1:1 mm so tissue isn't distorted; rectangular zooms to
+      // the exact drawn rectangle at the cost of stretch. The lock stays on
+      // while UNZOOMED even in rectangular mode, so toggling the checkbox
+      // never distorts the full view — and constrain:"domain" makes the drag
+      // report the exact drawn ranges, which the next render shows unlocked.
+      ...((!freeZoom || !viewRange) && {
+        scaleanchor: "y",
+        scaleratio: 1,
+        constrain: "domain",
+      }),
       ...(viewRange?.x && { range: [...viewRange.x], autorange: false }),
     },
     yaxis: {
@@ -371,9 +389,8 @@ function SamplePairRow({
                 "Cell ID: %{customdata}<br>Cell type: %{fullData.name}<extra></extra>",
               hoverlabel: { namelength: -1 },
               marker: { size, opacity, showscale: false },
-              // lasso-zoom: cells outside the drawn shape disappear entirely
+              // lasso-zoom: withLasso hides/dims outside cells via `unselected`
               selected: { marker: { opacity } },
-              unselected: { marker: { opacity: 0 } },
             },
             null,
             rowColors,
@@ -401,9 +418,8 @@ function SamplePairRow({
                 cmax,
                 colorbar: { thickness: 12, tickfont: { size: 9 } },
               },
-              // see the cell-type plot: outside-lasso cells are hidden
+              // see the cell-type plot: withLasso owns the unselected style
               selected: { marker: { opacity } },
-              unselected: { marker: { opacity: 0 } },
             },
             "__value",
           )
@@ -412,12 +428,12 @@ function SamplePairRow({
   );
 
   const leftShown = useMemo(
-    () => (leftData ? withLasso(leftData, lassoCells) : null),
-    [leftData, lassoCells],
+    () => (leftData ? withLasso(leftData, lassoCells, opacity) : null),
+    [leftData, lassoCells, opacity],
   );
   const rightShown = useMemo(
-    () => (rightData ? withLasso(rightData, lassoCells) : null),
-    [rightData, lassoCells],
+    () => (rightData ? withLasso(rightData, lassoCells, opacity) : null),
+    [rightData, lassoCells, opacity],
   );
 
   const errorBox = (err) => (
@@ -442,14 +458,14 @@ function SamplePairRow({
 
   return (
     <div ref={innerRef} style={{ minHeight: ROW_MIN_HEIGHT }} className="mb-3">
-      {/* AC3: center-aligned row header — SampleID + the active Gene/Gene Set
-          and Samples filter selections */}
+      {/* center-aligned row header — SampleID + cell count (the gene/sample
+          filter echoes 10326's AC3 asked for were dropped per client feedback;
+          those selections still show in the page-level header and plot titles) */}
       <h3 className="h6 mb-1 text-center">
-        {sample}{" "}
-        <span className="text-muted fw-normal">
-          · {featureLabel} · {samplesLabel}
-          {cellCount != null && <> · n={cellCount}</>}
-        </span>
+        {sample}
+        {cellCount != null && (
+          <span className="text-muted fw-normal"> · n={cellCount}</span>
+        )}
         {updating && (
           <Spinner
             animation="border"
@@ -492,7 +508,9 @@ function SamplePairRow({
                 <Plot
                   data={rightShown}
                   layout={merge({}, axes, {
-                    title: { text: featureLabel, font: { size: 13 } },
+                    // general name to mirror the left plot's "Cell type" — the
+                    // active gene/set still shows in the page header and hover
+                    title: { text: "Gene expression", font: { size: 13 } },
                   })}
                   config={plotConfig}
                   onRelayout={handleRelayout}
@@ -525,8 +543,12 @@ function SamplePairRow({
   );
 }
 
-// Shared plots heading: cohort title + what the expression plots show.
+// Shared plots heading: cohort title + what the expression plots show, with
+// the Free-form zoom switch beneath (moved out of the plot options row — it
+// acts on the graphs, so it lives with them).
 function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle }) {
+  const { config, plotOptionsState } = useSpatialCohort();
+  const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   return (
     <div className="text-center mb-2">
       <h2 className="h5 mb-0">
@@ -541,6 +563,19 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
         )}
       </h2>
       <span className="text-muted small">{subtitle}</span>
+      {/* centered under the title */}
+      <div className="d-flex justify-content-center">
+        <Form.Check
+          type="checkbox"
+          id={`${config.id}-free-zoom`}
+          label="Enable rectangular zoom"
+          title="Zoom to the exact drawn rectangle without preserving the square 1:1 mm aspect (allows stretching)"
+          checked={plotOptions.freeZoom}
+          onChange={(e) =>
+            setPlotOptions({ ...plotOptions, freeZoom: e.target.checked })
+          }
+        />
+      </div>
     </div>
   );
 }
@@ -587,16 +622,9 @@ function FullFetchPlots() {
     () => (featureRecords ? groupBy(featureRecords, "sample") : null),
     [featureRecords],
   );
-  const totalSamples = Object.keys(cellsBySample).length;
   const sampleIds = Object.keys(cellsBySample)
     .filter((s) => !sampleSet || sampleSet.has(s))
     .sort();
-  // echoed in each row header: "All samples (N)" or "k of N samples"
-  const samplesLabel =
-    samples == null
-      ? `All samples (${totalSamples})`
-      : `${sampleIds.length} of ${totalSamples} samples`;
-
   // global expression range across every shown sample (fixed colorbar scale)
   let cmin = Infinity;
   let cmax = -Infinity;
@@ -629,7 +657,6 @@ function FullFetchPlots() {
           size={size}
           opacity={opacity}
           featureLabel={featureLabel}
-          samplesLabel={samplesLabel}
           cmin={cmin}
           cmax={cmax}
           freeZoom={freeZoom}
@@ -657,7 +684,7 @@ function FullFetchRow(props) {
 // alive, which put the whole cohort back in memory after one pass down the
 // page — the exact cost perSample fetching exists to avoid.) Only the cell
 // count survives, so a revisited row's header still reads n=… immediately.
-function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
+function PerSampleRow({ sample, currentLabel, genesKey }) {
   const state = useSpatialCohort();
   const { config } = state;
   const { size, opacity, freeZoom } = useRecoilValue(state.plotOptionsState);
@@ -800,7 +827,6 @@ function PerSampleRow({ sample, samplesLabel, currentLabel, genesKey }) {
       size={size}
       opacity={opacity}
       featureLabel={featureLabel}
-      samplesLabel={samplesLabel}
       updating={updating}
       cmin={cmin}
       cmax={cmax}
@@ -828,11 +854,6 @@ function PerSamplePlots() {
   const sampleIds = allSamples
     .filter((s) => !sampleSet || sampleSet.has(s))
     .sort();
-  const samplesLabel =
-    samples == null
-      ? `All samples (${allSamples.length})`
-      : `${sampleIds.length} of ${allSamples.length} samples`;
-
   return (
     <div>
       <PlotsHeader
@@ -844,7 +865,6 @@ function PerSamplePlots() {
         <PerSampleRow
           key={sample}
           sample={sample}
-          samplesLabel={samplesLabel}
           currentLabel={currentLabel}
           genesKey={genesKey}
         />

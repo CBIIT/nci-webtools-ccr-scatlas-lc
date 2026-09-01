@@ -55,7 +55,7 @@ export default function GeneMultiSelect({
       ? `Select ${label}…`
       : value.length === 1
         ? value[0]
-        : `${value.length} ${label} selected`;
+        : `${value.length} ${label} included`;
 
   return (
     <Dropdown autoClose="outside">
@@ -88,7 +88,7 @@ export default function GeneMultiSelect({
             onClick={() => onChange([])}>
             Clear
           </Button>
-          <span className="text-muted small">{value.length} selected</span>
+          <span className="text-muted small">{value.length} included</span>
         </div>
         {filtered.length === 0 && (
           <div className="text-muted small px-1">No matches</div>

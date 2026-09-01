@@ -16,6 +16,47 @@
   opacity: 0.6;
 }
 
+/* the navbar is static, so its open dropdown menus (z-index ~1000) would slip
+   under the pinned spatial plot controls (1020) — give the whole navbar a
+   stacking context above them */
+.navbar {
+  position: relative;
+  z-index: 1030;
+}
+
+/* Spatial cohort pages — the plot controls (gene/set pickers, samples filter,
+   size/opacity) stay pinned to the viewport top while the per-sample plot rows
+   scroll beneath them. Bleeds over the card body's padding so scrolling rows
+   can't peek through the gutters; z-index clears Plotly's modebar (~1000). */
+.spatial-controls {
+  max-width: 60rem; // both filter rows fill this, so their edges align
+}
+
+// gene-set list rows use the .form-control vertical padding (0.375rem) so a
+// collapsed row's 1.5rem content line lands at the same 38px as the Gene input
+.gene-set-row {
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+// Reset sits just outside the centered filter box (its right edge is at
+// 50% + half the box's 60rem width), level with the second row's Gene input:
+// past row 1 (2rem label + 2.375rem input + 1rem margin) plus row 2's label
+// line; min() keeps it on-card when the viewport is too narrow for box + gap
+.spatial-controls-sticky .spatial-reset {
+  top: calc(var(--bs-card-spacer-y) + 7.375rem);
+  left: min(calc(50% + 32.5rem), calc(100% - 6rem));
+}
+
+.spatial-controls-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  background-color: var(--bs-card-bg, #fff);
+  margin: calc(-1 * var(--bs-card-spacer-y)) calc(-1 * var(--bs-card-spacer-x)) 0;
+  padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x) 0;
+}
+
 /* Spatial cohort statistics table — many value columns squeeze the
    range-filter inputs, so give them enough minimum width that the
    "Enter min/max" placeholders stay readable; the surrounding
@@ -201,7 +242,7 @@
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 56px); // fill the viewport below the navbar
-  padding: 2rem 0;
+  padding: 2rem 0 0; // no bottom padding — the credit card sits flush on the hero's bottom edge
   background-color: #0b1020; // dark fallback that matches the micrograph
   // background-image is set inline in home.js from the public asset
   // (/images/homepage_figure.jpg) — CRA doesn't resolve public files via CSS url()
@@ -210,7 +251,8 @@
   background-repeat: no-repeat;
 
   .home-intro {
-    max-width: 720px;
+    max-width: 800px;
+    margin-top: 5rem; // drop the main group below the navbar per client feedback
     background-color: rgba(255, 255, 255, 0.9); // 90% white over the hero
   }
 
@@ -222,14 +264,30 @@
     position: relative;
     z-index: 2;
     transform: translateY(-50%);
+    // auto-width grid with equal (1fr) columns: both buttons take the widest
+    // label's width, so the gap between them lands exactly on the center line
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+
+    // sized up beyond btn-lg
+    .btn {
+      padding: 1rem 2.25rem;
+      font-size: 1.55rem;
+    }
 
     @media (max-width: 540px) {
       transform: none;
       margin-top: 1rem;
+      grid-auto-flow: row; // stack the buttons instead of overflowing
     }
   }
 
   // Total Counts tiles — translucent cards over the hero, like the intro box.
+  .home-counts {
+    margin-top: 2rem;
+  }
+
   .home-count-tile {
     background-color: rgba(255, 255, 255, 0.9);
   }
@@ -237,7 +295,7 @@
   // credit sentence + disclaimer at the page bottom (moved from the footer's
   // References section — see NCIATWP-11120) — same translucent card treatment
   .home-credit {
-    max-width: 720px;
+    max-width: 800px;
     background-color: rgba(255, 255, 255, 0.9);
   }
 }
