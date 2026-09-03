@@ -45,13 +45,27 @@ await run(`SET memory_limit='${process.env.DUCKDB_MEMORY_LIMIT || "8GB"}'`);
 await run(`SET temp_directory='${(process.env.DUCKDB_TEMP_DIR || targetDb + ".tmp").replace(/'/g, "''")}'`);
 await run("SET threads TO 2");
 await run("SET preserve_insertion_order=false");
+// Copy in row batches with a CHECKPOINT after each — the same scheme as
+// apply_delta.sh on the tier side. A single CREATE TABLE AS SELECT of a
+// multi-million-row 6,000-column table blows the memory cap even with disk
+// spill; batches keep only one batch's row groups in flight.
+const batchRows = Number(process.env.BATCH_ROWS || 100000);
 try {
   await run(`ATTACH '${sourceDb.replace(/'/g, "''")}' AS src (READ_ONLY)`);
   for (const t of tables) {
     await run(`DROP TABLE IF EXISTS ${q(t)}`);
-    await run(`CREATE TABLE ${q(t)} AS SELECT * FROM src.${q(t)}`);
-    await run("CHECKPOINT");
+    await run(`CREATE TABLE ${q(t)} AS SELECT * FROM src.${q(t)} LIMIT 0`);
+    const [{ n }] = await run(`SELECT count(*) AS n FROM src.${q(t)}`);
+    for (let off = 0; off < Number(n); off += batchRows) {
+      await run(
+        `INSERT INTO ${q(t)} SELECT * FROM src.${q(t)} WHERE rowid >= ${off} AND rowid < ${off + batchRows}`,
+      );
+      await run("CHECKPOINT");
+    }
     const [{ c }] = await run(`SELECT count(*) AS c FROM ${q(t)}`);
+    if (Number(c) !== Number(n)) {
+      throw new Error(`${t}: copied ${Number(c)} rows, source has ${Number(n)}`);
+    }
     console.log(`copied ${t}: ${Number(c)} rows`);
   }
 } catch (e) {

@@ -34,8 +34,14 @@ if (!/^[a-z_][a-z0-9_]*$/.test(table)) {
   process.exit(1);
 }
 
-const chunkRe = new RegExp(`^${table}_\\d+\\.csv$`);
-const files = readdirSync(chunkDir).filter((f) => chunkRe.test(f)).sort();
+// numeric sort: chunk numbers can outgrow their zero-padding (a >999-chunk
+// cohort mixes 3- and 4-digit names), and a lexical sort would interleave
+// them — putting the short final chunk mid-stream instead of last
+const chunkRe = new RegExp(`^${table}_(\\d+)\\.csv$`);
+const chunkNo = (f) => Number(f.match(chunkRe)[1]);
+const files = readdirSync(chunkDir)
+  .filter((f) => chunkRe.test(f))
+  .sort((a, b) => chunkNo(a) - chunkNo(b));
 if (!files.length) {
   console.error(`no ${table}_*.csv chunks in`, chunkDir);
   process.exit(1);
