@@ -72,7 +72,7 @@ for (i in seq_along(starts)) {
   dense <- t(as.matrix(expr[, s:e, drop = FALSE])) # rows=cells, cols=genes
   dt <- cbind(meta_dt[s:e], as.data.table(dense))
   setnames(dt, c(meta_names, genes))
-  f <- file.path(out_dir, sprintf("%s_%03d.csv", prefix, i))
+  f <- file.path(out_dir, sprintf("%s_%04d.csv", prefix, i))
   fwrite(dt, f)
   cat("wrote", basename(f), "rows", nrow(dt), "\n")
   rm(dense, dt)
