@@ -1,0 +1,246 @@
+name: scAtlasLC Data Import
+permissions:
+  id-token: write
+  contents: read
+
+# Applies a delta DuckDB file (built locally with database/copy_tables.mjs and
+# uploaded to s3://<DATA_BUCKET>/scatlas/data/deltas/, dated plus a "latest"
+# copy the run defaults to) onto the tier database on EFS via a one-off
+# Fargate task — the org's "Load EFS Data" pattern (see
+# nci-webtools-ccr-microarray deploy-efs-data.yml), except our task merges
+# tables with DuckDB instead of syncing files, so only the delta's tables
+# change and nothing else on the tier file is disturbed. The task works on a
+# copy and swaps it in atomically
+# (previous file kept as .bak); the workflow then restarts the web service so
+# the backend re-reads the schema.
+on:
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: "Tier whose database to update"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - qa
+          - stage
+          - prod
+      delta_file:
+        description: "Delta file name under s3://<DATA_BUCKET>/scatlas/data/deltas/ (default: the latest upload)"
+        required: true
+        default: "scatlaslc-delta-latest.db"
+        type: string
+      tables:
+        description: "Space-separated tables to apply; leave empty to apply every table the delta carries"
+        required: false
+        default: ""
+        type: string
+      restart_web:
+        description: "Restart the web service afterwards (required for the backend to see new tables)"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  data-import:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.tier }}
+    # one import per tier at a time: concurrent runs share the task family and
+    # the .new/.bak working files on EFS; other tiers still run independently
+    concurrency:
+      group: data-import-${{ inputs.tier }}
+      cancel-in-progress: false
+    env:
+      APP: scatlaslc
+      AWS_REGION: us-east-1
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      TIER: ${{ inputs.tier }}
+      DATA_BUCKET: ${{ vars.DATA_BUCKET }}
+      CICD_ROLE_ARN: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/power-user-github-actions-cicd
+      PARAMETER_PATH: /analysistools/${{ inputs.tier }}/scatlaslc
+      ECS_DATA_IMPORT_TASK: ${{ inputs.tier }}-scatlaslc-data-import
+      ECS_DATA_IMPORT_CPU_UNITS: "2048"
+      ECS_DATA_IMPORT_MEMORY_UNITS: "16384"
+      TABLES: ${{ inputs.tables }}
+      # dispatch inputs and the ref reach the shell only through env (never
+      # interpolated into run: scripts) and are validated below
+      DELTA_FILE: ${{ inputs.delta_file }}
+      REF_NAME: ${{ github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.0.0
+        with:
+          role-to-assume: ${{ env.CICD_ROLE_ARN }}
+          role-session-name: ${{ env.TIER }}-scatlaslc-data-import-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: 3600
+
+      - name: Validate inputs
+        run: |
+          case "$DELTA_FILE" in
+            ""|.*|*[!A-Za-z0-9._-]*) echo "::error::delta_file must be a plain file name (letters, digits, . _ -): '$DELTA_FILE'"; exit 1 ;;
+          esac
+          # same grammar apply_delta.sh accepts; also keeps the value a plain
+          # scalar when it is substituted into the task-definition YAML
+          case "$TABLES" in
+            *[!a-z0-9_\ ]*) echo "::error::tables must be space-separated lower_snake_case names: '$TABLES'"; exit 1 ;;
+          esac
+          # normalise whitespace so a blank box means "every table in the delta"
+          echo "TABLES=$(echo $TABLES)" >> "$GITHUB_ENV"
+
+      - name: Set derived variables
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d%H%M%S")
+          REPO="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$APP"
+          REF_SLUG=$(printf '%s' "$REF_NAME" | tr -c 'A-Za-z0-9._-' '-')
+          # DuckDB's buffer cap only bounds part of its footprint: keep it well
+          # under the container limit (about 60%) so the task is never OOM-killed
+          DUCKDB_MEMORY_LIMIT="$((ECS_DATA_IMPORT_MEMORY_UNITS * 6 / 10 / 1024))GB"
+          {
+            echo "DUCKDB_MEMORY_LIMIT=$DUCKDB_MEMORY_LIMIT"
+            echo "TIER_UPPER=$(echo "$TIER" | tr '[:lower:]' '[:upper:]')"
+            echo "DELTA_S3_URI=s3://$DATA_BUCKET/scatlas/data/deltas/$DELTA_FILE"
+            echo "DATA_IMPORT_IMAGE=$REPO:data-import-$REF_SLUG-$TIMESTAMP"
+            echo "DATA_IMPORT_IMAGE_LATEST=$REPO:data-import-$REF_SLUG-latest"
+          } >> "$GITHUB_ENV"
+
+      - name: Retrieve infra values from SSM
+        run: |
+          PARAMS=$(aws ssm get-parameters-by-path --path "$PARAMETER_PATH" --recursive --output json)
+          get() { echo "$PARAMS" | jq -r --arg n "$PARAMETER_PATH/$1" '.Parameters[] | select(.Name==$n) | .Value'; }
+          {
+            echo "ROLE_ARN=$(get role_arn)"
+            echo "SUBNET_IDS=$(get subnet_ids)"
+            echo "SECURITY_GROUP_IDS=$(get security_group_ids)"
+            echo "ECS_CLUSTER=$(get ecs_cluster)"
+            echo "ECS_WEB_SERVICE=$(get ecs_web_service)"
+            echo "EFS_FILESYSTEM_ID=$(get efs_filesystem_id)"
+            echo "EFS_ACCESS_POINT_ID=$(get efs_access_point_id)"
+          } >> "$GITHUB_ENV"
+
+      - name: Validate required values
+        run: |
+          test -n "$DATA_BUCKET" || { echo "::error::vars.DATA_BUCKET is not set for the '$TIER' environment"; exit 1; }
+          missing=0
+          for v in ROLE_ARN SUBNET_IDS SECURITY_GROUP_IDS ECS_CLUSTER ECS_WEB_SERVICE EFS_FILESYSTEM_ID EFS_ACCESS_POINT_ID; do
+            if [ -z "${!v}" ]; then echo "::error::$v missing from SSM under $PARAMETER_PATH"; missing=1; fi
+          done
+          test "$missing" = "0"
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2.1.0
+        with:
+          mask-password: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.0.0
+
+      # unlike the plain S3-sync pattern, merging tables needs the DuckDB CLI —
+      # a small custom image pinned to the backend's DuckDB version
+      - name: Build data-import image ${{ env.DATA_IMPORT_IMAGE }}
+        uses: docker/build-push-action@v7.0.0
+        with:
+          context: .
+          file: docker/data-import.dockerfile
+          pull: true
+          push: true
+          tags: |
+            ${{ env.DATA_IMPORT_IMAGE }}
+            ${{ env.DATA_IMPORT_IMAGE_LATEST }}
+          cache-from: type=registry,ref=${{ env.DATA_IMPORT_IMAGE_LATEST }}
+          cache-to: type=inline
+
+      - name: Render data-import task definition
+        run: |
+          mkdir -p ecs-tasks
+          envsubst < .github/aws/data-import.yml > ecs-tasks/data-import.yml
+          echo "----- rendered task definition -----"
+          cat ecs-tasks/data-import.yml
+
+      - name: Register data-import task definition
+        run: aws ecs register-task-definition --cli-input-yaml file://ecs-tasks/data-import.yml
+
+      - name: Run data-import task
+        run: |
+          TASK_ARN=$(aws ecs run-task \
+            --cluster "$ECS_CLUSTER" \
+            --count 1 \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_IDS],securityGroups=[$SECURITY_GROUP_IDS],assignPublicIp=DISABLED}" \
+            --task-definition "$ECS_DATA_IMPORT_TASK" \
+            --query 'tasks[0].taskArn' --output text)
+          test -n "$TASK_ARN" && test "$TASK_ARN" != "None" || { echo "::error::run-task did not return a task ARN"; exit 1; }
+          echo "TASK_ARN=$TASK_ARN" >> "$GITHUB_ENV"
+          echo "Started $TASK_ARN"
+
+      - name: Wait for task to stop
+        run: |
+          # the built-in tasks-stopped waiter gives up after ~10 minutes; a
+          # multi-GB delta can take longer, so poll for up to 45 minutes.
+          # A transient describe error must not abort the step (bash -e), and
+          # a task that no longer exists reports "None" - treat that as gone.
+          STATUS=""
+          for i in $(seq 1 91); do
+            STATUS=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
+              --query 'tasks[0].lastStatus' --output text 2>/dev/null || echo "UNKNOWN")
+            echo "task status: $STATUS"
+            case "$STATUS" in
+              STOPPED) break ;;
+              None) echo "::error::task $TASK_ARN no longer exists"; exit 1 ;;
+            esac
+            # 90 sleeps then a final check at the 45-minute boundary (no sleep after it)
+            [ "$i" -lt 91 ] && sleep 30
+          done
+          test "$STATUS" = "STOPPED" || { echo "::error::data-import task still running after 45 minutes"; exit 1; }
+          echo "TASK_DONE=true" >> "$GITHUB_ENV"
+
+      # runs on every exit path (timeout, describe failure, cancel, job
+      # timeout): never leave a detached task that could swap the database later
+      - name: Stop the task if it is still running
+        if: ${{ always() && env.TASK_ARN != '' && env.TASK_DONE != 'true' }}
+        run: |
+          STATUS=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
+            --query 'tasks[0].lastStatus' --output text 2>/dev/null || echo "UNKNOWN")
+          if [ "$STATUS" != "STOPPED" ] && [ "$STATUS" != "None" ]; then
+            if aws ecs stop-task --cluster "$ECS_CLUSTER" --task "$TASK_ARN" --reason "data-import workflow ended before the task finished" >/dev/null; then
+              echo "stop requested for $TASK_ARN (was $STATUS); waiting for it to stop"
+              # hold the per-tier concurrency lock until the task has really
+              # stopped, so a queued retry can never overlap it on the EFS files
+              aws ecs wait tasks-stopped --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
+                || { echo "::error::$TASK_ARN did not stop within the wait window - confirm it is stopped before retrying"; exit 1; }
+              echo "task stopped"
+            else
+              echo "::error::could not stop $TASK_ARN (was $STATUS) - stop it manually before retrying"
+              exit 1
+            fi
+          fi
+
+      - name: Check exit code
+        run: |
+          DESC=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" --output json)
+          echo "$DESC" | jq -r '.tasks[0] | "stoppedReason: \(.stoppedReason // "n/a")"'
+          CODE=$(echo "$DESC" | jq -r '.tasks[0].containers[] | select(.name=="data-import") | .exitCode // "null"')
+          echo "data-import container exit code: $CODE"
+          test "$CODE" = "0" || { echo "::error::data-import task did not exit cleanly (exit code: $CODE) — check CloudWatch group /analysistools/$TIER/scatlaslc/data-import"; exit 1; }
+          echo "Delta applied successfully."
+
+      - name: Restart web service
+        if: ${{ inputs.restart_web }}
+        run: |
+          # no --desired-count: restart whatever is running without overriding
+          # the scheduled non-prod scale-in or any autoscaling minimum
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_WEB_SERVICE" \
+            --force-new-deployment >/dev/null
+          echo "waiting for the web service to stabilise on the new deployment"
+          # only report success once replacement tasks are running and healthy
+          # (i.e. the backend has opened the updated database)
+          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_WEB_SERVICE" \
+            || { echo "::error::web service did not stabilise after the restart - check the service events and task logs"; exit 1; }
+          echo "web service restarted on the updated database"

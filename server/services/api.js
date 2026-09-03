@@ -22,10 +22,10 @@ export async function createApi(env = process.env) {
 
   router.get("/query", async (request, response) => {
     const { logger } = request.app.locals;
-    const { table, columns } = request.query;
-    const query = getQuery(schema, table, columns.split(","));
-    logger.info(query);
-    const results = await runQuery(query);
+    const { table, columns, sample } = request.query;
+    const { sql, params } = getQuery(schema, table, columns.split(","), sample);
+    logger.info(sql);
+    const results = await runQuery(sql, ...params);
     response.json(results);
   });
 

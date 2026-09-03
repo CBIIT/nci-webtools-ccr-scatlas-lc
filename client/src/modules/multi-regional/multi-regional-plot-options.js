@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import Form from "react-bootstrap/Form";
-import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Select from "../components/select";
 import {
   plotOptionsState,
-  tumorCellsQuery,
   tumorCellsStatsQuery,
   defaultPlotOptions,
 } from "./multi-regional.state";
@@ -17,7 +15,6 @@ export default function MultiRegionalCellPlotOptions() {
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const [formValues, setFormValues] = useState(plotOptions);
   const lookup = useRecoilValue(tumorCellsStatsQuery);
-  const tumor = useRecoilValue(tumorCellsQuery);
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
   const mergeFormValues = (obj) => setFormValues({ ...formValues, ...obj });
 

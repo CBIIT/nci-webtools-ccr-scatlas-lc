@@ -3,7 +3,13 @@ import BootstrapTable from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import Pagination from "react-bootstrap/Pagination";
-import { useTable, useFilters, usePagination, useSortBy } from "react-table";
+import {
+  useTable,
+  useFilters,
+  usePagination,
+  useSortBy,
+  defaultOrderByFn,
+} from "react-table";
 import classNames from "classnames";
 import { useEffect, useRef } from "react";
 
@@ -47,10 +53,40 @@ export function RangeFilter({
   );
 }
 
-export default function Table({ columns, data, options, selectedGene }) {
+export default function Table({
+  columns,
+  data,
+  options,
+  selectedGene,
+  // multi-select variant (e.g. a gene set): every listed gene's row is
+  // highlighted and the table pages to the FIRST one. Interim behavior for
+  // selections spanning pages — pending research under NCIATWP-11121.
+  selectedGenes,
+}) {
   const [highlightedRowIndex, setHighlightedRowIndex] = useState(null);
   const navigationRef = useRef(null); // Add this line to create navigationRef
   const [gotoPageTimes, setGoToPageTimes] = useState(0);
+
+  const selected = useMemo(
+    () => selectedGenes ?? (selectedGene != null ? [selectedGene] : []),
+    [selectedGenes, selectedGene],
+  );
+
+  // Multi-select pinning (NCIATWP-11121): when a genes ARRAY is supplied, the
+  // selected rows are pinned to the top of the table (in the current sort
+  // order) so a gene set's members are never separated across pages. The
+  // single selectedGene path keeps the classic highlight + jump-to-page.
+  const orderByFn = useMemo(() => {
+    if (!selectedGenes?.length) return defaultOrderByFn;
+    const pinned = new Set(selectedGenes);
+    return (sortedRows, sortFns, directions) => {
+      const ordered = defaultOrderByFn(sortedRows, sortFns, directions);
+      return [
+        ...ordered.filter((row) => pinned.has(row.original.gene)),
+        ...ordered.filter((row) => !pinned.has(row.original.gene)),
+      ];
+    };
+  }, [selectedGenes]);
 
   const {
     getTableProps,
@@ -72,6 +108,7 @@ export default function Table({ columns, data, options, selectedGene }) {
     {
       columns: useMemo((_) => columns, [columns]),
       data: useMemo((_) => data, [data]),
+      orderByFn,
       ...options,
     },
     useFilters,
@@ -80,9 +117,10 @@ export default function Table({ columns, data, options, selectedGene }) {
   );
   const tableRef = useRef(null);
 
+
   useEffect(() => {
-    const newHighlightedRowIndex = rows.findIndex(
-      (row) => row.original.gene === selectedGene,
+    const newHighlightedRowIndex = rows.findIndex((row) =>
+      selected.includes(row.original.gene),
     );
 
     if (newHighlightedRowIndex !== highlightedRowIndex) {
@@ -100,7 +138,7 @@ export default function Table({ columns, data, options, selectedGene }) {
 
     // Update the highlighted row index after the navigation is complete
     setHighlightedRowIndex(newHighlightedRowIndex);
-  }, [selectedGene, pageIndex, pageSize, rows, gotoPage, highlightedRowIndex]);
+  }, [selected, pageIndex, pageSize, rows, gotoPage, highlightedRowIndex]);
 
   return (
     <>
@@ -142,7 +180,7 @@ export default function Table({ columns, data, options, selectedGene }) {
           <tbody {...getTableBodyProps()}>
             {page.map((row) => {
               prepareRow(row);
-              const isHighlighted = row.original.gene === selectedGene;
+              const isHighlighted = selected.includes(row.original.gene);
 
               return (
                 <tr {...row.getRowProps()}>

@@ -11,3 +11,8 @@ data
 *.csv.gz
 *.csv
 test.mjs
+# raw R source data (large, client-provided pipeline inputs)
+*.rds
+/docs
+# local dev-only DuckDB seed script
+database/dev-seed.mjs
