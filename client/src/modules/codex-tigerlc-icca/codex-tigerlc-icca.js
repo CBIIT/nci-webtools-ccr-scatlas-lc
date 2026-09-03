@@ -95,6 +95,10 @@ const state = createSpatialCohortState({
   ],
   renderer: "scatter",
   units: "px",
+  // samples are tiny (~4.8k cells), so a scroll-back should re-render from
+  // cache instead of refetching — unlike the WebGL cohorts, whose 100k+ cell
+  // samples keep the default budget of 6
+  sampleCacheSize: 24,
 });
 
 export default function CodexTigerLcIcca() {

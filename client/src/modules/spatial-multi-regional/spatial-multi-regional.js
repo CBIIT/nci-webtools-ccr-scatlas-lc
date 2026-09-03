@@ -68,6 +68,9 @@ const state = createSpatialCohortState({
   // the same arrays those rows already hold, so only the recently-departed
   // rows cost anything.
   sampleCacheSize: 6,
+  // rows idle as captured PNGs and go live on hover — WebGL contexts stay
+  // far under the browser cap no matter how the user scrolls
+  staticPreview: true,
 });
 
 export default function SpatialMultiRegional() {

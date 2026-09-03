@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
@@ -7,6 +7,8 @@ import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Plot from "react-plotly.js";
+// the same build react-plotly.js wraps, so webpack reuses the one instance
+import Plotly from "plotly.js/dist/plotly";
 import merge from "lodash/merge";
 import groupBy from "lodash/groupBy";
 import { getTraces } from "../../services/plot";
@@ -64,19 +66,29 @@ function createMountBudget(maxLive) {
   // claims when it enters the band, so claim order is scroll order, and on a
   // viewport tall enough to hold more than maxLive rows that hands the slots
   // to the rows FURTHEST along and blanks the ones the user is looking at.
+  // On-screen rows additionally outrank ALL off-screen rows regardless of
+  // distance: a slot yielded while visible is a live plot swapping to its
+  // frozen snapshot in front of the user, so victims come from off-screen
+  // rows whenever possible (a visible row only yields when more than maxLive
+  // rows fit the viewport at once).
   const settle = () => {
     frame = 0;
-    const middle = window.innerHeight / 2;
+    const height = window.innerHeight;
+    const middle = height / 2;
     const live = new Set(
       [...claimed]
         .map((id) => {
           const el = rows.get(id)?.el;
           if (!el) return null;
           const box = el.getBoundingClientRect();
-          return { id, distance: Math.abs((box.top + box.bottom) / 2 - middle) };
+          return {
+            id,
+            inView: box.bottom > 0 && box.top < height,
+            distance: Math.abs((box.top + box.bottom) / 2 - middle),
+          };
         })
         .filter(Boolean)
-        .sort((a, b) => a.distance - b.distance)
+        .sort((a, b) => b.inView - a.inView || a.distance - b.distance)
         .slice(0, maxLive)
         .map((row) => row.id),
     );
@@ -126,18 +138,24 @@ function getMountBudget(id, maxLive) {
 function useMountSlot(config, rowId, near, elementRef) {
   const maxLive = config.maxLiveRows;
   const [granted, setGranted] = useState(false);
+  // Claim only once the scroll has settled: every mount is two fresh WebGL
+  // contexts, and rapid create/destroy cycling while scrolling outruns the
+  // browser's lazy context reclamation — tripping the per-page cap and
+  // blanking LIVE plots. Rows the user scrolls straight past now never
+  // render at all; only rows they stop on claim a slot.
+  const settled = useScrollSettled(near && !!maxLive);
   useEffect(() => {
     if (!maxLive) return;
     const budget = getMountBudget(config.id, maxLive);
     const unsubscribe = budget.subscribe(rowId, elementRef.current, setGranted);
-    if (near) budget.claim(rowId);
+    if (near && settled) budget.claim(rowId);
     else budget.release(rowId);
     return () => {
       budget.release(rowId);
       unsubscribe();
     };
-  }, [config.id, maxLive, rowId, near, elementRef]);
-  return maxLive ? near && granted : near;
+  }, [config.id, maxLive, rowId, near, settled, elementRef]);
+  return maxLive ? near && settled && granted : near;
 }
 
 // Gate per-sample fetching on the page having stopped moving. A flick down the
@@ -175,6 +193,33 @@ function useScrollSettled(active, delay = SCROLL_SETTLE_MS) {
 
 const PLOT_HEIGHT = 340;
 const ROW_MIN_HEIGHT = PLOT_HEIGHT + 56; // plots + heading, keeps scroll stable
+
+// Frozen images of recently rendered rows (PNG data URLs), so a row scrolled
+// out of the mount window shows its last render instead of a bare "scroll to
+// load" box — the page reads as if every visited row stayed rendered, while
+// the real SVG/WebGL budgets stay bounded. Keyed per cohort+sample, LRU-capped
+// so the page never holds more than a few dozen images (~1MB each at retina
+// scale). Module-level on purpose: snapshots survive the row's own unmount.
+const SNAPSHOT_MAX = 40;
+const snapshots = new Map(); // "cohort sample" -> { freshKey, left?, right? }
+function rememberSnapshot(key, side, url, freshKey) {
+  let entry = snapshots.get(key);
+  // a capture under a new freshKey (gene/size/opacity changed) starts a new
+  // entry rather than pairing with the other side's stale image
+  if (!entry || entry.freshKey !== freshKey) entry = { freshKey };
+  snapshots.delete(key); // re-insert for LRU recency
+  entry[side] = url;
+  snapshots.set(key, entry);
+  while (snapshots.size > SNAPSHOT_MAX) {
+    snapshots.delete(snapshots.keys().next().value);
+  }
+}
+
+// All captures run through one serialized chain: Plotly.toImage renders a
+// hidden CLONE of the plot (a temporary WebGL context for scattergl), and
+// parallel captures once churned enough contexts to trip the browser's
+// per-page cap and blank live plots. One clone at a time is bounded and safe.
+let captureChain = Promise.resolve();
 
 // Mount a row's plots only while it is near the viewport, and unmount them
 // again once scrolled far away so the browser doesn't accumulate every row's
@@ -245,6 +290,11 @@ function SamplePairRow({
   cellsError,
   featureError,
   onRetry,
+  // static-preview mode (WebGL cohorts): the row idles as its PNG and only
+  // runs live plots while the user is on it — see PerSampleRow
+  staticPreview = false,
+  freshKey = "",
+  onSnapshot,
 }) {
   const { config } = useSpatialCohort();
   // shared view for the pair: zoom/pan/reset on either plot mirrors to the
@@ -272,6 +322,75 @@ function SamplePairRow({
     setLassoCells(null);
     setViewRange(null);
   }, [releasesRecords, near, lassoCells]);
+
+  // A plot whose WebGL context the browser reclaimed stays in the DOM but
+  // draws nothing — it looks loaded and is blank forever (Plotly does not
+  // restore lost contexts). Watch every canvas and remount the pair under a
+  // fresh key when a context dies, so it rebuilds with a live context;
+  // throttled so a still-starved page doesn't remount-loop. No dependency
+  // array: new canvases appear across many renders and arming is idempotent.
+  const [plotEpoch, setPlotEpoch] = useState(0);
+  const lastContextLoss = useRef(0);
+  useEffect(() => {
+    const rowEl = innerRef?.current;
+    if (!rowEl || !near) return;
+    for (const canvas of rowEl.querySelectorAll("canvas")) {
+      if (canvas.dataset.lossArmed) continue;
+      canvas.dataset.lossArmed = "1";
+      canvas.addEventListener(
+        "webglcontextlost",
+        () => {
+          const now = Date.now();
+          if (now - lastContextLoss.current < 3000) return;
+          lastContextLoss.current = now;
+          setPlotEpoch((n) => n + 1);
+        },
+        { once: true },
+      );
+    }
+  });
+
+  // Capture the pair as images shortly after renders settle, feeding the
+  // frozen-placeholder cache above. Runs while the plots are still mounted
+  // (there is no capturable canvas left by unmount time); debounced so a
+  // zoom/gene-change burst costs one capture, not one per frame.
+  const snapshotKey = `${config.id} ${sample}`;
+  const graphDivs = useRef({});
+  const captureTimer = useRef(0);
+  const captureNow = () => {
+    for (const side of ["left", "right"]) {
+      const gd = graphDivs.current[side];
+      if (!gd?._fullLayout || !gd.offsetWidth) continue;
+      const width = gd.offsetWidth;
+      captureChain = captureChain
+        .then(() => {
+          // the plot may have been purged while this capture waited its turn
+          if (!gd._fullLayout) return null;
+          return Plotly.toImage(gd, {
+            format: "png",
+            width,
+            height: PLOT_HEIGHT,
+            scale: Math.min(window.devicePixelRatio || 1, 2),
+          });
+        })
+        .then((url) => {
+          if (!url) return;
+          rememberSnapshot(snapshotKey, side, url, freshKey);
+          onSnapshot?.();
+        })
+        .catch(() => {}); // a failed capture just means a plain placeholder
+    }
+  };
+  const scheduleSnapshot = () => {
+    // a row's FIRST capture runs almost immediately, so even a briefly
+    // mounted row leaves an image behind; re-captures after that wait for a
+    // settle so a zoom/gene-change burst costs one capture, not one per frame
+    const delay = snapshots.get(snapshotKey) ? 800 : 50;
+    clearTimeout(captureTimer.current);
+    captureTimer.current = setTimeout(captureNow, delay);
+  };
+  useEffect(() => () => clearTimeout(captureTimer.current), []);
+  const snapshot = !near ? snapshots.get(snapshotKey) : null;
 
   function handleRelayout(event) {
     if (event["xaxis.autorange"] || event["yaxis.autorange"]) {
@@ -541,6 +660,7 @@ function SamplePairRow({
           <Row className="g-2">
             <Col xl={6}>
               <Plot
+                key={`left-${plotEpoch}`}
                 data={leftShown}
                 layout={merge({}, axes, {
                   title: { text: "Cell type", font: { size: 13 } },
@@ -556,6 +676,14 @@ function SamplePairRow({
                 onDeselect={() => setLassoCells(null)}
                 onLegendClick={handleLegendClick}
                 onLegendDoubleClick={handleLegendDoubleClick}
+                onInitialized={(_, gd) => {
+                  graphDivs.current.left = gd;
+                  scheduleSnapshot();
+                }}
+                onUpdate={(_, gd) => {
+                  graphDivs.current.left = gd;
+                  scheduleSnapshot();
+                }}
                 useResizeHandler
                 className="w-100"
                 style={{ height: `${PLOT_HEIGHT}px` }}
@@ -564,6 +692,7 @@ function SamplePairRow({
             <Col xl={6}>
               {rightShown ? (
                 <Plot
+                  key={`right-${plotEpoch}`}
                   data={rightShown}
                   layout={merge({}, axes, {
                     // general name to mirror the left plot's "Cell type" — the
@@ -574,6 +703,14 @@ function SamplePairRow({
                   onRelayout={handleRelayout}
                   onSelected={handleSelected}
                   onDeselect={() => setLassoCells(null)}
+                  onInitialized={(_, gd) => {
+                    graphDivs.current.right = gd;
+                    scheduleSnapshot();
+                  }}
+                  onUpdate={(_, gd) => {
+                    graphDivs.current.right = gd;
+                    scheduleSnapshot();
+                  }}
                   useResizeHandler
                   className="w-100"
                   style={{ height: `${PLOT_HEIGHT}px` }}
@@ -590,6 +727,36 @@ function SamplePairRow({
         ) : (
           loadingBox(`Loading ${sample}…`)
         )
+      ) : snapshot?.left ? (
+        // frozen image of the last render — the row still LOOKS loaded while
+        // its real plots are released; interactivity returns on remount
+        <Row
+          className="g-2"
+          style={staticPreview ? { cursor: "pointer" } : undefined}
+          title={
+            staticPreview
+              ? `Hover to interact with ${sample}`
+              : `Scroll stops here to reactivate ${sample}`
+          }>
+          <Col xl={6}>
+            <img
+              src={snapshot.left}
+              alt={`${sample} cell type plot (inactive preview)`}
+              className="w-100"
+              style={{ height: PLOT_HEIGHT, objectFit: "contain" }}
+            />
+          </Col>
+          <Col xl={6}>
+            {snapshot.right && (
+              <img
+                src={snapshot.right}
+                alt={`${sample} gene expression plot (inactive preview)`}
+                className="w-100"
+                style={{ height: PLOT_HEIGHT, objectFit: "contain" }}
+              />
+            )}
+          </Col>
+        </Row>
       ) : (
         <div
           className="bg-light border rounded d-flex align-items-center justify-content-center text-muted"
@@ -754,7 +921,39 @@ function PerSampleRow({ sample, currentLabel, genesKey }) {
   const { config } = state;
   const { size, opacity, freeZoom } = useRecoilValue(state.plotOptionsState);
   const [ref, nearViewport] = useNearViewport(config);
-  const near = useMountSlot(config, sample, nearViewport, ref);
+
+  // Static-preview mode (WebGL cohorts): a row idles as its captured PNG and
+  // wants LIVE plots only while (a) it still owes a snapshot for the current
+  // gene/size/opacity, or (b) the user is on it (hover, or tap on touch
+  // screens). Live rows therefore converge to just the one being used — the
+  // browser's WebGL-context cap stops being reachable in normal use.
+  const staticPreview = !!config.staticPreview;
+  const [hovered, setHovered] = useState(false);
+  const [, snapshotLanded] = useReducer((n) => n + 1, 0); // re-check freshness
+  useEffect(() => {
+    if (!staticPreview) return;
+    const el = ref.current;
+    if (!el) return;
+    const on = () => setHovered(true);
+    const off = () => setHovered(false);
+    el.addEventListener("pointerenter", on);
+    el.addEventListener("pointerleave", off);
+    el.addEventListener("click", on); // touch devices have no hover
+    return () => {
+      el.removeEventListener("pointerenter", on);
+      el.removeEventListener("pointerleave", off);
+      el.removeEventListener("click", on);
+    };
+  }, [staticPreview, ref]);
+  const freshKey = `${genesKey}|${size}|${opacity}`;
+  const snapEntry = snapshots.get(`${config.id} ${sample}`);
+  const hasFresh =
+    !!snapEntry &&
+    snapEntry.freshKey === freshKey &&
+    !!snapEntry.left &&
+    !!snapEntry.right;
+  const wantLive = nearViewport && (!staticPreview || hovered || !hasFresh);
+  const near = useMountSlot(config, sample, wantLive, ref);
   const settled = useScrollSettled(near);
 
   const [leftRecords, setLeftRecords] = useState(null);
@@ -903,6 +1102,9 @@ function PerSampleRow({ sample, currentLabel, genesKey }) {
         setFeatureError(null);
         setAttempt((n) => n + 1);
       }}
+      staticPreview={staticPreview}
+      freshKey={freshKey}
+      onSnapshot={snapshotLanded}
     />
   );
 }
