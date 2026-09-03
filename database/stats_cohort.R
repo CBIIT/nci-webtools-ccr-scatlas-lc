@@ -36,8 +36,11 @@ stopifnot(ncol(expr) == nrow(meta))
 # Per-cell-type stats select matrix columns POSITIONALLY from meta row order
 # (see the loop below), so a meta shipped in a different order than the matrix
 # columns would silently assign cells to the wrong cell type. Assert the 1:1
-# order join the same way import_cohort.R does.
-stopifnot(identical(colnames(expr), meta$cell_id))
+# order join the same way import_cohort.R does: colnames match cell_id (CosMx)
+# or the meta rownames (CODEX, where cell_id repeats across samples).
+stopifnot(
+  identical(colnames(expr), meta$cell_id) || identical(colnames(expr), rownames(meta))
+)
 genes <- rownames(expr)
 
 # Row-wise (per-gene) stats over a set of cell columns of the sparse matrix.
