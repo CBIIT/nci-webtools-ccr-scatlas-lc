@@ -596,6 +596,12 @@ function SamplePairRow({
           <span className="small">Scroll to load {sample}</span>
         </div>
       )}
+      {/* bottom divider pairs with the sticky bar's, framing each row between
+          borders; outside the conditional so placeholders keep the frame.
+          mt-4: the x-axis label sits flush inside the plot canvas, so the
+          divider needs the larger step to read evenly spaced against the
+          next row's title below it */}
+      <hr className="mt-4 mb-0" />
     </div>
   );
 }
@@ -607,7 +613,8 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
   const { config, plotOptionsState } = useSpatialCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   return (
-    <div className="text-center mb-2">
+    // mt-3: breathing room between the sticky controls' divider and the title
+    <div className="text-center mt-3 mb-2">
       <h2 className="h5 mb-0">
         {title} <span className="text-muted fw-normal">— {featureLabel}</span>
         {updating && (
