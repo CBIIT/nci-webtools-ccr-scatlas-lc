@@ -324,11 +324,12 @@ function SamplePairRow({
       zeroline: false,
       // aspect lock is optional (the "Enable rectangular zoom" checkbox):
       // locked keeps 1:1 so tissue isn't distorted; rectangular zooms to
-      // the exact drawn rectangle at the cost of stretch. The lock stays on
-      // while UNZOOMED even in rectangular mode, so toggling the checkbox
-      // never distorts the full view — and constrain:"domain" makes the drag
-      // report the exact drawn ranges, which the next render shows unlocked.
-      ...((!freeZoom || !viewRange) && {
+      // the exact drawn rectangle at the cost of stretch. The lock must go
+      // the moment the box is checked — while scaleanchor is active Plotly
+      // constrains the zoombox DURING the drag, so an "unzoomed keeps the
+      // lock" compromise made the first zoom (and every zoom after a reset)
+      // ratio-snapped: the free-drawn rectangle never existed to zoom into.
+      ...(!freeZoom && {
         scaleanchor: "y",
         scaleratio: 1,
         constrain: "domain",
