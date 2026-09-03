@@ -44,7 +44,7 @@ on:
 
 jobs:
   data-import:
-    timeout-minutes: 60
+    timeout-minutes: 150
     runs-on: ubuntu-latest
     environment: ${{ inputs.tier }}
     # one import per tier at a time: concurrent runs share the task family and
@@ -181,11 +181,12 @@ jobs:
       - name: Wait for task to stop
         run: |
           # the built-in tasks-stopped waiter gives up after ~10 minutes; a
-          # multi-GB delta can take longer, so poll for up to 45 minutes.
+          # multi-GB delta can take longer still (the European cohort delta is
+          # 14GB), so poll for up to 120 minutes.
           # A transient describe error must not abort the step (bash -e), and
           # a task that no longer exists reports "None" - treat that as gone.
           STATUS=""
-          for i in $(seq 1 91); do
+          for i in $(seq 1 241); do
             STATUS=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
               --query 'tasks[0].lastStatus' --output text 2>/dev/null || echo "UNKNOWN")
             echo "task status: $STATUS"
@@ -193,10 +194,10 @@ jobs:
               STOPPED) break ;;
               None) echo "::error::task $TASK_ARN no longer exists"; exit 1 ;;
             esac
-            # 90 sleeps then a final check at the 45-minute boundary (no sleep after it)
-            [ "$i" -lt 91 ] && sleep 30
+            # 240 sleeps then a final check at the 120-minute boundary (no sleep after it)
+            [ "$i" -lt 241 ] && sleep 30
           done
-          test "$STATUS" = "STOPPED" || { echo "::error::data-import task still running after 45 minutes"; exit 1; }
+          test "$STATUS" = "STOPPED" || { echo "::error::data-import task still running after 120 minutes"; exit 1; }
           echo "TASK_DONE=true" >> "$GITHUB_ENV"
 
       # runs on every exit path (timeout, describe failure, cancel, job
