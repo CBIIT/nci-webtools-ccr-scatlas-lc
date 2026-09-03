@@ -6,9 +6,7 @@ import PlaceholderPage from "./placeholder-page";
 // --- Transcriptomics ---
 // Multi-Regional is a real page now — see ../spatial/multi-regional.js.
 // TIGER-LC transcriptomics is a real page now — see ../spatial/tiger-lc.js.
-export function SpatialTransEuropean() {
-  return <PlaceholderPage title="European iCCA" modality="Transcriptomics" />;
-}
+// European iCCA is a real page now — see ../spatial/european-icca.js.
 
 // --- Proteomics ---
 // TIGER-LC iCCA proteomics is a real page now — see ../spatial/codex-tigerlc-icca.js.
