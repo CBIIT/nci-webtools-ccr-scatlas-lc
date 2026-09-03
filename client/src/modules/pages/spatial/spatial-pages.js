@@ -10,9 +10,7 @@ import PlaceholderPage from "./placeholder-page";
 
 // --- Proteomics ---
 // TIGER-LC iCCA proteomics is a real page now — see ../spatial/codex-tigerlc-icca.js.
-export function SpatialProtTigerLcHcc() {
-  return <PlaceholderPage title="TIGER-LC HCC" modality="Proteomics" />;
-}
+// TIGER-LC HCC is a real page now — see ../spatial/codex-tigerlc-hcc.js.
 export function SpatialProtLciHcc() {
   return <PlaceholderPage title="LCI HCC" modality="Proteomics" />;
 }
