@@ -152,9 +152,9 @@ export default function SpatialSummary() {
         stromal cells and immune cells.
       </p>
       <p>
-        Whole-tissue sections were used for profiling in the Multi-Regional and
-        European iCCA cohorts, whereas tissue microarrays were used in the other
-        cohorts. Spatial transcriptomic profiling was performed using CosMx, and
+        Whole-tissue sections were used for profiling in the Multi-Regional
+        cohort and European iCCA cohort, whereas tissue microarrays were used
+        in the other cohorts. Spatial transcriptomic profiling was performed using CosMx, and
         spatial proteomic profiling was performed using CODEX. Both platforms
         provide single-cell spatial resolution.
       </p>
