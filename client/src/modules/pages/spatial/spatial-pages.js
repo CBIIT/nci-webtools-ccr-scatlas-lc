@@ -11,9 +11,7 @@ export function SpatialTransEuropean() {
 }
 
 // --- Proteomics ---
-export function SpatialProtTigerLcIcca() {
-  return <PlaceholderPage title="TIGER-LC iCCA" modality="Proteomics" />;
-}
+// TIGER-LC iCCA proteomics is a real page now — see ../spatial/codex-tigerlc-icca.js.
 export function SpatialProtTigerLcHcc() {
   return <PlaceholderPage title="TIGER-LC HCC" modality="Proteomics" />;
 }

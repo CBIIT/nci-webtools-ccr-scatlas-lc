@@ -9,12 +9,12 @@ import SingleCellSummary from "./modules/pages/single-cell-summary";
 import SpatialSummary from "./modules/pages/spatial-summary";
 import {
   SpatialTransEuropean,
-  SpatialProtTigerLcIcca,
   SpatialProtTigerLcHcc,
   SpatialProtLciHcc,
 } from "./modules/pages/spatial/spatial-pages";
 import TigerLcPage from "./modules/pages/spatial/tiger-lc";
 import SpatialMultiRegionalPage from "./modules/pages/spatial/multi-regional";
+import CodexTigerLcIccaPage from "./modules/pages/spatial/codex-tigerlc-icca";
 
 import "./styles/main.scss";
 import WebglAlert from "./modules/components/webgl-alert";
@@ -59,7 +59,7 @@ export default function App() {
         <Route
           exact
           path="/spatial/proteomics/tiger-lc-icca"
-          component={SpatialProtTigerLcIcca}
+          component={CodexTigerLcIccaPage}
         />
         <Route
           exact
