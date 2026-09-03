@@ -301,7 +301,7 @@ function SamplePairRow({
   // the pair zooms to the outline's bounding box and every cell OUTSIDE the
   // lasso is hidden (opacity 0) on both plots, so the view shows exactly the
   // lassoed region. Double-click resets view + visibility. With the aspect
-  // lock on the box widens to keep 1:1 mm; with Free-form zoom it is exact.
+  // lock on the box widens to keep 1:1; with Free-form zoom it is exact.
   function handleSelected(event) {
     if (!event) return; // deselect / programmatic clears
     const outline = event.lassoPoints ?? event.range;
@@ -317,12 +317,13 @@ function SamplePairRow({
     );
   }
 
+  const units = config.units ?? "mm";
   const axes = {
     xaxis: {
-      title: { text: "Spatial X (mm)", font: { size: 11 } },
+      title: { text: `Spatial X (${units})`, font: { size: 11 } },
       zeroline: false,
       // aspect lock is optional (the "Enable rectangular zoom" checkbox):
-      // locked keeps 1:1 mm so tissue isn't distorted; rectangular zooms to
+      // locked keeps 1:1 so tissue isn't distorted; rectangular zooms to
       // the exact drawn rectangle at the cost of stretch. The lock stays on
       // while UNZOOMED even in rectangular mode, so toggling the checkbox
       // never distorts the full view — and constrain:"domain" makes the drag
@@ -335,7 +336,7 @@ function SamplePairRow({
       ...(viewRange?.x && { range: [...viewRange.x], autorange: false }),
     },
     yaxis: {
-      title: { text: "Spatial Y (mm)", font: { size: 11 } },
+      title: { text: `Spatial Y (${units})`, font: { size: 11 } },
       zeroline: false,
       ...(viewRange?.y && { range: [...viewRange.y], autorange: false }),
     },
@@ -569,7 +570,7 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
           type="checkbox"
           id={`${config.id}-free-zoom`}
           label="Enable rectangular zoom"
-          title="Zoom to the exact drawn rectangle without preserving the square 1:1 mm aspect (allows stretching)"
+          title="Zoom to the exact drawn rectangle without preserving the square 1:1 aspect (allows stretching)"
           checked={plotOptions.freeZoom}
           onChange={(e) =>
             setPlotOptions({ ...plotOptions, freeZoom: e.target.checked })
