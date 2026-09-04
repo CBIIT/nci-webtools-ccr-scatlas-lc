@@ -295,6 +295,11 @@ function SamplePairRow({
   staticPreview = false,
   freshKey = "",
   onSnapshot,
+  hovered = false,
+  // whether the row is still inside the scroll band — distinct from `near`
+  // (mounted): a static-preview row that merely lost hover is unmounted but
+  // still "here", and must keep its lasso/zoom for the next hover
+  inBand = near,
 }) {
   const { config } = useSpatialCohort();
   // shared view for the pair: zoom/pan/reset on either plot mirrors to the
@@ -318,10 +323,14 @@ function SamplePairRow({
   // must survive scrolling between samples, as it always has.
   const releasesRecords = config.fetch === "perSample";
   useEffect(() => {
-    if (!releasesRecords || near || !lassoCells) return;
+    // release on leaving the scroll BAND, not on any unmount: an unhovered
+    // static-preview row (or one that yielded its slot while visible) keeps
+    // its selection for reactivation — the string-pinning this guard exists
+    // for only matters for rows genuinely scrolled away
+    if (!releasesRecords || inBand || !lassoCells) return;
     setLassoCells(null);
     setViewRange(null);
-  }, [releasesRecords, near, lassoCells]);
+  }, [releasesRecords, inBand, lassoCells]);
 
   // A plot whose WebGL context the browser reclaimed stays in the DOM but
   // draws nothing — it looks loaded and is blank forever (Plotly does not
@@ -358,6 +367,12 @@ function SamplePairRow({
   const graphDivs = useRef({});
   const captureTimer = useRef(0);
   const captureNow = () => {
+    // notify only when the pair BECOMES complete: that release-signal is all
+    // the notification exists for, and notifying on every re-capture caused a
+    // re-render (and WebGL redraw flicker) while the user worked on the row
+    const before = snapshots.get(snapshotKey);
+    const wasComplete =
+      !!before && before.freshKey === freshKey && !!before.left && !!before.right;
     for (const side of ["left", "right"]) {
       const gd = graphDivs.current[side];
       if (!gd?._fullLayout || !gd.offsetWidth) continue;
@@ -376,19 +391,29 @@ function SamplePairRow({
         .then((url) => {
           if (!url) return;
           rememberSnapshot(snapshotKey, side, url, freshKey);
-          onSnapshot?.();
+          const now = snapshots.get(snapshotKey);
+          if (!wasComplete && now?.left && now?.right) onSnapshot?.();
         })
         .catch(() => {}); // a failed capture just means a plain placeholder
     }
   };
   const scheduleSnapshot = () => {
     // a row's FIRST capture runs almost immediately, so even a briefly
-    // mounted row leaves an image behind; re-captures after that wait for a
-    // settle so a zoom/gene-change burst costs one capture, not one per frame
-    const delay = snapshots.get(snapshotKey) ? 800 : 50;
+    // mounted row leaves an image behind; re-captures wait for a settle so a
+    // burst costs one capture — and while the user is actively ON the row the
+    // settle is much longer, so a capture (main-thread heavy for dense WebGL
+    // plots) never lands mid-gesture, only in pauses
+    const delay = !snapshots.get(snapshotKey) ? 50 : hovered ? 1500 : 800;
     clearTimeout(captureTimer.current);
     captureTimer.current = setTimeout(captureNow, delay);
   };
+  // hover just ended, plots still mounted for the leave-grace window: capture
+  // the final zoom/lasso state once, so the idle PNG matches what was left
+  const prevHovered = useRef(false);
+  useEffect(() => {
+    if (staticPreview && prevHovered.current && !hovered && near) captureNow();
+    prevHovered.current = hovered;
+  });
   useEffect(() => () => clearTimeout(captureTimer.current), []);
   const snapshot = !near ? snapshots.get(snapshotKey) : null;
 
@@ -437,10 +462,19 @@ function SamplePairRow({
   }
 
   const units = config.units ?? "mm";
+  // The axes' own uirevision tracks OUR view state: layout-level uirevision
+  // preserves user-established axis state over anything the props say, so
+  // after a manual reset Plotly would silently ignore the programmatic ranges
+  // a lasso-zoom sets (the lasso then dims cells but never zooms — stock
+  // select behavior). Every viewRange change bumps this, making Plotly adopt
+  // the prop ranges; user drag-zooms are mirrored into viewRange by
+  // handleRelayout, so their revision matches what they already see.
+  const axisRevision = `${sample}:${JSON.stringify(viewRange)}`;
   const axes = {
     xaxis: {
       title: { text: `Spatial X (${units})`, font: { size: 11 } },
       zeroline: false,
+      uirevision: axisRevision,
       // aspect lock is optional (the "Enable rectangular zoom" checkbox):
       // locked keeps 1:1 so tissue isn't distorted; rectangular zooms to
       // the exact drawn rectangle at the cost of stretch. The lock must go
@@ -453,12 +487,17 @@ function SamplePairRow({
         scaleratio: 1,
         constrain: "domain",
       }),
-      ...(viewRange?.x && { range: [...viewRange.x], autorange: false }),
+      ...(viewRange?.x
+        ? { range: [...viewRange.x], autorange: false }
+        : { autorange: true }),
     },
     yaxis: {
       title: { text: `Spatial Y (${units})`, font: { size: 11 } },
       zeroline: false,
-      ...(viewRange?.y && { range: [...viewRange.y], autorange: false }),
+      uirevision: axisRevision,
+      ...(viewRange?.y
+        ? { range: [...viewRange.y], autorange: false }
+        : { autorange: true }),
     },
     margin: { t: 36, r: 10, b: 40, l: 50 },
     hovermode: "closest",
@@ -930,19 +969,52 @@ function PerSampleRow({ sample, currentLabel, genesKey }) {
   const staticPreview = !!config.staticPreview;
   const [hovered, setHovered] = useState(false);
   const [, snapshotLanded] = useReducer((n) => n + 1, 0); // re-check freshness
+  // Deactivation must never interrupt an interaction: a lasso or zoom drag
+  // routinely crosses the row's edge, and unmounting the plots mid-drag
+  // leaves Plotly's document-level drag handlers pointing at a purged graph
+  // (the "_hoverlayer of undefined" crash). A pointer-down locks the row live
+  // until pointer-up, and a plain mouse-out only deactivates after a grace
+  // delay so grazing the edge doesn't flicker the row.
+  const insideRef = useRef(false);
+  const draggingRef = useRef(false);
+  const leaveTimer = useRef(0);
   useEffect(() => {
     if (!staticPreview) return;
     const el = ref.current;
     if (!el) return;
-    const on = () => setHovered(true);
-    const off = () => setHovered(false);
-    el.addEventListener("pointerenter", on);
-    el.addEventListener("pointerleave", off);
-    el.addEventListener("click", on); // touch devices have no hover
+    const activate = () => {
+      clearTimeout(leaveTimer.current);
+      insideRef.current = true;
+      setHovered(true);
+    };
+    const scheduleDeactivate = () => {
+      insideRef.current = false;
+      if (draggingRef.current) return; // mid-drag: deactivate on pointer-up
+      clearTimeout(leaveTimer.current);
+      leaveTimer.current = setTimeout(() => setHovered(false), 600);
+    };
+    const unlock = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      if (!insideRef.current) scheduleDeactivate();
+    };
+    const lock = () => {
+      draggingRef.current = true;
+      document.addEventListener("pointerup", unlock, { once: true });
+      document.addEventListener("pointercancel", unlock, { once: true });
+    };
+    el.addEventListener("pointerenter", activate);
+    el.addEventListener("pointerleave", scheduleDeactivate);
+    el.addEventListener("pointerdown", lock);
+    el.addEventListener("click", activate); // touch devices have no hover
     return () => {
-      el.removeEventListener("pointerenter", on);
-      el.removeEventListener("pointerleave", off);
-      el.removeEventListener("click", on);
+      clearTimeout(leaveTimer.current);
+      document.removeEventListener("pointerup", unlock);
+      document.removeEventListener("pointercancel", unlock);
+      el.removeEventListener("pointerenter", activate);
+      el.removeEventListener("pointerleave", scheduleDeactivate);
+      el.removeEventListener("pointerdown", lock);
+      el.removeEventListener("click", activate);
     };
   }, [staticPreview, ref]);
   const freshKey = `${genesKey}|${size}|${opacity}`;
@@ -1105,6 +1177,8 @@ function PerSampleRow({ sample, currentLabel, genesKey }) {
       staticPreview={staticPreview}
       freshKey={freshKey}
       onSnapshot={snapshotLanded}
+      inBand={nearViewport}
+      hovered={hovered}
     />
   );
 }
