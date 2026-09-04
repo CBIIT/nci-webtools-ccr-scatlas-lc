@@ -61,8 +61,10 @@ jobs:
       CICD_ROLE_ARN: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/power-user-github-actions-cicd
       PARAMETER_PATH: /analysistools/${{ inputs.tier }}/scatlaslc
       ECS_DATA_IMPORT_TASK: ${{ inputs.tier }}-scatlaslc-data-import
-      ECS_DATA_IMPORT_CPU_UNITS: "2048"
-      ECS_DATA_IMPORT_MEMORY_UNITS: "16384"
+      # 32GB (4 vCPU floor at this size): the European cohort merge needs
+      # headroom even with sample-batched inserts; DuckDB's cap derives below
+      ECS_DATA_IMPORT_CPU_UNITS: "4096"
+      ECS_DATA_IMPORT_MEMORY_UNITS: "32768"
       TABLES: ${{ inputs.tables }}
       # dispatch inputs and the ref reach the shell only through env (never
       # interpolated into run: scripts) and are validated below
