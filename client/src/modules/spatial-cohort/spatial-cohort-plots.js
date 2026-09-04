@@ -428,14 +428,65 @@ function SamplePairRow({
     [rightRecords, size, opacity, cmin, cmax, featureLabel, config.renderer],
   );
 
+  // Cell types toggled off via the LEFT plot's legend — controlled state so
+  // the RIGHT plot filters the same cells simultaneously (both plots' traces
+  // are grouped per type, so visibility mirrors by trace name). Plotly's own
+  // legend toggling is suppressed; this state is the single source of truth.
+  const [hiddenTypes, setHiddenTypes] = useState(() => new Set());
+  const applyHidden = (traces, moveColorbar) => {
+    const firstVisible = traces.find((t) => !hiddenTypes.has(t.name))?.name;
+    return traces.map((t) => ({
+      ...t,
+      visible: hiddenTypes.has(t.name) ? "legendonly" : true,
+      // the expression colorbar rides on one trace — keep it on the first
+      // VISIBLE one, or hiding that type would hide the scale with it
+      ...(moveColorbar && {
+        marker: { ...t.marker, showscale: t.name === firstVisible },
+      }),
+    }));
+  };
   const leftShown = useMemo(
-    () => (leftData ? withLasso(leftData, lassoCells, opacity) : null),
-    [leftData, lassoCells, opacity],
+    () =>
+      leftData ? applyHidden(withLasso(leftData, lassoCells, opacity)) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [leftData, lassoCells, opacity, hiddenTypes],
   );
   const rightShown = useMemo(
-    () => (rightData ? withLasso(rightData, lassoCells, opacity) : null),
-    [rightData, lassoCells, opacity],
+    () =>
+      rightData
+        ? applyHidden(withLasso(rightData, lassoCells, opacity), true)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rightData, lassoCells, opacity, hiddenTypes],
   );
+
+  // legend interactions on the cell-type plot drive BOTH plots: single click
+  // toggles a type, double click isolates it (or restores all when it is
+  // already the only one showing) — the standard Plotly gestures, reimplemented
+  // so the expression plot follows
+  function handleLegendClick(event) {
+    const name = event.data[event.curveNumber]?.name;
+    if (name == null) return false;
+    setHiddenTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+    return false; // suppress Plotly's internal (left-only) toggle
+  }
+  function handleLegendDoubleClick(event) {
+    const traces = event.data ?? [];
+    const name = traces[event.curveNumber]?.name;
+    if (name == null) return false;
+    setHiddenTypes((prev) => {
+      const others = traces.map((t) => t.name).filter((t) => t !== name);
+      const isolated =
+        !prev.has(name) && others.every((t) => prev.has(t)) && others.length > 0;
+      return isolated ? new Set() : new Set(others);
+    });
+    return false;
+  }
 
   const errorBox = (err) => (
     <Alert variant="danger" className="d-flex align-items-center gap-3">
@@ -465,7 +516,10 @@ function SamplePairRow({
       <h3 className="h6 mb-1 text-center">
         {sample}
         {cellCount != null && (
-          <span className="text-muted fw-normal"> · n={cellCount}</span>
+          <span className="text-muted fw-normal">
+            {" "}
+            · n={cellCount.toLocaleString()} cells
+          </span>
         )}
         {updating && (
           <Spinner
@@ -499,6 +553,8 @@ function SamplePairRow({
                 onRelayout={handleRelayout}
                 onSelected={handleSelected}
                 onDeselect={() => setLassoCells(null)}
+                onLegendClick={handleLegendClick}
+                onLegendDoubleClick={handleLegendDoubleClick}
                 useResizeHandler
                 className="w-100"
                 style={{ height: `${PLOT_HEIGHT}px` }}
