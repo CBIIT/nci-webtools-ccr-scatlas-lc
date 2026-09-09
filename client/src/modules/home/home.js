@@ -11,9 +11,9 @@ const TITLE = "Spatial and Single-Cell Atlas of Liver Cancer";
 const DESCRIPTION =
   "The scAtlasLC is a publicly available multi-omics data portal for characterizing " +
   "cellular communities in liver cancer at single-cell and spatial resolution. It " +
-  "includes single-cell transcriptomic, spatial transcriptomic, and spatial proteomic " +
-  "data from hepatocellular carcinoma (HCC) and intrahepatic cholangiocarcinoma (iCCA), " +
-  "the two major subtypes of primary liver cancer.";
+  "includes single-cell transcriptomics, spatial transcriptomics, and spatial " +
+  "proteomics data from hepatocellular carcinoma (HCC) and intrahepatic " +
+  "cholangiocarcinoma (iCCA), the two major subtypes of primary liver cancer.";
 
 // Atlas entry points — add an entry here to surface another "Explore" button.
 const EXPLORE_LINKS = [
@@ -79,21 +79,26 @@ export default function Home() {
         {/* mt-auto pins it near the hero's bottom edge; mb-4 floats it a bit up */}
         <div className="home-credit text-center rounded shadow-sm mt-auto mb-4 p-3">
           <p className="mb-2">
-            The scAtlasLC is developed by MA Lab at the Cancer Data Science
-            Laboratory and{" "}
+            The scAtlasLC was developed by the MA Lab at the{" "}
+            <a
+              href="https://ccr.cancer.gov/cancer-data-science-laboratory"
+              target="_blank"
+              rel="noopener noreferrer">
+              Cancer Data Science Laboratory
+            </a>{" "}
+            and the{" "}
             <a
               href="https://ccr.cancer.gov/liver-cancer-program"
               target="_blank"
               rel="noopener noreferrer">
               Liver Cancer Program
             </a>
-            .
+            , Center for Cancer Research, National Cancer Institute.
           </p>
           <p className="h6 mb-1">Disclaimer</p>
           <p className="mb-0 small">
             Each dataset was normalized independently. Gene expression levels
-            may not be comparable between datasets. Illustrations were created
-            using BioRender.
+            may not be comparable between datasets.
           </p>
         </div>
       </Container>

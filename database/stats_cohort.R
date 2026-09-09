@@ -10,10 +10,14 @@
 # spaces, which DuckDB handles via quoted identifiers.
 #
 # Unlike stats.R (which pivots the wide cells CSV to long format), this reads the
-# SPARSE expression matrix directly and computes row-wise stats — pivoting millions
-# of cells x thousands of genes to long format would exhaust memory. "count" =
-# cells with expression > 0; mean/stdev are over ALL cells (zeros included),
-# matching stats.R. sd uses the sample (n-1) denominator.
+# SPARSE expression matrix directly — pivoting millions of cells x thousands of
+# genes to long format would exhaust memory. It streams over column blocks,
+# accumulating per-gene count / sum / sum-of-squares overall and per cell type,
+# so peak memory stays near the matrix itself: materializing even one per-type
+# sub-matrix (or the squared matrix) doubled the footprint and broke the 4.66M-
+# cell European cohort on a 18 GB machine. "count" = cells with expression > 0;
+# mean/stdev are over ALL cells (zeros included), matching stats.R. sd uses the
+# sample (n-1) denominator.
 #
 # Usage: Rscript stats_cohort.R <matrix_rds> <meta_rds> <out_csv>
 suppressMessages({
@@ -36,43 +40,74 @@ stopifnot(ncol(expr) == nrow(meta))
 # Per-cell-type stats select matrix columns POSITIONALLY from meta row order
 # (see the loop below), so a meta shipped in a different order than the matrix
 # columns would silently assign cells to the wrong cell type. Assert the 1:1
-# order join the same way import_cohort.R does.
-stopifnot(identical(colnames(expr), meta$cell_id))
+# order join the same way import_cohort.R does: colnames match cell_id (CosMx)
+# or the meta rownames (CODEX, where cell_id repeats across samples).
+stopifnot(
+  identical(colnames(expr), meta$cell_id) || identical(colnames(expr), rownames(meta))
+)
 genes <- rownames(expr)
+ng <- length(genes)
+ncells <- ncol(expr)
+cell_types <- as.character(meta$cellType)
+types <- sort(unique(cell_types))
 
-# Row-wise (per-gene) stats over a set of cell columns of the sparse matrix.
-gene_stats <- function(m) {
-  n <- ncol(m)
-  # cells expressing = stored entries with value > 0 (a dgCMatrix can hold explicit
-  # zeros / negatives, so count those out to match stats.R's sum(value > 0))
-  pos <- m@x > 0
-  count <- tabulate((m@i + 1L)[pos], nbins = nrow(m))
-  rs <- Matrix::rowSums(m)
-  msq <- m
-  msq@x <- msq@x^2
-  sumsq <- Matrix::rowSums(msq)
-  mean <- rs / n
-  var <- if (n > 1) (sumsq - n * mean^2) / (n - 1) else rep(NA_real_, nrow(m))
+# One accumulator per group (overall + each cell type): per-gene
+# expressing-cell count, value sum, and sum of squares, plus the group's cell
+# count.
+new_acc <- function() list(count = numeric(ng), sum = numeric(ng), sumsq = numeric(ng), n = 0)
+overall_acc <- new_acc()
+type_accs <- setNames(lapply(types, function(...) new_acc()), types)
+
+# Per-gene partial sums over a set of cell columns of the sparse matrix.
+# cells expressing = stored entries with value > 0 (a dgCMatrix can hold
+# explicit zeros / negatives, so count those out to match stats.R).
+accumulate <- function(acc, m) {
+  x <- m@x
+  rows <- m@i + 1L
+  acc$count <- acc$count + tabulate(rows[x > 0], nbins = ng)
+  acc$sum <- acc$sum + Matrix::rowSums(m)
+  # rowsum over the entry vector avoids materializing a squared copy of the
+  # whole matrix — only this block's x^2 temp exists at a time
+  sq <- rowsum(x * x, rows)
+  idx <- as.integer(rownames(sq))
+  acc$sumsq[idx] <- acc$sumsq[idx] + sq[, 1]
+  acc$n <- acc$n + ncol(m)
+  acc
+}
+
+block <- 200000L
+starts <- seq(1L, ncells, by = block)
+cat("accumulating over", length(starts), "column blocks...\n")
+for (s in starts) {
+  e <- min(s + block - 1L, ncells)
+  mb <- expr[, s:e, drop = FALSE]
+  bt <- cell_types[s:e]
+  overall_acc <- accumulate(overall_acc, mb)
+  for (ty in unique(bt)) {
+    type_accs[[ty]] <- accumulate(type_accs[[ty]], mb[, bt == ty, drop = FALSE])
+  }
+  rm(mb)
+}
+
+finalize <- function(acc) {
+  n <- acc$n
+  mean <- acc$sum / n
+  var <- if (n > 1) (acc$sumsq - n * mean^2) / (n - 1) else rep(NA_real_, ng)
   var[var < 0] <- 0 # guard tiny negative from float error
   stdev <- sqrt(var)
   data.table(
-    count = count,
-    percent = 100 * count / n,
+    count = acc$count,
+    percent = 100 * acc$count / n,
     mean = mean,
     stdev = stdev,
     stderr = stdev / sqrt(n)
   )
 }
 
-cat("overall stats...\n")
-overall <- gene_stats(expr)
 res <- data.table(gene = genes)
-res[, c("count", "percent", "mean", "stdev", "stderr") := overall]
-
-cat("per-cell-type stats...\n")
-for (ty in sort(unique(meta$cellType))) {
-  cols <- which(meta$cellType == ty)
-  st <- gene_stats(expr[, cols, drop = FALSE])
+res[, c("count", "percent", "mean", "stdev", "stderr") := finalize(overall_acc)]
+for (ty in types) {
+  st <- finalize(type_accs[[ty]])
   setnames(st, paste0(c("count", "percent", "mean", "stdev", "stderr"), ".", ty))
   res <- cbind(res, st)
 }

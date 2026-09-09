@@ -54,6 +54,12 @@ export default function GeneSetPanel({
           onClick={() => setShowCreate(true)}>
           Add new
         </Button>
+        {/* the droplet toggles are only on screen once a set exists */}
+        {sets.length > 0 && (
+          <span className="text-muted small">
+            Click water drop to show gene expression
+          </span>
+        )}
       </div>
       {sets.length === 0 ? (
         <div className="text-muted small">

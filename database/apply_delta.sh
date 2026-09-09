@@ -61,10 +61,20 @@ echo "copying the live database to local disk"
 cp "$DATABASE_PATH" "$STAGE"
 
 # One SQL script: settings, attach the delta, then per table create an empty
-# copy and fill it in row batches with a CHECKPOINT after each, so the wide
-# gene tables never need the whole table in memory at once.
+# copy and fill it in batches with a CHECKPOINT after each, so the wide gene
+# tables never need the whole table in memory at once.
+#
+# Batch by the `sample` column when the table has one: sample is a real,
+# zone-mapped column over sample-contiguous data, so each batch scans only its
+# own row groups. rowid predicates are NOT pushed into the scan of an attached
+# database — every rowid batch re-scanned the entire table with its blocks
+# pinned, which ran the 4.66M x 6,208 European cohort out of memory at any
+# batch size (the batches were "smaller" only in what they kept, not in what
+# they read). rowid ranges remain the fallback for sample-less tables, which
+# are all narrow.
 SQL="$WORK/apply.sql"
 {
+  echo ".bail on"
   echo "SET memory_limit='$MEMORY_LIMIT';"
   echo "SET temp_directory='$WORK/duckdb_tmp';"
   echo "SET threads TO 2;"
@@ -72,14 +82,25 @@ SQL="$WORK/apply.sql"
   echo "ATTACH '$DELTA' AS src (READ_ONLY);"
   for t in $TABLES; do
     n=$(duckdb -readonly -csv -noheader "$DELTA" "SELECT count(*) FROM \"$t\"")
+    has_sample=$(duckdb -readonly -csv -noheader "$DELTA" \
+      "SELECT count(*) FROM information_schema.columns WHERE table_schema='main' AND table_name='$t' AND column_name='sample'")
     echo "DROP TABLE IF EXISTS \"$t\";"
     echo "CREATE TABLE \"$t\" AS SELECT * FROM src.\"$t\" LIMIT 0;"
-    off=0
-    while [ "$off" -lt "$n" ]; do
-      echo "INSERT INTO \"$t\" SELECT * FROM src.\"$t\" WHERE rowid >= $off AND rowid < $((off + BATCH_ROWS));"
-      echo "CHECKPOINT;"
-      off=$((off + BATCH_ROWS))
-    done
+    if [ "$has_sample" = "1" ] && [ "$n" -gt "$BATCH_ROWS" ]; then
+      duckdb -readonly -csv -noheader "$DELTA" \
+        "SELECT DISTINCT sample FROM \"$t\" ORDER BY sample" | while IFS= read -r sm; do
+        esc=$(printf '%s' "$sm" | sed "s/'/''/g")
+        echo "INSERT INTO \"$t\" SELECT * FROM src.\"$t\" WHERE sample = '$esc';"
+        echo "CHECKPOINT;"
+      done
+    else
+      off=0
+      while [ "$off" -lt "$n" ]; do
+        echo "INSERT INTO \"$t\" SELECT * FROM src.\"$t\" WHERE rowid >= $off AND rowid < $((off + BATCH_ROWS));"
+        echo "CHECKPOINT;"
+        off=$((off + BATCH_ROWS))
+      done
+    fi
     echo "SELECT '$t' AS applied_table, count(*) AS row_count, $n AS expected FROM \"$t\";"
   done
 } > "$SQL"

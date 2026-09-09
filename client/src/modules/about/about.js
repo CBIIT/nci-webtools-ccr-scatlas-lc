@@ -231,7 +231,7 @@ export default function About() {
 
           <h2 className="text-primary h4 mt-4">References</h2>
 
-          <h3 className="h6 mt-3">Single-cell papers</h3>
+          <h3 className="h6 mt-3">Single-cell publications</h3>
           <ul className="ps-4">
             <li className="mb-2">
               Revsine, M. et al. Lineage and ecology define liver tumor
@@ -256,7 +256,7 @@ export default function About() {
             </li>
           </ul>
 
-          <h3 className="h6 mt-3">Spatial papers</h3>
+          <h3 className="h6 mt-3">Spatial publications</h3>
           <ul className="ps-4">
             <li className="mb-2">
               Liu, M. et al. Tumor cell villages define the co-dependency of
@@ -282,7 +282,7 @@ export default function About() {
             </li>
           </ul>
 
-          <h3 className="h6 mt-3">Review papers</h3>
+          <h3 className="h6 mt-3">Review</h3>
           <ul className="ps-4">
             <li className="mb-2">
               Ma, L. C., Xiong, B., Liu, M. &amp; Tan, K. Cellular

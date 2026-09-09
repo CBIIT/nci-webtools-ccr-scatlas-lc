@@ -19,6 +19,8 @@ import { query } from "../../services/query";
 //   samples         known sample ids (required for perSample; null = derive
 //                   from the fetched cells)
 //   renderer        Plotly trace type: "scatter" (SVG) or "scattergl" (WebGL)
+//   units           coordinate unit for the axis labels (default "mm"; CODEX
+//                   drops ship pixel coordinates — "px")
 //   mountMargin / unmountMargin   lazy-mount hysteresis distances
 //   maxLiveRows     hard cap on simultaneously mounted rows (WebGL cohorts —
 //                   a pixel margin scales with viewport height, a cap does not)

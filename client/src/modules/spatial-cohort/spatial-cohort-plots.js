@@ -301,7 +301,7 @@ function SamplePairRow({
   // the pair zooms to the outline's bounding box and every cell OUTSIDE the
   // lasso is hidden (opacity 0) on both plots, so the view shows exactly the
   // lassoed region. Double-click resets view + visibility. With the aspect
-  // lock on the box widens to keep 1:1 mm; with Free-form zoom it is exact.
+  // lock on the box widens to keep 1:1; with Free-form zoom it is exact.
   function handleSelected(event) {
     if (!event) return; // deselect / programmatic clears
     const outline = event.lassoPoints ?? event.range;
@@ -317,17 +317,19 @@ function SamplePairRow({
     );
   }
 
+  const units = config.units ?? "mm";
   const axes = {
     xaxis: {
-      title: { text: "Spatial X (mm)", font: { size: 11 } },
+      title: { text: `Spatial X (${units})`, font: { size: 11 } },
       zeroline: false,
       // aspect lock is optional (the "Enable rectangular zoom" checkbox):
-      // locked keeps 1:1 mm so tissue isn't distorted; rectangular zooms to
-      // the exact drawn rectangle at the cost of stretch. The lock stays on
-      // while UNZOOMED even in rectangular mode, so toggling the checkbox
-      // never distorts the full view — and constrain:"domain" makes the drag
-      // report the exact drawn ranges, which the next render shows unlocked.
-      ...((!freeZoom || !viewRange) && {
+      // locked keeps 1:1 so tissue isn't distorted; rectangular zooms to
+      // the exact drawn rectangle at the cost of stretch. The lock must go
+      // the moment the box is checked — while scaleanchor is active Plotly
+      // constrains the zoombox DURING the drag, so an "unzoomed keeps the
+      // lock" compromise made the first zoom (and every zoom after a reset)
+      // ratio-snapped: the free-drawn rectangle never existed to zoom into.
+      ...(!freeZoom && {
         scaleanchor: "y",
         scaleratio: 1,
         constrain: "domain",
@@ -335,7 +337,7 @@ function SamplePairRow({
       ...(viewRange?.x && { range: [...viewRange.x], autorange: false }),
     },
     yaxis: {
-      title: { text: "Spatial Y (mm)", font: { size: 11 } },
+      title: { text: `Spatial Y (${units})`, font: { size: 11 } },
       zeroline: false,
       ...(viewRange?.y && { range: [...viewRange.y], autorange: false }),
     },
@@ -427,14 +429,65 @@ function SamplePairRow({
     [rightRecords, size, opacity, cmin, cmax, featureLabel, config.renderer],
   );
 
+  // Cell types toggled off via the LEFT plot's legend — controlled state so
+  // the RIGHT plot filters the same cells simultaneously (both plots' traces
+  // are grouped per type, so visibility mirrors by trace name). Plotly's own
+  // legend toggling is suppressed; this state is the single source of truth.
+  const [hiddenTypes, setHiddenTypes] = useState(() => new Set());
+  const applyHidden = (traces, moveColorbar) => {
+    const firstVisible = traces.find((t) => !hiddenTypes.has(t.name))?.name;
+    return traces.map((t) => ({
+      ...t,
+      visible: hiddenTypes.has(t.name) ? "legendonly" : true,
+      // the expression colorbar rides on one trace — keep it on the first
+      // VISIBLE one, or hiding that type would hide the scale with it
+      ...(moveColorbar && {
+        marker: { ...t.marker, showscale: t.name === firstVisible },
+      }),
+    }));
+  };
   const leftShown = useMemo(
-    () => (leftData ? withLasso(leftData, lassoCells, opacity) : null),
-    [leftData, lassoCells, opacity],
+    () =>
+      leftData ? applyHidden(withLasso(leftData, lassoCells, opacity)) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [leftData, lassoCells, opacity, hiddenTypes],
   );
   const rightShown = useMemo(
-    () => (rightData ? withLasso(rightData, lassoCells, opacity) : null),
-    [rightData, lassoCells, opacity],
+    () =>
+      rightData
+        ? applyHidden(withLasso(rightData, lassoCells, opacity), true)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rightData, lassoCells, opacity, hiddenTypes],
   );
+
+  // legend interactions on the cell-type plot drive BOTH plots: single click
+  // toggles a type, double click isolates it (or restores all when it is
+  // already the only one showing) — the standard Plotly gestures, reimplemented
+  // so the expression plot follows
+  function handleLegendClick(event) {
+    const name = event.data[event.curveNumber]?.name;
+    if (name == null) return false;
+    setHiddenTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+    return false; // suppress Plotly's internal (left-only) toggle
+  }
+  function handleLegendDoubleClick(event) {
+    const traces = event.data ?? [];
+    const name = traces[event.curveNumber]?.name;
+    if (name == null) return false;
+    setHiddenTypes((prev) => {
+      const others = traces.map((t) => t.name).filter((t) => t !== name);
+      const isolated =
+        !prev.has(name) && others.every((t) => prev.has(t)) && others.length > 0;
+      return isolated ? new Set() : new Set(others);
+    });
+    return false;
+  }
 
   const errorBox = (err) => (
     <Alert variant="danger" className="d-flex align-items-center gap-3">
@@ -464,7 +517,10 @@ function SamplePairRow({
       <h3 className="h6 mb-1 text-center">
         {sample}
         {cellCount != null && (
-          <span className="text-muted fw-normal"> · n={cellCount}</span>
+          <span className="text-muted fw-normal">
+            {" "}
+            · n={cellCount.toLocaleString()} cells
+          </span>
         )}
         {updating && (
           <Spinner
@@ -498,6 +554,8 @@ function SamplePairRow({
                 onRelayout={handleRelayout}
                 onSelected={handleSelected}
                 onDeselect={() => setLassoCells(null)}
+                onLegendClick={handleLegendClick}
+                onLegendDoubleClick={handleLegendDoubleClick}
                 useResizeHandler
                 className="w-100"
                 style={{ height: `${PLOT_HEIGHT}px` }}
@@ -539,6 +597,12 @@ function SamplePairRow({
           <span className="small">Scroll to load {sample}</span>
         </div>
       )}
+      {/* bottom divider pairs with the sticky bar's, framing each row between
+          borders; outside the conditional so placeholders keep the frame.
+          mt-4: the x-axis label sits flush inside the plot canvas, so the
+          divider needs the larger step to read evenly spaced against the
+          next row's title below it */}
+      <hr className="mt-4 mb-0" />
     </div>
   );
 }
@@ -550,7 +614,8 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
   const { config, plotOptionsState } = useSpatialCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   return (
-    <div className="text-center mb-2">
+    // mt-3: breathing room between the sticky controls' divider and the title
+    <div className="text-center mt-3 mb-2">
       <h2 className="h5 mb-0">
         {title} <span className="text-muted fw-normal">— {featureLabel}</span>
         {updating && (
@@ -569,7 +634,7 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
           type="checkbox"
           id={`${config.id}-free-zoom`}
           label="Enable rectangular zoom"
-          title="Zoom to the exact drawn rectangle without preserving the square 1:1 mm aspect (allows stretching)"
+          title="Zoom to the exact drawn rectangle without preserving the square 1:1 aspect (allows stretching)"
           checked={plotOptions.freeZoom}
           onChange={(e) =>
             setPlotOptions({ ...plotOptions, freeZoom: e.target.checked })
