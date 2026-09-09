@@ -378,10 +378,9 @@ function SamplePairRow({
       matches: "x",
     },
     yaxis2: {
-      ...axisStyle(""),
+      ...axisStyle(`Spatial Y (${units})`),
       anchor: "x2",
       matches: "y",
-      showticklabels: false,
     },
     // subplot titles (a figure-level title would sit over the gap)
     annotations: [
@@ -660,7 +659,7 @@ function SamplePairRow({
         errorBox(cellsError)
       ) : near ? (
         leftShown ? (
-          <>
+          <div className="position-relative">
             <Plot
               key={plotEpoch}
               data={pairData}
@@ -675,8 +674,20 @@ function SamplePairRow({
               className="w-100 spatial-pair"
               style={{ height: `${PLOT_HEIGHT}px` }}
             />
+            {/* the right subplot has no traces while a row's expression
+                loads — overlay a spinner on that half (Plotly cannot animate
+                in-figure); gene CHANGES keep the previous coloring up, so
+                this only shows on a row's first expression fetch */}
+            {!rightShown && !featureError && (
+              <div
+                className="position-absolute top-0 d-flex align-items-center justify-content-center text-muted"
+                style={{ left: "58%", width: "42%", height: PLOT_HEIGHT }}>
+                <Spinner animation="border" size="sm" className="me-2" />
+                <span className="small">Loading expression…</span>
+              </div>
+            )}
             {featureError && !rightShown && errorBox(featureError)}
-          </>
+          </div>
         ) : (
           loadingBox(`Loading ${sample}…`)
         )
