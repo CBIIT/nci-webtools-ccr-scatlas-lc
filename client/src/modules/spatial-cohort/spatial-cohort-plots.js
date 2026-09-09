@@ -61,19 +61,27 @@ function createMountBudget(maxLive) {
   // claims when it enters the band, so claim order is scroll order, and on a
   // viewport tall enough to hold more than maxLive rows that hands the slots
   // to the rows FURTHEST along and blanks the ones the user is looking at.
+  // On-screen rows additionally outrank ALL off-screen rows regardless of
+  // distance — a slot yielded while visible is a live plot blanking in front
+  // of the user, so victims come from off-screen rows whenever possible.
   const settle = () => {
     frame = 0;
-    const middle = window.innerHeight / 2;
+    const height = window.innerHeight;
+    const middle = height / 2;
     const live = new Set(
       [...claimed]
         .map((id) => {
           const el = rows.get(id)?.el;
           if (!el) return null;
           const box = el.getBoundingClientRect();
-          return { id, distance: Math.abs((box.top + box.bottom) / 2 - middle) };
+          return {
+            id,
+            inView: box.bottom > 0 && box.top < height,
+            distance: Math.abs((box.top + box.bottom) / 2 - middle),
+          };
         })
         .filter(Boolean)
-        .sort((a, b) => a.distance - b.distance)
+        .sort((a, b) => b.inView - a.inView || a.distance - b.distance)
         .slice(0, maxLive)
         .map((row) => row.id),
     );
@@ -123,18 +131,24 @@ function getMountBudget(id, maxLive) {
 function useMountSlot(config, rowId, near, elementRef) {
   const maxLive = config.maxLiveRows;
   const [granted, setGranted] = useState(false);
+  // Claim only once the scroll has settled: every mount is a fresh WebGL
+  // context, and rapid create/destroy cycling while scrolling outruns the
+  // browser's lazy context reclamation — tripping the per-page cap and
+  // blanking LIVE plots. Rows the user scrolls straight past never render;
+  // only rows they stop on claim a slot.
+  const settled = useScrollSettled(near && !!maxLive);
   useEffect(() => {
     if (!maxLive) return;
     const budget = getMountBudget(config.id, maxLive);
     const unsubscribe = budget.subscribe(rowId, elementRef.current, setGranted);
-    if (near) budget.claim(rowId);
+    if (near && settled) budget.claim(rowId);
     else budget.release(rowId);
     return () => {
       budget.release(rowId);
       unsubscribe();
     };
-  }, [config.id, maxLive, rowId, near, elementRef]);
-  return maxLive ? near && granted : near;
+  }, [config.id, maxLive, rowId, near, settled, elementRef]);
+  return maxLive ? near && settled && granted : near;
 }
 
 // Gate per-sample fetching on the page having stopped moving. A flick down the
@@ -530,6 +544,33 @@ function SamplePairRow({
   // toggles a type, double click isolates it (or restores all when it is
   // already the only one showing) — the standard Plotly gestures, reimplemented
   // so the expression plot follows
+  // A figure whose WebGL context the browser reclaimed stays in the DOM but
+  // draws nothing — it looks loaded and is blank forever (Plotly does not
+  // restore lost contexts). Watch the row's canvas and remount the figure
+  // under a fresh key when its context dies, so it rebuilds with a live one;
+  // throttled so a still-starved page cannot remount-loop. No dependency
+  // array: canvases appear across many renders and arming is idempotent.
+  const [plotEpoch, setPlotEpoch] = useState(0);
+  const lastContextLoss = useRef(0);
+  useEffect(() => {
+    const rowEl = innerRef?.current;
+    if (!rowEl || !near) return;
+    for (const canvas of rowEl.querySelectorAll("canvas")) {
+      if (canvas.dataset.lossArmed) continue;
+      canvas.dataset.lossArmed = "1";
+      canvas.addEventListener(
+        "webglcontextlost",
+        () => {
+          const now = Date.now();
+          if (now - lastContextLoss.current < 3000) return;
+          lastContextLoss.current = now;
+          setPlotEpoch((n) => n + 1);
+        },
+        { once: true },
+      );
+    }
+  });
+
   // one figure: right-subplot traces are the same records re-axed onto x2/y2
   const pairData = useMemo(
     () =>
@@ -621,6 +662,7 @@ function SamplePairRow({
         leftShown ? (
           <>
             <Plot
+              key={plotEpoch}
               data={pairData}
               layout={pairLayout}
               config={plotConfig}
