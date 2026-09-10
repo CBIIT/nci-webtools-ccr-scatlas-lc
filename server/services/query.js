@@ -1,12 +1,16 @@
 import { promisify } from "util";
 
 /**
- * Quote a string for use in a SQL query
+ * Quote an identifier for use in a SQL query. Embedded double-quotes are
+ * escaped by doubling them (the SQL rule for quoted identifiers — a backslash
+ * escape is not recognized there), and EVERY occurrence is escaped: a string
+ * pattern would replace only the first, leaving later quotes able to break
+ * out of the identifier.
  * @param {string} str
  * @returns
  */
 export function quote(str) {
-  return `"${str.replace('"', '\\"')}"`;
+  return `"${str.replace(/"/g, '""')}"`;
 }
 
 /**
