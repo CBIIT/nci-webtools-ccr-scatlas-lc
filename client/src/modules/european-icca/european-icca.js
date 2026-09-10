@@ -43,6 +43,8 @@ const state = createSpatialCohortState({
     "c49", "c50-2", "c50-1", "c51", "c52", "c59", "c60-1", "c60-2", "c63-1",
     "c63-2", "c65", "c68", "c70", "c71", "c72", "c77",
   ],
+    // client-chosen sample the Samples filter starts with (9/4 feedback)
+  defaultSelectedSamples: ["c34-1"],
   renderer: "scattergl",
   mountMargin: "200px",
   unmountMargin: "600px",

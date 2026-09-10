@@ -8,12 +8,13 @@ import MultiSelect from "../components/multi-select";
 import { useSpatialCohort } from "./spatial-cohort-context";
 
 // Plot controls for a spatial cohort's scatter pairs: Cell Size / Cell Opacity
-// (defaults 4 / 0.8), a Samples multi-select (all selected by default), and
+// (defaults 4 / 0.8), a Samples multi-select (initial selection from the
+// cohort's defaultSelectedSamples; all samples when unset), and
 // Reset/free-zoom. The gene search lives in SpatialCohortGenePicker, laid out
 // beside the Gene Sets panel. The sample list comes from samplesQuery
 // (configured, or derived from the cells).
 export default function SpatialCohortPlotOptions() {
-  const { plotOptionsState, samplesQuery, defaultPlotOptions } =
+  const { plotOptionsState, samplesQuery, defaultOptionsQuery } =
     useSpatialCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const [formValues, setFormValues] = useState(plotOptions);
@@ -29,9 +30,12 @@ export default function SpatialCohortPlotOptions() {
     mergeFormValues({ [name]: value });
   }
 
+  // reset restores the VALIDATED defaults (stale default sample ids fall
+  // back to all samples there)
+  const resolvedDefaults = useRecoilValue(defaultOptionsQuery);
   function handleReset() {
-    mergePlotOptions(defaultPlotOptions);
-    mergeFormValues(defaultPlotOptions);
+    mergePlotOptions(resolvedDefaults);
+    mergeFormValues(resolvedDefaults);
   }
 
   function handleBlur() {

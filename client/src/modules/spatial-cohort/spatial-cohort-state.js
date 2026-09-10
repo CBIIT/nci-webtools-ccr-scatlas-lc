@@ -18,6 +18,10 @@ import { query } from "../../services/query";
 //                   API's sample filter (large cohorts; requires `samples`)
 //   samples         known sample ids (required for perSample; null = derive
 //                   from the fetched cells)
+//   defaultSelectedSamples  the Samples filter's initial selection (client
+//                   feedback: one representative sample per cohort). Cuts
+//                   render cost everywhere; on full-fetch cohorts the whole
+//                   cells table still downloads. null/absent = all samples.
 //   renderer        Plotly trace type: "scatter" (SVG) or "scattergl" (WebGL)
 //   units           coordinate unit for the axis labels (default "mm"; CODEX
 //                   drops ship pixel coordinates — "px")
@@ -205,15 +209,31 @@ export function createSpatialCohortState(config) {
       label: config.defaultGene,
       genes: [config.defaultGene],
     },
-    samples: null,
+    samples: config.defaultSelectedSamples ?? null,
     // experimental: when true, drag-zoom goes to the exact drawn rectangle
     // instead of snapping to the 1:1 mm aspect (allows stretch distortion)
     freeZoom: false,
   };
 
+  // The atom's actual default: the configured default samples validated
+  // against the real id list — a stale id (e.g. a future data drop renaming
+  // a sample) falls back to all samples instead of silently rendering an
+  // empty page. Reset reads this too (see SpatialCohortPlotOptions).
+  const defaultOptionsQuery = selector({
+    key: `${id}.defaultOptionsQuery`,
+    get: ({ get }) => {
+      let samples = defaultPlotOptions.samples;
+      if (samples) {
+        const known = new Set(get(samplesQuery));
+        samples = samples.filter((s) => known.has(s));
+        if (!samples.length) samples = null;
+      }
+      return { ...defaultPlotOptions, samples };
+    },
+  });
   const plotOptionsState = atom({
     key: `${id}.plotOptionsState`,
-    default: defaultPlotOptions,
+    default: defaultOptionsQuery,
   });
 
   // Gene sets are session-only (in-memory Recoil): an array of
@@ -234,6 +254,7 @@ export function createSpatialCohortState(config) {
     featureExpressionQuery,
     fetchSampleFeature,
     defaultPlotOptions,
+    defaultOptionsQuery,
     plotOptionsState,
     geneSetsState,
   };
