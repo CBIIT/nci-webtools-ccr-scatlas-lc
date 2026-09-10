@@ -46,7 +46,9 @@ const state = createSpatialCohortState({
   renderer: "scattergl",
   mountMargin: "200px",
   unmountMargin: "600px",
-  maxLiveRows: 6,
+  // one WebGL context per row now (the pair shares a figure), so twice
+  // the rows fit under the ~16-context cap
+  maxLiveRows: 12,
   sampleCacheSize: 6,
 });
 

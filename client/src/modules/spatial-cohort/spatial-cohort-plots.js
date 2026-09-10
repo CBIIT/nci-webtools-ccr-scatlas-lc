@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
 import Form from "react-bootstrap/Form";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Plot from "react-plotly.js";
-import merge from "lodash/merge";
 import groupBy from "lodash/groupBy";
 import { getTraces } from "../../services/plot";
 import { useSpatialCohort } from "./spatial-cohort-context";
@@ -64,19 +61,27 @@ function createMountBudget(maxLive) {
   // claims when it enters the band, so claim order is scroll order, and on a
   // viewport tall enough to hold more than maxLive rows that hands the slots
   // to the rows FURTHEST along and blanks the ones the user is looking at.
+  // On-screen rows additionally outrank ALL off-screen rows regardless of
+  // distance — a slot yielded while visible is a live plot blanking in front
+  // of the user, so victims come from off-screen rows whenever possible.
   const settle = () => {
     frame = 0;
-    const middle = window.innerHeight / 2;
+    const height = window.innerHeight;
+    const middle = height / 2;
     const live = new Set(
       [...claimed]
         .map((id) => {
           const el = rows.get(id)?.el;
           if (!el) return null;
           const box = el.getBoundingClientRect();
-          return { id, distance: Math.abs((box.top + box.bottom) / 2 - middle) };
+          return {
+            id,
+            inView: box.bottom > 0 && box.top < height,
+            distance: Math.abs((box.top + box.bottom) / 2 - middle),
+          };
         })
         .filter(Boolean)
-        .sort((a, b) => a.distance - b.distance)
+        .sort((a, b) => b.inView - a.inView || a.distance - b.distance)
         .slice(0, maxLive)
         .map((row) => row.id),
     );
@@ -126,18 +131,24 @@ function getMountBudget(id, maxLive) {
 function useMountSlot(config, rowId, near, elementRef) {
   const maxLive = config.maxLiveRows;
   const [granted, setGranted] = useState(false);
+  // Claim only once the scroll has settled: every mount is a fresh WebGL
+  // context, and rapid create/destroy cycling while scrolling outruns the
+  // browser's lazy context reclamation — tripping the per-page cap and
+  // blanking LIVE plots. Rows the user scrolls straight past never render;
+  // only rows they stop on claim a slot.
+  const settled = useScrollSettled(near && !!maxLive);
   useEffect(() => {
     if (!maxLive) return;
     const budget = getMountBudget(config.id, maxLive);
     const unsubscribe = budget.subscribe(rowId, elementRef.current, setGranted);
-    if (near) budget.claim(rowId);
+    if (near && settled) budget.claim(rowId);
     else budget.release(rowId);
     return () => {
       budget.release(rowId);
       unsubscribe();
     };
-  }, [config.id, maxLive, rowId, near, elementRef]);
-  return maxLive ? near && granted : near;
+  }, [config.id, maxLive, rowId, near, settled, elementRef]);
+  return maxLive ? near && settled && granted : near;
 }
 
 // Gate per-sample fetching on the page having stopped moving. A flick down the
@@ -274,24 +285,34 @@ function SamplePairRow({
   }, [releasesRecords, near, lassoCells]);
 
   function handleRelayout(event) {
-    if (event["xaxis.autorange"] || event["yaxis.autorange"]) {
+    if (
+      event["xaxis.autorange"] ||
+      event["yaxis.autorange"] ||
+      event["xaxis2.autorange"] ||
+      event["yaxis2.autorange"]
+    ) {
       setViewRange(null); // double-click / reset-axes on one resets both
       setLassoCells(null); // ...and brings all cells back
       return;
     }
-    if (
-      event["xaxis.range[0]"] !== undefined ||
+    // both subplots share one figure: a drag on the right reports xaxis2/
+    // yaxis2 keys, matched to the left axes — normalize to one view range
+    const rx =
+      event["xaxis.range[0]"] !== undefined
+        ? [event["xaxis.range[0]"], event["xaxis.range[1]"]]
+        : event["xaxis2.range[0]"] !== undefined
+          ? [event["xaxis2.range[0]"], event["xaxis2.range[1]"]]
+          : null;
+    const ry =
       event["yaxis.range[0]"] !== undefined
-    ) {
+        ? [event["yaxis.range[0]"], event["yaxis.range[1]"]]
+        : event["yaxis2.range[0]"] !== undefined
+          ? [event["yaxis2.range[0]"], event["yaxis2.range[1]"]]
+          : null;
+    if (rx || ry) {
       setViewRange((prev) => ({
-        x:
-          event["xaxis.range[0]"] !== undefined
-            ? [event["xaxis.range[0]"], event["xaxis.range[1]"]]
-            : (prev?.x ?? null),
-        y:
-          event["yaxis.range[0]"] !== undefined
-            ? [event["yaxis.range[0]"], event["yaxis.range[1]"]]
-            : (prev?.y ?? null),
+        x: rx ?? prev?.x ?? null,
+        y: ry ?? prev?.y ?? null,
       }));
     }
   }
@@ -305,10 +326,14 @@ function SamplePairRow({
   function handleSelected(event) {
     if (!event) return; // deselect / programmatic clears
     const outline = event.lassoPoints ?? event.range;
-    if (!outline?.x?.length || !outline?.y?.length) return;
+    // the outline is keyed by AXIS ID: "x"/"y" from the left subplot,
+    // "x2"/"y2" from the right — the coordinates are the same data space
+    const ox = outline?.x ?? outline?.x2;
+    const oy = outline?.y ?? outline?.y2;
+    if (!ox?.length || !oy?.length) return;
     setViewRange({
-      x: [Math.min(...outline.x), Math.max(...outline.x)],
-      y: [Math.min(...outline.y), Math.max(...outline.y)],
+      x: [Math.min(...ox), Math.max(...ox)],
+      y: [Math.min(...oy), Math.max(...oy)],
     });
     setLassoCells(
       event.points?.length
@@ -318,17 +343,24 @@ function SamplePairRow({
   }
 
   const units = config.units ?? "mm";
-  const axes = {
+  // ONE figure holds both plots as side-by-side subplots — one WebGL context
+  // per row instead of two, doubling how many rows fit under the browser's
+  // context cap. The right axes `match` the left, so zoom/pan on either
+  // subplot moves both natively (the old two-figure sync re-rendered through
+  // React state; matching happens inside Plotly's one draw).
+  const axisStyle = (title) => ({
+    title: { text: title, font: { size: 11 } },
+    zeroline: false,
+  });
+  const pairLayout = {
     xaxis: {
-      title: { text: `Spatial X (${units})`, font: { size: 11 } },
-      zeroline: false,
+      ...axisStyle(`Spatial X (${units})`),
+      domain: [0, 0.42],
       // aspect lock is optional (the "Enable rectangular zoom" checkbox):
-      // locked keeps 1:1 so tissue isn't distorted; rectangular zooms to
-      // the exact drawn rectangle at the cost of stretch. The lock must go
-      // the moment the box is checked — while scaleanchor is active Plotly
-      // constrains the zoombox DURING the drag, so an "unzoomed keeps the
-      // lock" compromise made the first zoom (and every zoom after a reset)
-      // ratio-snapped: the free-drawn rectangle never existed to zoom into.
+      // locked keeps 1:1 so tissue isn't distorted; the lock must go the
+      // moment the box is checked — while scaleanchor is active Plotly
+      // constrains the zoombox DURING the drag, so the free-drawn rectangle
+      // otherwise never exists to zoom into.
       ...(!freeZoom && {
         scaleanchor: "y",
         scaleratio: 1,
@@ -337,9 +369,55 @@ function SamplePairRow({
       ...(viewRange?.x && { range: [...viewRange.x], autorange: false }),
     },
     yaxis: {
-      title: { text: `Spatial Y (${units})`, font: { size: 11 } },
-      zeroline: false,
+      ...axisStyle(`Spatial Y (${units})`),
       ...(viewRange?.y && { range: [...viewRange.y], autorange: false }),
+    },
+    xaxis2: {
+      ...axisStyle(`Spatial X (${units})`),
+      domain: [0.58, 1],
+      matches: "x",
+    },
+    yaxis2: {
+      ...axisStyle(`Spatial Y (${units})`),
+      anchor: "x2",
+      matches: "y",
+    },
+    // subplot titles (a figure-level title would sit over the gap)
+    annotations: [
+      {
+        text: "Cell type",
+        x: 0.21,
+        y: 1,
+        xref: "paper",
+        yref: "paper",
+        xanchor: "center",
+        yanchor: "bottom",
+        showarrow: false,
+        font: { size: 13 },
+      },
+      {
+        text: "Gene expression",
+        x: 0.79,
+        y: 1,
+        xref: "paper",
+        yref: "paper",
+        xanchor: "center",
+        yanchor: "bottom",
+        showarrow: false,
+        font: { size: 13 },
+      },
+    ],
+    // the legend lives in the gap between the subplots (the spot it occupied
+    // when the pair was two figures), keeping the row symmetrical instead of
+    // stacking legend + colorbar on the right edge
+    legend: {
+      itemsizing: "constant",
+      itemwidth: 30,
+      font: { size: 10 },
+      x: 0.435,
+      xanchor: "left",
+      y: 1,
+      yanchor: "top",
     },
     margin: { t: 36, r: 10, b: 40, l: 50 },
     hovermode: "closest",
@@ -465,6 +543,49 @@ function SamplePairRow({
   // toggles a type, double click isolates it (or restores all when it is
   // already the only one showing) — the standard Plotly gestures, reimplemented
   // so the expression plot follows
+  // A figure whose WebGL context the browser reclaimed stays in the DOM but
+  // draws nothing — it looks loaded and is blank forever (Plotly does not
+  // restore lost contexts). Watch the row's canvas and remount the figure
+  // under a fresh key when its context dies, so it rebuilds with a live one;
+  // throttled so a still-starved page cannot remount-loop. No dependency
+  // array: canvases appear across many renders and arming is idempotent.
+  const [plotEpoch, setPlotEpoch] = useState(0);
+  const lastContextLoss = useRef(0);
+  useEffect(() => {
+    const rowEl = innerRef?.current;
+    if (!rowEl || !near) return;
+    for (const canvas of rowEl.querySelectorAll("canvas")) {
+      if (canvas.dataset.lossArmed) continue;
+      canvas.dataset.lossArmed = "1";
+      canvas.addEventListener(
+        "webglcontextlost",
+        () => {
+          const now = Date.now();
+          if (now - lastContextLoss.current < 3000) return;
+          lastContextLoss.current = now;
+          setPlotEpoch((n) => n + 1);
+        },
+        { once: true },
+      );
+    }
+  });
+
+  // one figure: right-subplot traces are the same records re-axed onto x2/y2
+  const pairData = useMemo(
+    () =>
+      leftShown
+        ? [
+            ...leftShown,
+            ...(rightShown ?? []).map((t) => ({
+              ...t,
+              xaxis: "x2",
+              yaxis: "y2",
+            })),
+          ]
+        : null,
+    [leftShown, rightShown],
+  );
+
   function handleLegendClick(event) {
     const name = event.data[event.curveNumber]?.name;
     if (name == null) return false;
@@ -538,55 +659,35 @@ function SamplePairRow({
         errorBox(cellsError)
       ) : near ? (
         leftShown ? (
-          <Row className="g-2">
-            <Col xl={6}>
-              <Plot
-                data={leftShown}
-                layout={merge({}, axes, {
-                  title: { text: "Cell type", font: { size: 13 } },
-                  legend: {
-                    itemsizing: "constant",
-                    itemwidth: 30,
-                    font: { size: 10 },
-                  },
-                })}
-                config={plotConfig}
-                onRelayout={handleRelayout}
-                onSelected={handleSelected}
-                onDeselect={() => setLassoCells(null)}
-                onLegendClick={handleLegendClick}
-                onLegendDoubleClick={handleLegendDoubleClick}
-                useResizeHandler
-                className="w-100"
-                style={{ height: `${PLOT_HEIGHT}px` }}
-              />
-            </Col>
-            <Col xl={6}>
-              {rightShown ? (
-                <Plot
-                  data={rightShown}
-                  layout={merge({}, axes, {
-                    // general name to mirror the left plot's "Cell type" — the
-                    // active gene/set still shows in the page header and hover
-                    title: { text: "Gene expression", font: { size: 13 } },
-                  })}
-                  config={plotConfig}
-                  onRelayout={handleRelayout}
-                  onSelected={handleSelected}
-                  onDeselect={() => setLassoCells(null)}
-                  useResizeHandler
-                  className="w-100"
-                  style={{ height: `${PLOT_HEIGHT}px` }}
-                />
-              ) : (
-                featureError ? (
-                  errorBox(featureError)
-                ) : (
-                  loadingBox("Loading expression…")
-                )
-              )}
-            </Col>
-          </Row>
+          <div className="position-relative">
+            <Plot
+              key={plotEpoch}
+              data={pairData}
+              layout={pairLayout}
+              config={plotConfig}
+              onRelayout={handleRelayout}
+              onSelected={handleSelected}
+              onDeselect={() => setLassoCells(null)}
+              onLegendClick={handleLegendClick}
+              onLegendDoubleClick={handleLegendDoubleClick}
+              useResizeHandler
+              className="w-100 spatial-pair"
+              style={{ height: `${PLOT_HEIGHT}px` }}
+            />
+            {/* the right subplot has no traces while a row's expression
+                loads — overlay a spinner on that half (Plotly cannot animate
+                in-figure); gene CHANGES keep the previous coloring up, so
+                this only shows on a row's first expression fetch */}
+            {!rightShown && !featureError && (
+              <div
+                className="position-absolute top-0 d-flex align-items-center justify-content-center text-muted"
+                style={{ left: "58%", width: "42%", height: PLOT_HEIGHT }}>
+                <Spinner animation="border" size="sm" className="me-2" />
+                <span className="small">Loading expression…</span>
+              </div>
+            )}
+            {featureError && !rightShown && errorBox(featureError)}
+          </div>
         ) : (
           loadingBox(`Loading ${sample}…`)
         )
