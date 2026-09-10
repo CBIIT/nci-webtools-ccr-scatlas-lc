@@ -9,6 +9,24 @@ import groupBy from "lodash/groupBy";
 import { getTraces } from "../../services/plot";
 import { useSpatialCohort } from "./spatial-cohort-context";
 
+// THE row visibility rule, in one place: a record shows when its type is not
+// legend-hidden, it is inside an applied lasso (if any), and it lies within
+// the zoomed view. The display pipeline applies these same three filters as
+// trace transforms (applyHidden, withLasso, viewRange-as-axis-ranges); the
+// header's "n=X of Y" count MUST derive from this predicate so the number
+// and the pixels can never drift apart.
+function isRecordVisible(r, { hiddenTypes, lassoCells, viewRange }) {
+  if (hiddenTypes && hiddenTypes.has(r.type)) return false;
+  if (lassoCells && !lassoCells.has(r.cell_id)) return false;
+  if (viewRange) {
+    if (viewRange.x && (r.x < viewRange.x[0] || r.x > viewRange.x[1]))
+      return false;
+    if (viewRange.y && (r.y < viewRange.y[0] || r.y > viewRange.y[1]))
+      return false;
+  }
+  return true;
+}
+
 // Project the lassoed cell ids onto a trace list as per-trace selectedpoints
 // indices — shared by both plots of a pair (Plotly selections are otherwise
 // per-plot). With no lasso active, selectedpoints is EXPLICITLY nulled: the
@@ -321,8 +339,8 @@ function SamplePairRow({
   // comment): the lasso acts as a free-shape ZOOM into just the drawn cells —
   // the pair zooms to the outline's bounding box and every cell OUTSIDE the
   // lasso is hidden (opacity 0) on both plots, so the view shows exactly the
-  // lassoed region. Double-click resets view + visibility. With the aspect
-  // lock on the box widens to keep 1:1; with Free-form zoom it is exact.
+  // lassoed region. Double-click resets view + visibility. In Proportional
+  // zoom the box widens to keep 1:1; in Free zoom it is exact.
   function handleSelected(event) {
     if (!event) return; // deselect / programmatic clears
     const outline = event.lassoPoints ?? event.range;
@@ -370,6 +388,10 @@ function SamplePairRow({
     },
     yaxis: {
       ...axisStyle(`Spatial Y (${units})`),
+      // constrain "domain" (as on x): without it Plotly's constraint pass
+      // WIDENS an explicit y range (a lasso bbox) to keep 1:1, showing cells
+      // the header count excludes
+      ...(!freeZoom && { constrain: "domain" }),
       ...(viewRange?.y && { range: [...viewRange.y], autorange: false }),
     },
     xaxis2: {
@@ -552,6 +574,7 @@ function SamplePairRow({
   // array: canvases appear across many renders and arming is idempotent.
   const [plotEpoch, setPlotEpoch] = useState(0);
   const lastContextLoss = useRef(0);
+  const contextLossTimer = useRef(0);
   useEffect(() => {
     const rowEl = innerRef?.current;
     if (!rowEl || !near) return;
@@ -561,15 +584,24 @@ function SamplePairRow({
       canvas.addEventListener(
         "webglcontextlost",
         () => {
+          // a loss inside the throttle window DEFERS the remount rather than
+          // dropping it: the {once} listener is consumed either way, so a
+          // dropped event would leave the row permanently blank with nothing
+          // left to watch it
           const now = Date.now();
-          if (now - lastContextLoss.current < 3000) return;
-          lastContextLoss.current = now;
-          setPlotEpoch((n) => n + 1);
+          const wait = Math.max(0, lastContextLoss.current + 3000 - now);
+          lastContextLoss.current = now + wait;
+          clearTimeout(contextLossTimer.current);
+          contextLossTimer.current = setTimeout(
+            () => setPlotEpoch((n) => n + 1),
+            wait,
+          );
         },
         { once: true },
       );
     }
   });
+  useEffect(() => () => clearTimeout(contextLossTimer.current), []);
 
   // one figure: right-subplot traces are the same records re-axed onto x2/y2
   const pairData = useMemo(
@@ -618,27 +650,33 @@ function SamplePairRow({
   // keeps showing the filtered count it had when live.
   const countFiltersActive =
     !!lassoCells || !!viewRange || hiddenTypes.size > 0;
+  // a stable fingerprint of the active filters — the latched count (below)
+  // is only valid while the filters it was computed under still hold
+  const filterSignature = `${lassoCells ? lassoCells.size : ""}|${
+    viewRange ? JSON.stringify(viewRange) : ""
+  }|${[...hiddenTypes].sort().join(",")}`;
   const filteredCount = useMemo(() => {
     if (!leftRecords) return null;
     if (!countFiltersActive) return leftRecords.length;
     let n = 0;
-    for (const r of leftRecords) {
-      if (hiddenTypes.has(r.type)) continue;
-      if (lassoCells && !lassoCells.has(r.cell_id)) continue;
-      if (viewRange) {
-        if (viewRange.x && (r.x < viewRange.x[0] || r.x > viewRange.x[1]))
-          continue;
-        if (viewRange.y && (r.y < viewRange.y[0] || r.y > viewRange.y[1]))
-          continue;
-      }
-      n += 1;
-    }
+    const filters = { hiddenTypes, lassoCells, viewRange };
+    for (const r of leftRecords) if (isRecordVisible(r, filters)) n += 1;
     return n;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leftRecords, lassoCells, viewRange, hiddenTypes, countFiltersActive]);
+  // Latch the last computed count so an idle row (records released) keeps its
+  // number — but only while the filters still match: a perSample row's lasso
+  // is cleared on leaving the band, and the stale "n=X of Y" it produced must
+  // not outlive it. Written in an effect (committed renders only).
   const lastFilteredCount = useRef(null);
-  if (filteredCount != null) lastFilteredCount.current = filteredCount;
-  const shownCount = filteredCount ?? lastFilteredCount.current;
+  useEffect(() => {
+    if (filteredCount != null) {
+      lastFilteredCount.current = { count: filteredCount, sig: filterSignature };
+    }
+  });
+  const latched = lastFilteredCount.current;
+  const shownCount =
+    filteredCount ?? (latched?.sig === filterSignature ? latched.count : null);
 
   const errorBox = (err) => (
     <Alert variant="danger" className="d-flex align-items-center gap-3">
@@ -743,8 +781,8 @@ function SamplePairRow({
 }
 
 // Shared plots heading: cohort title + what the expression plots show, with
-// the Free-form zoom switch beneath (moved out of the plot options row — it
-// acts on the graphs, so it lives with them).
+// the Proportional/Free zoom radios beneath (moved out of the plot options
+// row — they act on the graphs, so they live with them).
 function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle }) {
   const { config, plotOptionsState } = useSpatialCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
@@ -825,29 +863,39 @@ function FullFetchPlots() {
   const featureLabel = shown?.label ?? currentLabel;
   const updating = loadable.state === "loading";
 
-  // samples: null = all; otherwise keep only the selected samples' rows
-  const sampleSet = samples == null ? null : new Set(samples);
   const cellsBySample = useMemo(() => groupBy(cells, "sample"), [cells]);
   const featureBySample = useMemo(
     () => (featureRecords ? groupBy(featureRecords, "sample") : null),
     [featureRecords],
   );
-  const sampleIds = Object.keys(cellsBySample)
-    .filter((s) => !sampleSet || sampleSet.has(s))
-    .sort();
+  // samples: null = all; otherwise keep only the selected samples' rows.
+  // Memoized: these scans cover every record, and plotOptionsState commits on
+  // each keystroke in the size/opacity inputs and every zoom-mode toggle.
+  const sampleIds = useMemo(() => {
+    const sampleSet = samples == null ? null : new Set(samples);
+    return Object.keys(cellsBySample)
+      .filter((s) => !sampleSet || sampleSet.has(s))
+      .sort();
+  }, [cellsBySample, samples]);
   // global expression range across every shown sample (fixed colorbar scale)
-  let cmin = Infinity;
-  let cmax = -Infinity;
-  if (featureRecords) {
-    for (const r of featureRecords) {
-      if (sampleSet && !sampleSet.has(r.sample)) continue;
-      if (r.__value < cmin) cmin = r.__value;
-      if (r.__value > cmax) cmax = r.__value;
+  const [cmin, cmax] = useMemo(() => {
+    let min = Infinity;
+    let max = -Infinity;
+    if (featureBySample) {
+      for (const id of sampleIds) {
+        for (const r of featureBySample[id] ?? []) {
+          if (r.__value < min) min = r.__value;
+          if (r.__value > max) max = r.__value;
+        }
+      }
     }
-  }
-
-  let totalShown = 0;
-  for (const s of sampleIds) totalShown += cellsBySample[s].length;
+    return [min, max];
+  }, [featureBySample, sampleIds]);
+  const totalShown = useMemo(() => {
+    let n = 0;
+    for (const s of sampleIds) n += cellsBySample[s].length;
+    return n;
+  }, [sampleIds, cellsBySample]);
 
   return (
     <div>
