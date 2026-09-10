@@ -27,18 +27,22 @@ function isRecordVisible(r, { hiddenTypes, lassoCells, viewRange }) {
   return true;
 }
 
-// Project the lassoed cell ids onto a trace list as per-trace selectedpoints
-// indices — shared by both plots of a pair (Plotly selections are otherwise
-// per-plot). With no lasso active, selectedpoints is EXPLICITLY nulled: the
-// plot the user drew on keeps an internal selection of its own, and only an
-// explicit null clears it (autoscale/reset/deselect would otherwise leave
-// that plot still filtered).
+// Apply the lassoed cell ids to a trace list — shared by both plots of a
+// pair (membership is by cell id, so the re-axed right traces filter
+// identically). The applied lasso REMOVES outside cells from the traces
+// rather than styling them invisible: a styled-out cell still participates
+// in the next draw's selection styling, so a second lasso rendered
+// everything outside the new path blank instead of dimmed. Filtering per
+// TRACE keeps the trace list, names, and color assignment stable (an
+// emptied type keeps its legend entry). The dim style below is therefore
+// all a drag ever shows: outside the in-progress path dims, inside stays
+// lit — on the first draw and every one after.
 //
-// The unselected style is decided here, not in the base traces: while a lasso
-// is still being DRAWN Plotly already styles everything outside the path as
-// unselected, so a fixed opacity 0 would blank the plot mid-draw. Until a
-// selection is applied, outside cells only dim; once applied they disappear
-// (the lasso-zoom effect).
+// With no lasso active, selectedpoints is EXPLICITLY nulled: the plot the
+// user drew on keeps an internal selection of its own, and only an explicit
+// null clears it. With one applied, every surviving point is explicitly
+// selected — the drawn outline persists as a live selection context, under
+// which a null would read as "nothing selected" and dim the whole figure.
 function withLasso(traces, lassoCells, opacity) {
   if (!lassoCells)
     return traces.map((trace) => ({
@@ -46,13 +50,26 @@ function withLasso(traces, lassoCells, opacity) {
       selectedpoints: null,
       unselected: { marker: { opacity: opacity * 0.2 } },
     }));
-  return traces.map((trace) => ({
-    ...trace,
-    unselected: { marker: { opacity: 0 } },
-    selectedpoints: trace.customdata
-      .map((cellId, i) => (lassoCells.has(cellId) ? i : -1))
-      .filter((i) => i >= 0),
-  }));
+  return traces.map((trace) => {
+    const keep = [];
+    for (let i = 0; i < trace.customdata.length; i++) {
+      if (lassoCells.has(trace.customdata[i])) keep.push(i);
+    }
+    return {
+      ...trace,
+      x: keep.map((i) => trace.x[i]),
+      y: keep.map((i) => trace.y[i]),
+      text: keep.map((i) => trace.text[i]),
+      customdata: keep.map((i) => trace.customdata[i]),
+      // per-point expression colors follow their cells; cmin/cmax are fixed
+      // numbers from the full records, so the color scale doesn't re-derive
+      marker: Array.isArray(trace.marker?.color)
+        ? { ...trace.marker, color: keep.map((i) => trace.marker.color[i]) }
+        : trace.marker,
+      selectedpoints: keep.map((_, i) => i),
+      unselected: { marker: { opacity: opacity * 0.2 } },
+    };
+  });
 }
 
 // how long the page must be still before a near row fetches
@@ -285,6 +302,12 @@ function SamplePairRow({
   // pair consistently shows only the lassoed cells (outside cells render at
   // opacity 0). null = no lasso active, everything visible.
   const [lassoCells, setLassoCells] = useState(null);
+  // The active modebar drag tool, controlled: left to Plotly's internal
+  // state, the frequent layout re-renders (each lasso updates the header
+  // count) reverted the chosen tool to zoom after a couple of draws. Routing
+  // the choice through state makes it stick, and the replot it triggers also
+  // initializes the WebGL selection overlay BEFORE the first drag.
+  const [dragmode, setDragmode] = useState("zoom");
 
   // A perSample row's records are released when it leaves the mount window;
   // the lasso's cell-id Set has to go with them, or it pins up to ~330k
@@ -303,6 +326,7 @@ function SamplePairRow({
   }, [releasesRecords, near, lassoCells]);
 
   function handleRelayout(event) {
+    if (event.dragmode) setDragmode(event.dragmode);
     if (
       event["xaxis.autorange"] ||
       event["yaxis.autorange"] ||
@@ -444,6 +468,7 @@ function SamplePairRow({
     },
     margin: { t: 36, r: 10, b: 40, l: 50 },
     hovermode: "closest",
+    dragmode,
     uirevision: sample,
   };
 
@@ -497,8 +522,11 @@ function SamplePairRow({
                 "Cell ID: %{customdata}<br>Cell type: %{fullData.name}<extra></extra>",
               hoverlabel: { namelength: -1 },
               marker: { size, opacity, showscale: false },
-              // lasso-zoom: withLasso hides/dims outside cells via `unselected`
-              selected: { marker: { opacity } },
+              // NO `selected` style, deliberately: for scattergl Plotly
+              // builds the selection overlay from ONLY the properties listed
+              // in selected.marker, so declaring just an opacity drops the
+              // colors. Undefined keeps the full base styling on selected
+              // cells (withLasso owns the unselected side).
             },
             null,
             rowColors,
@@ -526,8 +554,7 @@ function SamplePairRow({
                 cmax,
                 colorbar: { thickness: 12, tickfont: { size: 9 } },
               },
-              // see the cell-type plot: withLasso owns the unselected style
-              selected: { marker: { opacity } },
+              // no `selected` style — see the cell-type plot's note
             },
             "__value",
           )
