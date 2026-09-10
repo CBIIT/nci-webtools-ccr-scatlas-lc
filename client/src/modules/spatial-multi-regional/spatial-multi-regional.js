@@ -50,6 +50,9 @@ const state = createSpatialCohortState({
     "3CB", "3CT", "3HB", "3HT",
     "4HB", "4HN", "4HT",
   ],
+    // client-chosen representative sample shown by default (9/4 feedback);
+  // the Samples filter starts with just this one selected
+  defaultSelectedSamples: ["1CB"],
   renderer: "scattergl",
   // The hysteresis band (unmountMargin - mountMargin) must exceed the height a
   // row GAINS when it mounts, or the two thresholds oscillate: below the xl

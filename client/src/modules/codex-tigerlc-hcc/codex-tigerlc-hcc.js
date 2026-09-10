@@ -56,6 +56,9 @@ const state = createSpatialCohortState({
   defaultGene: "E-cadherin",
   fetch: "full",
   samples: null,
+    // client-chosen representative sample shown by default (9/4 feedback);
+  // the Samples filter starts with just this one selected
+  defaultSelectedSamples: ["518_T"],
   renderer: "scatter",
   units: "px",
 });

@@ -69,6 +69,9 @@ const state = createSpatialCohortState({
     "PT-24", "PT-27", "PT-28", "PT-30", "PT-31", "PT-32", "PT-34", "PT-35",
     "PT-36", "PT-5", "PT-6",
   ],
+    // client-chosen representative sample shown by default (9/4 feedback);
+  // the Samples filter starts with just this one selected
+  defaultSelectedSamples: ["LCS-049Ablock3"],
   renderer: "scatter",
   units: "px",
 });

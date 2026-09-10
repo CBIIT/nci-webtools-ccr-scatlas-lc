@@ -396,7 +396,8 @@ function SamplePairRow({
         font: { size: 13 },
       },
       {
-        text: "Gene expression",
+        // the active gene / gene set named in the title per client feedback
+        text: `Gene expression — ${featureLabel}`,
         x: 0.79,
         y: 1,
         xref: "paper",
@@ -730,16 +731,26 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
       </h2>
       <span className="text-muted small">{subtitle}</span>
       {/* centered under the title */}
-      <div className="d-flex justify-content-center">
+      {/* the client's vocabulary for the two zoom behaviors: proportional
+          keeps the square 1:1 aspect; free zooms to the exact drawn box */}
+      <div className="d-flex justify-content-center gap-4">
         <Form.Check
-          type="checkbox"
-          id={`${config.id}-free-zoom`}
-          label="Enable rectangular zoom"
+          type="radio"
+          name={`${config.id}-zoom-mode`}
+          id={`${config.id}-zoom-proportional`}
+          label="Proportional zoom"
+          title="Zoom boxes keep the square 1:1 aspect so tissue is never stretched"
+          checked={!plotOptions.freeZoom}
+          onChange={() => setPlotOptions({ ...plotOptions, freeZoom: false })}
+        />
+        <Form.Check
+          type="radio"
+          name={`${config.id}-zoom-mode`}
+          id={`${config.id}-zoom-free`}
+          label="Free zoom"
           title="Zoom to the exact drawn rectangle without preserving the square 1:1 aspect (allows stretching)"
           checked={plotOptions.freeZoom}
-          onChange={(e) =>
-            setPlotOptions({ ...plotOptions, freeZoom: e.target.checked })
-          }
+          onChange={() => setPlotOptions({ ...plotOptions, freeZoom: true })}
         />
       </div>
     </div>

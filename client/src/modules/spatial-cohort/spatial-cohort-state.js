@@ -18,6 +18,9 @@ import { query } from "../../services/query";
 //                   API's sample filter (large cohorts; requires `samples`)
 //   samples         known sample ids (required for perSample; null = derive
 //                   from the fetched cells)
+//   defaultSelectedSamples  the Samples filter's initial selection (client
+//                   feedback: one representative sample per cohort so pages
+//                   open light); null/absent = all samples selected
 //   renderer        Plotly trace type: "scatter" (SVG) or "scattergl" (WebGL)
 //   units           coordinate unit for the axis labels (default "mm"; CODEX
 //                   drops ship pixel coordinates — "px")
@@ -205,7 +208,7 @@ export function createSpatialCohortState(config) {
       label: config.defaultGene,
       genes: [config.defaultGene],
     },
-    samples: null,
+    samples: config.defaultSelectedSamples ?? null,
     // experimental: when true, drag-zoom goes to the exact drawn rectangle
     // instead of snapping to the 1:1 mm aspect (allows stretch distortion)
     freeZoom: false,
