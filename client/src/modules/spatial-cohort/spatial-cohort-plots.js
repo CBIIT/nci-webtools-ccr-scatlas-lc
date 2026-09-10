@@ -450,6 +450,11 @@ function SamplePairRow({
   const plotConfig = {
     displayModeBar: true,
     displaylogo: false,
+    // the lasso here ZOOMS to the drawn region (isolating its cells), so the
+    // toolbar names it accordingly — the locale dictionary is how Plotly
+    // retitles a stock modebar button
+    locale: "en",
+    locales: { en: { dictionary: { "Lasso Select": "Lasso zoom" } } },
     toImageButtonOptions: {
       format: "svg",
       filename: `${config.id}_${sample}`,
