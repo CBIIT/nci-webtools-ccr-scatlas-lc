@@ -611,6 +611,35 @@ function SamplePairRow({
     return false;
   }
 
+  // Header count reflects what the plots actually show: legend-hidden types,
+  // an applied lasso, and the zoomed region all narrow it. One pass per
+  // interaction (zoom/lasso/legend events are discrete). The last computed
+  // value is latched in a ref so an idle row — whose records are released —
+  // keeps showing the filtered count it had when live.
+  const countFiltersActive =
+    !!lassoCells || !!viewRange || hiddenTypes.size > 0;
+  const filteredCount = useMemo(() => {
+    if (!leftRecords) return null;
+    if (!countFiltersActive) return leftRecords.length;
+    let n = 0;
+    for (const r of leftRecords) {
+      if (hiddenTypes.has(r.type)) continue;
+      if (lassoCells && !lassoCells.has(r.cell_id)) continue;
+      if (viewRange) {
+        if (viewRange.x && (r.x < viewRange.x[0] || r.x > viewRange.x[1]))
+          continue;
+        if (viewRange.y && (r.y < viewRange.y[0] || r.y > viewRange.y[1]))
+          continue;
+      }
+      n += 1;
+    }
+    return n;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leftRecords, lassoCells, viewRange, hiddenTypes, countFiltersActive]);
+  const lastFilteredCount = useRef(null);
+  if (filteredCount != null) lastFilteredCount.current = filteredCount;
+  const shownCount = filteredCount ?? lastFilteredCount.current;
+
   const errorBox = (err) => (
     <Alert variant="danger" className="d-flex align-items-center gap-3">
       <div className="flex-grow-1 small">
@@ -641,7 +670,11 @@ function SamplePairRow({
         {cellCount != null && (
           <span className="text-muted fw-normal">
             {" "}
-            · n={cellCount.toLocaleString()} cells
+            · n=
+            {countFiltersActive && shownCount != null
+              ? `${shownCount.toLocaleString()} of ${cellCount.toLocaleString()}`
+              : cellCount.toLocaleString()}{" "}
+            cells
           </span>
         )}
         {updating && (
