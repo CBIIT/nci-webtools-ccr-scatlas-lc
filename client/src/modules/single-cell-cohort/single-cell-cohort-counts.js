@@ -59,6 +59,11 @@ export default function SingleCellCohortCounts() {
       return <span>{value == null ? "—" : Number(value).toFixed(digits)}</span>;
     };
 
+  // header wording is shared across cohorts except where the legacy pages
+  // differed (the T-Cell table says "Level", the others "Levels")
+  const percentHeader = config.countsHeaders?.percent ?? "% Cells Expressing";
+  const meanHeader = config.countsHeaders?.mean ?? "Normalized Expression Levels";
+
   const columns = useMemo(
     (_) => [
       {
@@ -77,7 +82,7 @@ export default function SingleCellCohortCounts() {
         aria: `${countPanels[0].countsAria} Gene`,
       },
       ...countPanels.map((panel) => ({
-        Header: `% Cells Expressing (${panel.countsLabel})`,
+        Header: `${percentHeader} (${panel.countsLabel})`,
         accessor: `${panel.id}_percent`,
         Filter: RangeFilter,
         filter: "between",
@@ -87,7 +92,7 @@ export default function SingleCellCohortCounts() {
         Cell: formatCell(1),
       })),
       ...countPanels.map((panel) => ({
-        Header: `Normalized Expression Levels (${panel.countsLabel})`,
+        Header: `${meanHeader} (${panel.countsLabel})`,
         accessor: `${panel.id}_mean`,
         Filter: RangeFilter,
         filter: "between",
@@ -98,7 +103,7 @@ export default function SingleCellCohortCounts() {
       })),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setGene, countPanels],
+    [setGene, countPanels, percentHeader, meanHeader],
   );
 
   const sortBy = useMemo((_) => [{ id: "gene", desc: false }], []);

@@ -146,9 +146,12 @@ export function createSingleCellCohortState(config) {
     default: [],
   });
 
-  const tabState = config.tabs
-    ? atom({ key: `${id}.tabState`, default: config.tabs[0].id })
-    : null;
+  // created unconditionally (hooks cannot be conditional in the components);
+  // cohorts without tabs simply never render a consumer that changes it
+  const tabState = atom({
+    key: `${id}.tabState`,
+    default: config.tabs?.[0]?.id ?? "",
+  });
 
   return {
     config,

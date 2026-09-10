@@ -7,6 +7,8 @@ import {
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
+import Tabs from "react-bootstrap/Tabs";
+import Tab from "react-bootstrap/Tab";
 import Spinner from "react-bootstrap/Spinner";
 import Plot from "react-plotly.js";
 import { getTraces } from "../../services/plot";
@@ -447,28 +449,59 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
 }
 
 export default function SingleCellCohortPlots() {
-  const { panels, plotOptionsState } = useSingleCellCohort();
+  const { config, panels, plotOptionsState, tabState } = useSingleCellCohort();
   const { size, opacity, activeFeature, freeZoom } =
     useRecoilValue(plotOptionsState);
+  const [tab, setTab] = useRecoilState(tabState);
   const genesKey = activeFeature ? activeFeature.genes.join(",") : "";
+
+  const panelGrid = (list) => (
+    <Row>
+      {list.map((panel) => (
+        <Col xl={panel.layout?.col ?? 6} key={panel.id}>
+          <PanelPlot
+            panel={panel}
+            size={size}
+            opacity={opacity}
+            activeFeature={activeFeature}
+            genesKey={genesKey}
+            freeZoom={freeZoom}
+          />
+        </Col>
+      ))}
+    </Row>
+  );
+
+  if (!config.tabs) {
+    return (
+      <div>
+        <ZoomModeRadios />
+        {panelGrid(panels)}
+      </div>
+    );
+  }
+
+  // plots initialized inside a hidden tab render 0-width, so a tab switch
+  // dispatches a resize for the newly shown figures to size themselves
+  function handleSelect(key) {
+    setTab(key);
+    window.dispatchEvent(new Event("resize"));
+  }
 
   return (
     <div>
       <ZoomModeRadios />
-      <Row>
-        {panels.map((panel) => (
-          <Col xl={panel.layout?.col ?? 6} key={panel.id}>
-            <PanelPlot
-              panel={panel}
-              size={size}
-              opacity={opacity}
-              activeFeature={activeFeature}
-              genesKey={genesKey}
-              freeZoom={freeZoom}
-            />
-          </Col>
+      <Tabs
+        activeKey={tab}
+        id={`${config.id}Tabs`}
+        className="nav-tabs-custom"
+        onSelect={handleSelect}>
+        {config.tabs.map((t) => (
+          <Tab eventKey={t.id} title={t.label} key={t.id}>
+            {panelGrid(panels.filter((p) => t.panelIds.includes(p.id)))}
+          </Tab>
         ))}
-      </Row>
+      </Tabs>
     </div>
   );
 }
