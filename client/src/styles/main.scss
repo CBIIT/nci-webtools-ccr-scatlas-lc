@@ -48,6 +48,14 @@
   left: min(calc(50% + 32.5rem), calc(100% - 6rem));
 }
 
+// the single-cell cohort pages share the centered filter box and this Reset
+// placement, but have no sticky wrapper (nothing scrolls under their
+// controls) — same offsets, anchored to the card body instead
+.single-cell-reset {
+  top: calc(var(--bs-card-spacer-y) + 7.375rem);
+  left: min(calc(50% + 32.5rem), calc(100% - 6rem));
+}
+
 .spatial-controls-sticky {
   position: sticky;
   top: 0;

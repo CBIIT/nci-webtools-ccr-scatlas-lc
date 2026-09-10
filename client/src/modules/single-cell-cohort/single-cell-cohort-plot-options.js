@@ -3,14 +3,13 @@ import { useRecoilState } from "recoil";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import InputGroup from "react-bootstrap/InputGroup";
-import SingleCellCohortGenePicker from "./single-cell-cohort-gene-picker";
 import { useSingleCellCohort } from "./single-cell-cohort-context";
 
 // Plot controls for a single-cell cohort's panels: Cell Size / Cell Opacity
-// (defaults 4 / 0.8), the gene search, and Reset. Reset restores the cohort's
-// defaults including its default gene — the × on the gene box is the one that
-// clears to the cell-type view.
+// (defaults 4 / 0.8) and Reset. Reset restores the cohort's defaults
+// including its default gene — the × on the gene box (rendered in the row
+// below, beside the Gene Sets panel) is the one that clears to the cell-type
+// view.
 export default function SingleCellCohortPlotOptions() {
   const { plotOptionsState, defaultPlotOptions } = useSingleCellCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
@@ -36,8 +35,11 @@ export default function SingleCellCohortPlotOptions() {
   }
 
   return (
-    <form className="row" onReset={handleReset}>
-      <Col md={3}>
+    // Size and Opacity split on the same center gutter as the Gene / Gene
+    // Sets row beneath; Reset sits out of the grid at the card's right edge
+    // (as on the spatial pages) so the inputs keep the full block width
+    <form className="row gx-5" onReset={handleReset}>
+      <Col md={6}>
         <Form.Group controlId="cell-size" className="mb-3">
           <Form.Label>Cell Size</Form.Label>
           <Form.Control
@@ -51,7 +53,7 @@ export default function SingleCellCohortPlotOptions() {
           />
         </Form.Group>
       </Col>
-      <Col md={3}>
+      <Col md={6}>
         <Form.Group controlId="cell-opacity" className="mb-3">
           <Form.Label>Cell Opacity</Form.Label>
           <Form.Control
@@ -66,19 +68,15 @@ export default function SingleCellCohortPlotOptions() {
           />
         </Form.Group>
       </Col>
-      <Col md={3}>
-        <SingleCellCohortGenePicker />
-      </Col>
-      <Col md={3}>
-        <Form.Group>
-          <Form.Label className="d-none d-md-block">&zwj;</Form.Label>
-          <InputGroup>
-            <Button variant="primary" type="reset">
-              Reset
-            </Button>
-          </InputGroup>
-        </Form.Group>
-      </Col>
+      {/* just right of the centered filter box, level with the Gene Sets row
+          — the same spot as the spatial pages (Card.Body is the positioning
+          parent). w-auto: .row forces width:100% on its children, which
+          would stretch this anchored box and land the button on the LEFT */}
+      <div className="single-cell-reset position-absolute w-auto">
+        <Button variant="primary" type="reset">
+          Reset
+        </Button>
+      </div>
     </form>
   );
 }

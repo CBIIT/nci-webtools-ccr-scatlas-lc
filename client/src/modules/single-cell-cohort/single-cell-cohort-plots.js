@@ -26,6 +26,21 @@ function featureLabelOf(activeFeature) {
   return `${label} (mean, ${genes.length} genes)`;
 }
 
+// The panel-level variant: each panel has its own table, so it may carry only
+// a subset of the requested genes (the expression query intersects). When it
+// does, the panel's title says what it actually shows.
+function panelFeatureLabel(activeFeature, expression) {
+  if (!activeFeature) return null;
+  if (
+    expression &&
+    activeFeature.kind === "set" &&
+    expression.genes.length < activeFeature.genes.length
+  ) {
+    return `${activeFeature.label} (mean, ${expression.genes.length} of ${activeFeature.genes.length} genes)`;
+  }
+  return featureLabelOf(activeFeature);
+}
+
 // THE record visibility rule for a panel, in one place: a record shows when
 // its type is not legend-hidden, it lies inside an applied lasso outline (if
 // any), and it lies within the zoomed view. The display pipeline applies the
@@ -129,12 +144,12 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
   if (loadable.state === "hasError") throw loadable.contents;
   const lastRef = useRef(null);
   if (loadable.state === "hasValue") {
-    lastRef.current = { expression: loadable.contents, label: currentLabel };
+    lastRef.current = {
+      expression: loadable.contents,
+      label: panelFeatureLabel(activeFeature, loadable.contents),
+    };
   }
-  const shown =
-    loadable.state === "hasValue"
-      ? { expression: loadable.contents, label: currentLabel }
-      : lastRef.current;
+  const shown = lastRef.current;
   const expression = shown?.expression ?? null;
   const featureLabel = shown?.label ?? currentLabel;
   const updating = loadable.state === "loading";
