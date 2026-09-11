@@ -225,7 +225,26 @@ function useScrollSettled(active, delay = SCROLL_SETTLE_MS) {
 }
 
 const PLOT_HEIGHT = 340;
-const ROW_MIN_HEIGHT = PLOT_HEIGHT + 56; // plots + heading, keeps scroll stable
+// stacked mode: two subplots on top of each other need roughly double the
+// figure, keeping each subplot about the height it has side-by-side
+const STACKED_PLOT_HEIGHT = 680;
+
+// Below Bootstrap's xl breakpoint the pair's subplots stack vertically —
+// side by side they get too narrow and the in-gap legend overlaps the
+// expression plot. Media-query driven so it tracks live resizes.
+function useStackedPair() {
+  const [stacked, setStacked] = useState(
+    () => window.matchMedia("(max-width: 1199.98px)").matches,
+  );
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1199.98px)");
+    const onChange = () => setStacked(mql.matches);
+    mql.addEventListener("change", onChange);
+    onChange();
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return stacked;
+}
 
 // Mount a row's plots only while it is near the viewport, and unmount them
 // again once scrolled far away so the browser doesn't accumulate every row's
@@ -298,6 +317,9 @@ function SamplePairRow({
   onRetry,
 }) {
   const { config } = useSpatialCohort();
+  const stacked = useStackedPair();
+  const plotHeight = stacked ? STACKED_PLOT_HEIGHT : PLOT_HEIGHT;
+  const rowMinHeight = plotHeight + 56; // plots + heading, keeps scroll stable
   // shared view for the pair: zoom/pan/reset on either plot mirrors to the
   // other (bidirectional sync per the 7/7 client-review minutes). null = auto.
   // uirevision is the (constant) sample id, so the view also survives gene
@@ -401,8 +423,13 @@ function SamplePairRow({
   });
   const pairLayout = {
     xaxis: {
-      ...axisStyle(`Spatial X (${units})`),
-      domain: [0, 0.42],
+      // stacked: the top subplot's x-axis title would collide with the
+      // legend band below it — the bottom subplot's identical label serves
+      // both (the axes are matched)
+      ...axisStyle(stacked ? "" : `Spatial X (${units})`),
+      // side by side on wide screens; stacked (full-width, top half) under
+      // the xl breakpoint
+      domain: stacked ? [0, 1] : [0, 0.42],
       // aspect lock is optional (the "Enable rectangular zoom" checkbox):
       // locked keeps 1:1 so tissue isn't distorted; the lock must go the
       // moment the box is checked — while scaleanchor is active Plotly
@@ -417,6 +444,7 @@ function SamplePairRow({
     },
     yaxis: {
       ...axisStyle(`Spatial Y (${units})`),
+      ...(stacked && { domain: [0.58, 1] }),
       // constrain "domain" (as on x): without it Plotly's constraint pass
       // WIDENS an explicit y range (a lasso bbox) to keep 1:1, showing cells
       // the header count excludes
@@ -425,19 +453,22 @@ function SamplePairRow({
     },
     xaxis2: {
       ...axisStyle(`Spatial X (${units})`),
-      domain: [0.58, 1],
+      domain: stacked ? [0, 1] : [0.58, 1],
+      ...(stacked && { anchor: "y2" }),
       matches: "x",
     },
     yaxis2: {
       ...axisStyle(`Spatial Y (${units})`),
+      ...(stacked && { domain: [0, 0.42] }),
       anchor: "x2",
       matches: "y",
     },
-    // subplot titles (a figure-level title would sit over the gap)
+    // subplot titles (a figure-level title would sit over the gap); each
+    // title sits over its own subplot in either arrangement
     annotations: [
       {
         text: "Cell type",
-        x: 0.21,
+        x: stacked ? 0.5 : 0.21,
         y: 1,
         xref: "paper",
         yref: "paper",
@@ -449,8 +480,8 @@ function SamplePairRow({
       {
         // the active gene / gene set named in the title per client feedback
         text: `Gene expression — ${featureLabel}`,
-        x: 0.79,
-        y: 1,
+        x: stacked ? 0.5 : 0.79,
+        y: stacked ? 0.42 : 1,
         xref: "paper",
         yref: "paper",
         xanchor: "center",
@@ -461,17 +492,32 @@ function SamplePairRow({
     ],
     // the legend lives in the gap between the subplots (the spot it occupied
     // when the pair was two figures), keeping the row symmetrical instead of
-    // stacking legend + colorbar on the right edge
-    legend: {
-      itemsizing: "constant",
-      itemwidth: 30,
-      font: { size: 10 },
-      x: 0.435,
-      xanchor: "left",
-      y: 1,
-      yanchor: "top",
-    },
-    margin: { t: 36, r: 10, b: 40, l: 50 },
+    // stacking legend + colorbar on the right edge; in the stacked
+    // arrangement the gap is a horizontal band, so the legend flows
+    // horizontally through it
+    legend: stacked
+      ? {
+          itemsizing: "constant",
+          itemwidth: 30,
+          font: { size: 10 },
+          orientation: "h",
+          x: 0.5,
+          xanchor: "center",
+          y: 0.5,
+          yanchor: "middle",
+        }
+      : {
+          itemsizing: "constant",
+          itemwidth: 30,
+          font: { size: 10 },
+          x: 0.435,
+          xanchor: "left",
+          y: 1,
+          yanchor: "top",
+        },
+    // stacked: the full-width top subplot would otherwise run under the
+    // hovering modebar, so the plot area starts lower
+    margin: { t: stacked ? 72 : 36, r: 10, b: 40, l: 50 },
     hovermode: "closest",
     dragmode,
     uirevision: sample,
@@ -557,14 +603,20 @@ function SamplePairRow({
                 opacity,
                 cmin,
                 cmax,
-                colorbar: { thickness: 12, tickfont: { size: 9 } },
+                // stacked: the colorbar shrinks to sit beside the lower
+                // (expression) subplot instead of spanning both
+                colorbar: {
+                  thickness: 12,
+                  tickfont: { size: 9 },
+                  ...(stacked && { y: 0.21, yanchor: "middle", len: 0.42 }),
+                },
               },
               // no `selected` style — see the cell-type plot's note
             },
             "__value",
           )
         : null,
-    [rightRecords, size, opacity, cmin, cmax, featureLabel, config.renderer],
+    [rightRecords, size, opacity, cmin, cmax, featureLabel, config.renderer, stacked],
   );
 
   // Cell types toggled off via the LEFT plot's legend — controlled state so
@@ -729,14 +781,16 @@ function SamplePairRow({
   const loadingBox = (message) => (
     <div
       className="bg-light border rounded d-flex align-items-center justify-content-center text-muted"
-      style={{ height: PLOT_HEIGHT }}>
+      style={{ height: plotHeight }}>
       <Spinner animation="border" size="sm" className="me-2" />
       <span className="small">{message}</span>
     </div>
   );
 
   return (
-    <div ref={innerRef} style={{ minHeight: ROW_MIN_HEIGHT }} className="mb-3">
+    // pt-3: keeps the sample title off the divider above it (the sticky
+    // bar's for the first row, the previous row's for the rest)
+    <div ref={innerRef} style={{ minHeight: rowMinHeight }} className="mb-3 pt-3">
       {/* center-aligned row header — SampleID + cell count (the gene/sample
           filter echoes 10326's AC3 asked for were dropped per client feedback;
           those selections still show in the page-level header and plot titles) */}
@@ -781,16 +835,21 @@ function SamplePairRow({
               onLegendDoubleClick={handleLegendDoubleClick}
               useResizeHandler
               className="w-100 spatial-pair"
-              style={{ height: `${PLOT_HEIGHT}px` }}
+              style={{ height: `${plotHeight}px` }}
             />
-            {/* the right subplot has no traces while a row's expression
-                loads — overlay a spinner on that half (Plotly cannot animate
-                in-figure); gene CHANGES keep the previous coloring up, so
-                this only shows on a row's first expression fetch */}
+            {/* the right (stacked: lower) subplot has no traces while a
+                row's expression loads — overlay a spinner on that region
+                (Plotly cannot animate in-figure); gene CHANGES keep the
+                previous coloring up, so this only shows on a row's first
+                expression fetch */}
             {!rightShown && !featureError && (
               <div
-                className="position-absolute top-0 d-flex align-items-center justify-content-center text-muted"
-                style={{ left: "58%", width: "42%", height: PLOT_HEIGHT }}>
+                className="position-absolute d-flex align-items-center justify-content-center text-muted"
+                style={
+                  stacked
+                    ? { top: "58%", left: 0, width: "100%", height: "42%" }
+                    : { top: 0, left: "58%", width: "42%", height: plotHeight }
+                }>
                 <Spinner animation="border" size="sm" className="me-2" />
                 <span className="small">Loading expression…</span>
               </div>
@@ -803,7 +862,7 @@ function SamplePairRow({
       ) : (
         <div
           className="bg-light border rounded d-flex align-items-center justify-content-center text-muted"
-          style={{ height: PLOT_HEIGHT }}>
+          style={{ height: plotHeight }}>
           <span className="small">Scroll to load {sample}</span>
         </div>
       )}
