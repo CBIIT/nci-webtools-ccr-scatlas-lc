@@ -48,6 +48,28 @@
   left: min(calc(50% + 32.5rem), calc(100% - 6rem));
 }
 
+// the single-cell cohort pages share the centered filter box and this Reset
+// placement, but have no sticky wrapper (nothing scrolls under their
+// controls) — same offsets, anchored to the card body instead
+.single-cell-reset {
+  top: calc(var(--bs-card-spacer-y) + 7.375rem);
+  left: min(calc(50% + 32.5rem), calc(100% - 6rem));
+}
+
+// Below xl the viewport can no longer fit the centered box plus the button:
+// the left anchor drifts into the gene-sets column, and once the filter
+// columns stack (md) the fixed top lands it on Cell Opacity. Fall back into
+// normal flow, right-aligned under the filter rows. The !importants override
+// the .position-absolute / .w-auto utility classes on the elements.
+@media (max-width: 1199.98px) {
+  .spatial-controls-sticky .spatial-reset,
+  .single-cell-reset {
+    position: static !important;
+    width: 100% !important;
+    text-align: end;
+  }
+}
+
 .spatial-controls-sticky {
   position: sticky;
   top: 0;

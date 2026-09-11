@@ -1,5 +1,5 @@
-import TumorCell from "../tumor-cell/tumor-cell";
-import TCell from "../t-cell/t-cell";
+import TumorCellCohort from "../single-cell-cohort/cohorts/tumor-cell";
+import TCellCohort from "../single-cell-cohort/cohorts/t-cell";
 import { Container, Tabs, Tab } from "react-bootstrap";
 
 export default function NCIClarity() {
@@ -13,10 +13,10 @@ export default function NCIClarity() {
                 className="mb-3"
             >
                 <Tab eventKey="tumorCell" title="Tumor Cell Community">
-                    <TumorCell/>
+                    <TumorCellCohort/>
                 </Tab>
                 <Tab eventKey="tCell" title="T-Cell">
-                    <TCell/>
+                    <TCellCohort/>
                 </Tab>
             </Tabs>
         </Container>
