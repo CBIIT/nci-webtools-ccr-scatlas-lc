@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
 import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
@@ -8,6 +10,9 @@ import Plot from "react-plotly.js";
 import groupBy from "lodash/groupBy";
 import { getTraces } from "../../services/plot";
 import { useSpatialCohort } from "./spatial-cohort-context";
+import SpatialCohortPlotOptions from "./spatial-cohort-plot-options";
+import SpatialCohortGenePicker from "./spatial-cohort-gene-picker";
+import SpatialCohortGeneSets from "./spatial-cohort-gene-sets";
 
 // THE row visibility rule, in one place: a record shows when its type is not
 // legend-hidden, it is inside an applied lasso (if any), and it lies within
@@ -812,6 +817,42 @@ function SamplePairRow({
   );
 }
 
+// The sticky control bar: filters, then the cohort title/sample-count header
+// — the header describes ALL the sample rows scrolling beneath it, so it
+// stays pinned with the filters instead of scrolling away with the first
+// rows. Rendered by the fetch-mode components (not the page) because the
+// header props are live state only they have.
+function StickyBar(headerProps) {
+  return (
+    <div className="spatial-controls-sticky">
+      {/* both filter rows fill the same centered max-width wrapper so their
+          edges line up */}
+      <div className="spatial-controls mx-auto">
+        <SpatialCohortPlotOptions />
+        {/* the single Gene and the Gene Sets color the plots through the
+            same activeFeature — an either/or, spelled out by the "or" */}
+        <Row className="gx-5">
+          {/* 1/3 + 2/3 so Gene lines up under Cell Size and the sets panel
+              under Cell Opacity + Samples; "or" floats over the gutter
+              between them, on the label line */}
+          <Col md={4}>
+            <SpatialCohortGenePicker />
+          </Col>
+          <Col md={8} className="position-relative">
+            <span className="form-label position-absolute top-0 start-0 translate-middle-x d-none d-md-block">
+              or
+            </span>
+            <SpatialCohortGeneSets />
+          </Col>
+        </Row>
+      </div>
+      <PlotsHeader {...headerProps} />
+      {/* the bar's bottom divider — pairs with each row's, framing the rows */}
+      <hr className="mb-0" />
+    </div>
+  );
+}
+
 // Shared plots heading: cohort title + what the expression plots show, with
 // the Proportional/Free zoom radios beneath (moved out of the plot options
 // row — they act on the graphs, so they live with them).
@@ -819,8 +860,8 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
   const { config, plotOptionsState } = useSpatialCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   return (
-    // mt-3: breathing room between the sticky controls' divider and the title
-    <div className="text-center mt-3 mb-2">
+    // mt-2: a small step between the filter rows above and the title
+    <div className="text-center mt-2 mb-2">
       <h2 className="h5 mb-0">
         {title} <span className="text-muted fw-normal">— {featureLabel}</span>
         {updating && (
@@ -931,7 +972,7 @@ function FullFetchPlots() {
 
   return (
     <div>
-      <PlotsHeader
+      <StickyBar
         title={config.title}
         featureLabel={featureLabel}
         updating={updating}
@@ -1146,7 +1187,7 @@ function PerSamplePlots() {
     .sort();
   return (
     <div>
-      <PlotsHeader
+      <StickyBar
         title={config.title}
         featureLabel={currentLabel}
         subtitle={`${sampleIds.length} sample${sampleIds.length === 1 ? "" : "s"}`}
