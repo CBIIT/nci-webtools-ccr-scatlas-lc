@@ -25,7 +25,11 @@ export default function SingleCellCohortPlotOptions() {
     mergeFormValues({ [name]: value });
   }
 
-  function handleReset() {
+  function handleReset(event) {
+    // state-only reset — the native form reset flips controls back to their
+    // mount-time attribute state behind React's back (see the spatial
+    // options' note)
+    event.preventDefault();
     mergePlotOptions(defaultPlotOptions);
     mergeFormValues(defaultPlotOptions);
   }
