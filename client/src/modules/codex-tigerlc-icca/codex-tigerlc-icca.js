@@ -93,6 +93,8 @@ const state = createSpatialCohortState({
     "LCS-689 N", "LCS-689 T", "LCS-690 T", "LCS-691 T", "LCS-692 T",
     "LCS-693 T", "LCS-694 T", "LCS-695 T", "LCS-696 T",
   ],
+    // client-chosen sample the Samples filter starts with (9/4 feedback)
+  defaultSelectedSamples: ["LCS-571 T"],
   renderer: "scatter",
   units: "px",
 });

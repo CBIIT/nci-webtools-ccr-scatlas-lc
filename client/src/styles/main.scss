@@ -299,3 +299,10 @@
     background-color: rgba(255, 255, 255, 0.9);
   }
 }
+// spatial plot pairs render as ONE figure per row, so there is a single
+// modebar — center it over the figure instead of Plotly's default top-right
+.spatial-pair .modebar {
+  right: auto !important;
+  left: 50%;
+  transform: translateX(-50%);
+}

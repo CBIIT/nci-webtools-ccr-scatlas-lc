@@ -24,6 +24,8 @@ const state = createSpatialCohortState({
   defaultGene: "EPCAM",
   fetch: "full",
   samples: null,
+    // client-chosen sample the Samples filter starts with (9/4 feedback)
+  defaultSelectedSamples: ["LCS571T_1"],
   renderer: "scatter",
 });
 

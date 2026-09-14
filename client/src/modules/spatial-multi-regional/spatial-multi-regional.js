@@ -50,6 +50,8 @@ const state = createSpatialCohortState({
     "3CB", "3CT", "3HB", "3HT",
     "4HB", "4HN", "4HT",
   ],
+    // client-chosen sample the Samples filter starts with (9/4 feedback)
+  defaultSelectedSamples: ["1CB"],
   renderer: "scattergl",
   // The hysteresis band (unmountMargin - mountMargin) must exceed the height a
   // row GAINS when it mounts, or the two thresholds oscillate: below the xl
@@ -60,7 +62,9 @@ const state = createSpatialCohortState({
   unmountMargin: "600px",
   // the margin sets the window, this sets the ceiling: 6 rows x 2 scattergl
   // contexts = 12, clear of the ~16-per-page cap on any viewport height
-  maxLiveRows: 6,
+  // one WebGL context per row now (the pair shares a figure), so twice
+  // the rows fit under the ~16-context cap
+  maxLiveRows: 12,
   // Samples retained by the state module's caches (cells and expression each
   // keep this many), for cheap scroll-back. Sized under the cohort's 15
   // samples on purpose: holding most of them would reconstitute the

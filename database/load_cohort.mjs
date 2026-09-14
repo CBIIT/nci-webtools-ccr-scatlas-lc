@@ -36,8 +36,12 @@ if (!/^[a-z_][a-z0-9_]*$/.test(table)) {
 
 // numeric sort: chunk numbers can outgrow their zero-padding (a >999-chunk
 // cohort mixes 3- and 4-digit names), and a lexical sort would interleave
-// them — putting the short final chunk mid-stream instead of last
-const chunkRe = new RegExp(`^${table}_(\\d+)\\.csv$`);
+// them — putting the short final chunk mid-stream instead of last.
+// The table name is already validated to lower_snake_case above, so it holds
+// no regex metacharacters — the escape keeps that guarantee local
+const chunkRe = new RegExp(
+  `^${table.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}_(\\d+)\\.csv$`,
+);
 const chunkNo = (f) => Number(f.match(chunkRe)[1]);
 const files = readdirSync(chunkDir)
   .filter((f) => chunkRe.test(f))
