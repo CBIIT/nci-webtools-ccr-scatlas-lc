@@ -33,7 +33,13 @@ export default function SpatialCohortPlotOptions() {
   // reset restores the VALIDATED defaults (stale default sample ids fall
   // back to all samples there)
   const resolvedDefaults = useRecoilValue(defaultOptionsQuery);
-  function handleReset() {
+  function handleReset(event) {
+    // state-only reset: the browser's NATIVE form reset also flips every
+    // form control back to its mount-time attribute state — re-checking
+    // Samples checkboxes React believes are already unchecked (it skips
+    // repainting inputs whose state didn't change), so the dropdown showed
+    // selections Reset had supposedly cleared
+    event.preventDefault();
     mergePlotOptions(resolvedDefaults);
     mergeFormValues(resolvedDefaults);
   }

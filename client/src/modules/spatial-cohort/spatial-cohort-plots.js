@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
 import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
@@ -8,6 +10,9 @@ import Plot from "react-plotly.js";
 import groupBy from "lodash/groupBy";
 import { getTraces } from "../../services/plot";
 import { useSpatialCohort } from "./spatial-cohort-context";
+import SpatialCohortPlotOptions from "./spatial-cohort-plot-options";
+import SpatialCohortGenePicker from "./spatial-cohort-gene-picker";
+import SpatialCohortGeneSets from "./spatial-cohort-gene-sets";
 
 // THE row visibility rule, in one place: a record shows when its type is not
 // legend-hidden, it is inside an applied lasso (if any), and it lies within
@@ -27,18 +32,22 @@ function isRecordVisible(r, { hiddenTypes, lassoCells, viewRange }) {
   return true;
 }
 
-// Project the lassoed cell ids onto a trace list as per-trace selectedpoints
-// indices — shared by both plots of a pair (Plotly selections are otherwise
-// per-plot). With no lasso active, selectedpoints is EXPLICITLY nulled: the
-// plot the user drew on keeps an internal selection of its own, and only an
-// explicit null clears it (autoscale/reset/deselect would otherwise leave
-// that plot still filtered).
+// Apply the lassoed cell ids to a trace list — shared by both plots of a
+// pair (membership is by cell id, so the re-axed right traces filter
+// identically). The applied lasso REMOVES outside cells from the traces
+// rather than styling them invisible: a styled-out cell still participates
+// in the next draw's selection styling, so a second lasso rendered
+// everything outside the new path blank instead of dimmed. Filtering per
+// TRACE keeps the trace list, names, and color assignment stable (an
+// emptied type keeps its legend entry). The dim style below is therefore
+// all a drag ever shows: outside the in-progress path dims, inside stays
+// lit — on the first draw and every one after.
 //
-// The unselected style is decided here, not in the base traces: while a lasso
-// is still being DRAWN Plotly already styles everything outside the path as
-// unselected, so a fixed opacity 0 would blank the plot mid-draw. Until a
-// selection is applied, outside cells only dim; once applied they disappear
-// (the lasso-zoom effect).
+// With no lasso active, selectedpoints is EXPLICITLY nulled: the plot the
+// user drew on keeps an internal selection of its own, and only an explicit
+// null clears it. With one applied, every surviving point is explicitly
+// selected — the drawn outline persists as a live selection context, under
+// which a null would read as "nothing selected" and dim the whole figure.
 function withLasso(traces, lassoCells, opacity) {
   if (!lassoCells)
     return traces.map((trace) => ({
@@ -46,13 +55,26 @@ function withLasso(traces, lassoCells, opacity) {
       selectedpoints: null,
       unselected: { marker: { opacity: opacity * 0.2 } },
     }));
-  return traces.map((trace) => ({
-    ...trace,
-    unselected: { marker: { opacity: 0 } },
-    selectedpoints: trace.customdata
-      .map((cellId, i) => (lassoCells.has(cellId) ? i : -1))
-      .filter((i) => i >= 0),
-  }));
+  return traces.map((trace) => {
+    const keep = [];
+    for (let i = 0; i < trace.customdata.length; i++) {
+      if (lassoCells.has(trace.customdata[i])) keep.push(i);
+    }
+    return {
+      ...trace,
+      x: keep.map((i) => trace.x[i]),
+      y: keep.map((i) => trace.y[i]),
+      text: keep.map((i) => trace.text[i]),
+      customdata: keep.map((i) => trace.customdata[i]),
+      // per-point expression colors follow their cells; cmin/cmax are fixed
+      // numbers from the full records, so the color scale doesn't re-derive
+      marker: Array.isArray(trace.marker?.color)
+        ? { ...trace.marker, color: keep.map((i) => trace.marker.color[i]) }
+        : trace.marker,
+      selectedpoints: keep.map((_, i) => i),
+      unselected: { marker: { opacity: opacity * 0.2 } },
+    };
+  });
 }
 
 // how long the page must be still before a near row fetches
@@ -203,7 +225,26 @@ function useScrollSettled(active, delay = SCROLL_SETTLE_MS) {
 }
 
 const PLOT_HEIGHT = 340;
-const ROW_MIN_HEIGHT = PLOT_HEIGHT + 56; // plots + heading, keeps scroll stable
+// stacked mode: two subplots on top of each other need roughly double the
+// figure, keeping each subplot about the height it has side-by-side
+const STACKED_PLOT_HEIGHT = 680;
+
+// Below Bootstrap's xl breakpoint the pair's subplots stack vertically —
+// side by side they get too narrow and the in-gap legend overlaps the
+// expression plot. Media-query driven so it tracks live resizes.
+function useStackedPair() {
+  const [stacked, setStacked] = useState(
+    () => window.matchMedia("(max-width: 1199.98px)").matches,
+  );
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1199.98px)");
+    const onChange = () => setStacked(mql.matches);
+    mql.addEventListener("change", onChange);
+    onChange();
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return stacked;
+}
 
 // Mount a row's plots only while it is near the viewport, and unmount them
 // again once scrolled far away so the browser doesn't accumulate every row's
@@ -276,6 +317,9 @@ function SamplePairRow({
   onRetry,
 }) {
   const { config } = useSpatialCohort();
+  const stacked = useStackedPair();
+  const plotHeight = stacked ? STACKED_PLOT_HEIGHT : PLOT_HEIGHT;
+  const rowMinHeight = plotHeight + 56; // plots + heading, keeps scroll stable
   // shared view for the pair: zoom/pan/reset on either plot mirrors to the
   // other (bidirectional sync per the 7/7 client-review minutes). null = auto.
   // uirevision is the (constant) sample id, so the view also survives gene
@@ -285,6 +329,12 @@ function SamplePairRow({
   // pair consistently shows only the lassoed cells (outside cells render at
   // opacity 0). null = no lasso active, everything visible.
   const [lassoCells, setLassoCells] = useState(null);
+  // The active modebar drag tool, controlled: left to Plotly's internal
+  // state, the frequent layout re-renders (each lasso updates the header
+  // count) reverted the chosen tool to zoom after a couple of draws. Routing
+  // the choice through state makes it stick, and the replot it triggers also
+  // initializes the WebGL selection overlay BEFORE the first drag.
+  const [dragmode, setDragmode] = useState("zoom");
 
   // A perSample row's records are released when it leaves the mount window;
   // the lasso's cell-id Set has to go with them, or it pins up to ~330k
@@ -303,6 +353,7 @@ function SamplePairRow({
   }, [releasesRecords, near, lassoCells]);
 
   function handleRelayout(event) {
+    if (event.dragmode) setDragmode(event.dragmode);
     if (
       event["xaxis.autorange"] ||
       event["yaxis.autorange"] ||
@@ -372,8 +423,13 @@ function SamplePairRow({
   });
   const pairLayout = {
     xaxis: {
-      ...axisStyle(`Spatial X (${units})`),
-      domain: [0, 0.42],
+      // stacked: the top subplot's x-axis title would collide with the
+      // legend band below it — the bottom subplot's identical label serves
+      // both (the axes are matched)
+      ...axisStyle(stacked ? "" : `Spatial X (${units})`),
+      // side by side on wide screens; stacked (full-width, top half) under
+      // the xl breakpoint
+      domain: stacked ? [0, 1] : [0, 0.42],
       // aspect lock is optional (the "Enable rectangular zoom" checkbox):
       // locked keeps 1:1 so tissue isn't distorted; the lock must go the
       // moment the box is checked — while scaleanchor is active Plotly
@@ -388,6 +444,7 @@ function SamplePairRow({
     },
     yaxis: {
       ...axisStyle(`Spatial Y (${units})`),
+      ...(stacked && { domain: [0.58, 1] }),
       // constrain "domain" (as on x): without it Plotly's constraint pass
       // WIDENS an explicit y range (a lasso bbox) to keep 1:1, showing cells
       // the header count excludes
@@ -396,19 +453,22 @@ function SamplePairRow({
     },
     xaxis2: {
       ...axisStyle(`Spatial X (${units})`),
-      domain: [0.58, 1],
+      domain: stacked ? [0, 1] : [0.58, 1],
+      ...(stacked && { anchor: "y2" }),
       matches: "x",
     },
     yaxis2: {
       ...axisStyle(`Spatial Y (${units})`),
+      ...(stacked && { domain: [0, 0.42] }),
       anchor: "x2",
       matches: "y",
     },
-    // subplot titles (a figure-level title would sit over the gap)
+    // subplot titles (a figure-level title would sit over the gap); each
+    // title sits over its own subplot in either arrangement
     annotations: [
       {
         text: "Cell type",
-        x: 0.21,
+        x: stacked ? 0.5 : 0.21,
         y: 1,
         xref: "paper",
         yref: "paper",
@@ -420,8 +480,8 @@ function SamplePairRow({
       {
         // the active gene / gene set named in the title per client feedback
         text: `Gene expression — ${featureLabel}`,
-        x: 0.79,
-        y: 1,
+        x: stacked ? 0.5 : 0.79,
+        y: stacked ? 0.42 : 1,
         xref: "paper",
         yref: "paper",
         xanchor: "center",
@@ -432,18 +492,34 @@ function SamplePairRow({
     ],
     // the legend lives in the gap between the subplots (the spot it occupied
     // when the pair was two figures), keeping the row symmetrical instead of
-    // stacking legend + colorbar on the right edge
-    legend: {
-      itemsizing: "constant",
-      itemwidth: 30,
-      font: { size: 10 },
-      x: 0.435,
-      xanchor: "left",
-      y: 1,
-      yanchor: "top",
-    },
-    margin: { t: 36, r: 10, b: 40, l: 50 },
+    // stacking legend + colorbar on the right edge; in the stacked
+    // arrangement the gap is a horizontal band, so the legend flows
+    // horizontally through it
+    legend: stacked
+      ? {
+          itemsizing: "constant",
+          itemwidth: 30,
+          font: { size: 10 },
+          orientation: "h",
+          x: 0.5,
+          xanchor: "center",
+          y: 0.5,
+          yanchor: "middle",
+        }
+      : {
+          itemsizing: "constant",
+          itemwidth: 30,
+          font: { size: 10 },
+          x: 0.435,
+          xanchor: "left",
+          y: 1,
+          yanchor: "top",
+        },
+    // stacked: the full-width top subplot would otherwise run under the
+    // hovering modebar, so the plot area starts lower
+    margin: { t: stacked ? 72 : 36, r: 10, b: 40, l: 50 },
     hovermode: "closest",
+    dragmode,
     uirevision: sample,
   };
 
@@ -497,8 +573,11 @@ function SamplePairRow({
                 "Cell ID: %{customdata}<br>Cell type: %{fullData.name}<extra></extra>",
               hoverlabel: { namelength: -1 },
               marker: { size, opacity, showscale: false },
-              // lasso-zoom: withLasso hides/dims outside cells via `unselected`
-              selected: { marker: { opacity } },
+              // NO `selected` style, deliberately: for scattergl Plotly
+              // builds the selection overlay from ONLY the properties listed
+              // in selected.marker, so declaring just an opacity drops the
+              // colors. Undefined keeps the full base styling on selected
+              // cells (withLasso owns the unselected side).
             },
             null,
             rowColors,
@@ -524,15 +603,20 @@ function SamplePairRow({
                 opacity,
                 cmin,
                 cmax,
-                colorbar: { thickness: 12, tickfont: { size: 9 } },
+                // stacked: the colorbar shrinks to sit beside the lower
+                // (expression) subplot instead of spanning both
+                colorbar: {
+                  thickness: 12,
+                  tickfont: { size: 9 },
+                  ...(stacked && { y: 0.21, yanchor: "middle", len: 0.42 }),
+                },
               },
-              // see the cell-type plot: withLasso owns the unselected style
-              selected: { marker: { opacity } },
+              // no `selected` style — see the cell-type plot's note
             },
             "__value",
           )
         : null,
-    [rightRecords, size, opacity, cmin, cmax, featureLabel, config.renderer],
+    [rightRecords, size, opacity, cmin, cmax, featureLabel, config.renderer, stacked],
   );
 
   // Cell types toggled off via the LEFT plot's legend — controlled state so
@@ -697,14 +781,16 @@ function SamplePairRow({
   const loadingBox = (message) => (
     <div
       className="bg-light border rounded d-flex align-items-center justify-content-center text-muted"
-      style={{ height: PLOT_HEIGHT }}>
+      style={{ height: plotHeight }}>
       <Spinner animation="border" size="sm" className="me-2" />
       <span className="small">{message}</span>
     </div>
   );
 
   return (
-    <div ref={innerRef} style={{ minHeight: ROW_MIN_HEIGHT }} className="mb-3">
+    // pt-3: keeps the sample title off the divider above it (the sticky
+    // bar's for the first row, the previous row's for the rest)
+    <div ref={innerRef} style={{ minHeight: rowMinHeight }} className="mb-3 pt-3">
       {/* center-aligned row header — SampleID + cell count (the gene/sample
           filter echoes 10326's AC3 asked for were dropped per client feedback;
           those selections still show in the page-level header and plot titles) */}
@@ -749,16 +835,21 @@ function SamplePairRow({
               onLegendDoubleClick={handleLegendDoubleClick}
               useResizeHandler
               className="w-100 spatial-pair"
-              style={{ height: `${PLOT_HEIGHT}px` }}
+              style={{ height: `${plotHeight}px` }}
             />
-            {/* the right subplot has no traces while a row's expression
-                loads — overlay a spinner on that half (Plotly cannot animate
-                in-figure); gene CHANGES keep the previous coloring up, so
-                this only shows on a row's first expression fetch */}
+            {/* the right (stacked: lower) subplot has no traces while a
+                row's expression loads — overlay a spinner on that region
+                (Plotly cannot animate in-figure); gene CHANGES keep the
+                previous coloring up, so this only shows on a row's first
+                expression fetch */}
             {!rightShown && !featureError && (
               <div
-                className="position-absolute top-0 d-flex align-items-center justify-content-center text-muted"
-                style={{ left: "58%", width: "42%", height: PLOT_HEIGHT }}>
+                className="position-absolute d-flex align-items-center justify-content-center text-muted"
+                style={
+                  stacked
+                    ? { top: "58%", left: 0, width: "100%", height: "42%" }
+                    : { top: 0, left: "58%", width: "42%", height: plotHeight }
+                }>
                 <Spinner animation="border" size="sm" className="me-2" />
                 <span className="small">Loading expression…</span>
               </div>
@@ -771,7 +862,7 @@ function SamplePairRow({
       ) : (
         <div
           className="bg-light border rounded d-flex align-items-center justify-content-center text-muted"
-          style={{ height: PLOT_HEIGHT }}>
+          style={{ height: plotHeight }}>
           <span className="small">Scroll to load {sample}</span>
         </div>
       )}
@@ -785,6 +876,42 @@ function SamplePairRow({
   );
 }
 
+// The sticky control bar: filters, then the cohort title/sample-count header
+// — the header describes ALL the sample rows scrolling beneath it, so it
+// stays pinned with the filters instead of scrolling away with the first
+// rows. Rendered by the fetch-mode components (not the page) because the
+// header props are live state only they have.
+function StickyBar(headerProps) {
+  return (
+    <div className="spatial-controls-sticky">
+      {/* both filter rows fill the same centered max-width wrapper so their
+          edges line up */}
+      <div className="spatial-controls mx-auto">
+        <SpatialCohortPlotOptions />
+        {/* the single Gene and the Gene Sets color the plots through the
+            same activeFeature — an either/or, spelled out by the "or" */}
+        <Row className="gx-5">
+          {/* 1/3 + 2/3 so Gene lines up under Cell Size and the sets panel
+              under Cell Opacity + Samples; "or" floats over the gutter
+              between them, on the label line */}
+          <Col md={4}>
+            <SpatialCohortGenePicker />
+          </Col>
+          <Col md={8} className="position-relative">
+            <span className="form-label position-absolute top-0 start-0 translate-middle-x d-none d-md-block">
+              or
+            </span>
+            <SpatialCohortGeneSets />
+          </Col>
+        </Row>
+      </div>
+      <PlotsHeader {...headerProps} />
+      {/* the bar's bottom divider — pairs with each row's, framing the rows */}
+      <hr className="mb-0" />
+    </div>
+  );
+}
+
 // Shared plots heading: cohort title + what the expression plots show, with
 // the Proportional/Free zoom radios beneath (moved out of the plot options
 // row — they act on the graphs, so they live with them).
@@ -792,8 +919,8 @@ function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle })
   const { config, plotOptionsState } = useSpatialCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   return (
-    // mt-3: breathing room between the sticky controls' divider and the title
-    <div className="text-center mt-3 mb-2">
+    // mt-2: a small step between the filter rows above and the title
+    <div className="text-center mt-2 mb-2">
       <h2 className="h5 mb-0">
         {title} <span className="text-muted fw-normal">— {featureLabel}</span>
         {updating && (
@@ -904,7 +1031,7 @@ function FullFetchPlots() {
 
   return (
     <div>
-      <PlotsHeader
+      <StickyBar
         title={config.title}
         featureLabel={featureLabel}
         updating={updating}
@@ -1119,7 +1246,7 @@ function PerSamplePlots() {
     .sort();
   return (
     <div>
-      <PlotsHeader
+      <StickyBar
         title={config.title}
         featureLabel={currentLabel}
         subtitle={`${sampleIds.length} sample${sampleIds.length === 1 ? "" : "s"}`}
