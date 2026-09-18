@@ -87,11 +87,18 @@ SQL="$WORK/apply.sql"
     echo "DROP TABLE IF EXISTS \"$t\";"
     echo "CREATE TABLE \"$t\" AS SELECT * FROM src.\"$t\" LIMIT 0;"
     if [ "$has_sample" = "1" ] && [ "$n" -gt "$BATCH_ROWS" ]; then
-      duckdb -readonly -csv -noheader "$DELTA" \
-        "SELECT DISTINCT sample FROM \"$t\" ORDER BY sample" | while IFS= read -r sm; do
-        esc=$(printf '%s' "$sm" | sed "s/'/''/g")
-        echo "INSERT INTO \"$t\" SELECT * FROM src.\"$t\" WHERE sample = '$esc';"
+      # Address each sample by its POSITION in the sorted distinct list, not
+      # by its value: round-tripping values through the CLI's CSV output
+      # mangled ids containing spaces (they came back quoted, so every
+      # per-sample INSERT matched zero rows — the codex iCCA cohort). Only
+      # plain numbers cross the shell boundary now.
+      n_samples=$(duckdb -readonly -csv -noheader "$DELTA" \
+        "SELECT count(DISTINCT sample) FROM \"$t\"")
+      k=0
+      while [ "$k" -lt "$n_samples" ]; do
+        echo "INSERT INTO \"$t\" SELECT * FROM src.\"$t\" WHERE sample = (SELECT sample FROM (SELECT DISTINCT sample FROM src.\"$t\" ORDER BY sample) LIMIT 1 OFFSET $k);"
         echo "CHECKPOINT;"
+        k=$((k + 1))
       done
     else
       off=0
@@ -108,6 +115,21 @@ SQL="$WORK/apply.sql"
 echo "applying delta (memory_limit $MEMORY_LIMIT, $BATCH_ROWS rows per batch)"
 duckdb "$STAGE" < "$SQL"
 rm -f "$STAGE.wal"
+
+# HARD verification before anything touches EFS: the in-script row counts are
+# display-only (.bail only trips on SQL errors), and a green run once shipped
+# an empty table because its INSERTs matched nothing. A mismatch here aborts
+# the task, leaving the live database untouched.
+echo "verifying applied tables"
+for t in $TABLES; do
+  n=$(duckdb -readonly -csv -noheader "$DELTA" "SELECT count(*) FROM \"$t\"")
+  c=$(duckdb -readonly -csv -noheader "$STAGE" "SELECT count(*) FROM \"$t\"")
+  if [ "$c" != "$n" ]; then
+    echo "verification failed: $t has $c rows, delta carries $n - aborting before the swap" >&2
+    exit 1
+  fi
+  echo "verified $t: $c rows"
+done
 
 echo "writing the updated database to EFS"
 cp "$STAGE" "$NEW"

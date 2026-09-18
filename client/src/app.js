@@ -17,6 +17,7 @@ import CodexLciHccPage from "./modules/pages/spatial/codex-lci-hcc";
 import "./styles/main.scss";
 import WebglAlert from "./modules/components/webgl-alert";
 import MainNav from "./modules/components/main-nav";
+import BackToTop from "./modules/components/back-to-top";
 
 export default function App() {
   const { pathname } = useLocation();
@@ -72,6 +73,8 @@ export default function App() {
 
         <Route exact path="/about" component={About} />
       </div>
+
+      <BackToTop />
     </>
   );
 }
