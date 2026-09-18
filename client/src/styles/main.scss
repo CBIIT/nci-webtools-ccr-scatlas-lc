@@ -328,3 +328,76 @@
   left: 50%;
   transform: translateX(-50%);
 }
+
+/* Back to Top — the NCI-standard quarter-circle pinned to the viewport's
+   bottom-right corner, revealed once the page is scrollable and scrolled past
+   the threshold (components/back-to-top.js). It fades rather than unmounting,
+   so the hidden state must ALSO drop visibility + pointer-events — opacity
+   alone leaves an invisible control in the tab order for keyboard and
+   screen-reader users. */
+.back-to-top {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 85px;
+  height: 85px;
+  background-color: #027bbd;
+  border-top-left-radius: 100%;
+  overflow: hidden;
+  // above the Plotly modebars (~1000) the corner can overlap while plots
+  // scroll by; below the sticky spatial controls (1020) and navbar (1030)
+  z-index: 1010;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  button {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+    // uneven padding centers the label in the visible wedge, not the square
+    padding: 25px 5px 5px 30px;
+
+    &:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: -2px;
+    }
+  }
+
+  .back-to-top-icon {
+    display: none;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  @media (max-width: 768px) {
+    .back-to-top-text {
+      display: none;
+    }
+
+    .back-to-top-icon {
+      display: inline;
+    }
+  }
+}
+
+@media print {
+  .back-to-top {
+    display: none;
+  }
+}
