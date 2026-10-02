@@ -133,8 +133,9 @@ export function createSingleCellCohortState(config) {
           genes: [config.defaultGene],
         }
       : null,
-    // when true, drag-zoom goes to the exact drawn rectangle instead of
-    // snapping to the 1:1 aspect (allows stretch distortion)
+    // which zoom tool is live — false: Square Zoom (the box is held square
+    // while dragging); true: Rectangle Zoom (any rectangle; the view settles
+    // on the square around it and shows only the cells it enclosed)
     freeZoom: false,
   };
 
