@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from "recoil";
-import Form from "react-bootstrap/Form";
+import {
+  useRecoilValue,
+  useRecoilValueLoadable,
+  useSetRecoilState,
+} from "recoil";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Spinner from "react-bootstrap/Spinner";
@@ -9,6 +12,22 @@ import Button from "react-bootstrap/Button";
 import Plot from "react-plotly.js";
 import groupBy from "lodash/groupBy";
 import { colorRange, getTraces } from "../../services/plot";
+import {
+  centeredDomain,
+  polygonBounds,
+  recordBounds,
+  squareBounds,
+  squareView,
+} from "../../services/geometry";
+import { isDrawnRectangle, relayoutView } from "../../services/plot-view";
+import { useElementWidth, usePlotArea } from "../components/use-plot-area";
+import {
+  MODEBAR_COLORS,
+  makeToolbarOperable,
+  toolbarConfig,
+  useZoomModeBar,
+  zoomModeProps,
+} from "../components/zoom-mode-bar";
 import { featureNoun } from "../components/feature-noun";
 import { useSpatialCohort } from "./spatial-cohort-context";
 import SpatialCohortPlotOptions from "./spatial-cohort-plot-options";
@@ -225,10 +244,46 @@ function useScrollSettled(active, delay = SCROLL_SETTLE_MS) {
   return settled;
 }
 
+// figure heights until the row has been measured (one render)
 const PLOT_HEIGHT = 340;
 // stacked mode: two subplots on top of each other need roughly double the
 // figure, keeping each subplot about the height it has side-by-side
 const STACKED_PLOT_HEIGHT = 680;
+
+// The pair figure's margins, and the share of its plot area each subplot's
+// cell spans along the direction the pair is arranged in (the rest is the
+// gap holding the legend).
+const PAIR_MARGIN = { t: 36, r: 10, b: 40, l: 50 };
+// stacked: the full-width top subplot would otherwise run under the hovering
+// modebar, so the plot area starts lower
+const STACKED_MARGIN_TOP = 72;
+const PAIR_CELL = 0.42;
+// what Plotly adds to the right margin for the expression colorbar — an
+// allowance, not a measurement: the height has to be known before anything
+// is drawn, so the placeholders can reserve it
+const COLORBAR_ROOM = 70;
+// the largest a subplot's square is drawn, and the smallest (the size the
+// fixed 340px figure gave it)
+const MAX_PLOT_SIDE = 560;
+const MIN_PLOT_SIDE = 264;
+
+// The figure height at which each subplot's square FILLS the width of its
+// cell: the squares take all the width the row offers (up to the cap), and
+// the row is as tall as that makes them. Derived from the row's width alone,
+// so a row's placeholder and its plots are the same height and the page
+// doesn't shift as rows mount and unmount.
+function pairHeight(rowWidth, stacked) {
+  if (!rowWidth) return stacked ? STACKED_PLOT_HEIGHT : PLOT_HEIGHT;
+  const areaWidth = rowWidth - PAIR_MARGIN.l - PAIR_MARGIN.r - COLORBAR_ROOM;
+  const clamp = (side) =>
+    Math.round(Math.min(MAX_PLOT_SIDE, Math.max(MIN_PLOT_SIDE, side)));
+  if (stacked) {
+    // two squares and the gap between them, top to bottom
+    const plotArea = Math.round(clamp(areaWidth) / PAIR_CELL);
+    return plotArea + STACKED_MARGIN_TOP + PAIR_MARGIN.b;
+  }
+  return clamp(areaWidth * PAIR_CELL) + PAIR_MARGIN.t + PAIR_MARGIN.b;
+}
 
 // Below Bootstrap's xl breakpoint the pair's subplots stack vertically —
 // side by side they get too narrow and the in-gap legend overlaps the
@@ -317,10 +372,11 @@ function SamplePairRow({
   featureError,
   onRetry,
 }) {
-  const { config } = useSpatialCohort();
-  const noun = featureNoun(config.featureNoun);
+  const { config, plotOptionsState } = useSpatialCohort();
+  const setPlotOptions = useSetRecoilState(plotOptionsState);
   const stacked = useStackedPair();
-  const plotHeight = stacked ? STACKED_PLOT_HEIGHT : PLOT_HEIGHT;
+  const rowWidth = useElementWidth(innerRef);
+  const plotHeight = pairHeight(rowWidth, stacked);
   const rowMinHeight = plotHeight + 56; // plots + heading, keeps scroll stable
   // shared view for the pair: zoom/pan/reset on either plot mirrors to the
   // other (bidirectional sync per the 7/7 client-review minutes). null = auto.
@@ -337,6 +393,17 @@ function SamplePairRow({
   // the choice through state makes it stick, and the replot it triggers also
   // initializes the WebGL selection overlay BEFORE the first drag.
   const [dragmode, setDragmode] = useState("zoom");
+  // Square Zoom / Rectangle Zoom: picking either arms the zoom tool on THIS
+  // figure; which of the two it is belongs to the page, so every figure's
+  // zoom tool draws the same kind of box
+  const modeBarButtons = useZoomModeBar((rectangle) => {
+    setDragmode("zoom");
+    setPlotOptions((options) => ({ ...options, freeZoom: rectangle }));
+  });
+  const noun = featureNoun(config.featureNoun);
+  // bumped to make Plotly drop the view it holds and take the one it is
+  // given (see handleRelayout) — it is part of the figure's uirevision
+  const [viewEpoch, setViewEpoch] = useState(0);
 
   // A perSample row's records are released when it leaves the mount window;
   // the lasso's cell-id Set has to go with them, or it pins up to ~330k
@@ -356,44 +423,53 @@ function SamplePairRow({
 
   function handleRelayout(event) {
     if (event.dragmode) setDragmode(event.dragmode);
-    if (
-      event["xaxis.autorange"] ||
-      event["yaxis.autorange"] ||
-      event["xaxis2.autorange"] ||
-      event["yaxis2.autorange"]
-    ) {
+    // both subplots share one figure and one view, whichever was dragged
+    const change = relayoutView(event);
+    if (change.reset) {
       setViewRange(null); // double-click / reset-axes on one resets both
       setLassoCells(null); // ...and brings all cells back
       return;
     }
-    // both subplots share one figure: a drag on the right reports xaxis2/
-    // yaxis2 keys, matched to the left axes — normalize to one view range
-    const rx =
-      event["xaxis.range[0]"] !== undefined
-        ? [event["xaxis.range[0]"], event["xaxis.range[1]"]]
-        : event["xaxis2.range[0]"] !== undefined
-          ? [event["xaxis2.range[0]"], event["xaxis2.range[1]"]]
-          : null;
-    const ry =
-      event["yaxis.range[0]"] !== undefined
-        ? [event["yaxis.range[0]"], event["yaxis.range[1]"]]
-        : event["yaxis2.range[0]"] !== undefined
-          ? [event["yaxis2.range[0]"], event["yaxis2.range[1]"]]
-          : null;
-    if (rx || ry) {
-      setViewRange((prev) => ({
-        x: rx ?? prev?.x ?? null,
-        y: ry ?? prev?.y ?? null,
-      }));
+    if (!change.x && !change.y) return;
+    const current = {
+      x: viewRange?.x ?? defaultRange?.x,
+      y: viewRange?.y ?? defaultRange?.y,
+    };
+    // A Rectangle Zoom box shows ONLY what it enclosed: the view widens to
+    // the square around the rectangle, and the cells that widening would
+    // bring into frame are hidden, exactly as a lasso hides them. Drawn
+    // inside an applied selection, it narrows it.
+    if (freeZoom && leftRecords && isDrawnRectangle(change, current)) {
+      const [x0, x1] = [...change.x].sort((a, b) => a - b);
+      const [y0, y1] = [...change.y].sort((a, b) => a - b);
+      const inside = new Set();
+      for (const r of leftRecords) {
+        if (r.x < x0 || r.x > x1 || r.y < y0 || r.y > y1) continue;
+        if (lassoCells && !lassoCells.has(r.cell_id)) continue;
+        inside.add(r.cell_id);
+      }
+      // a box that caught no cells is ignored outright, as an empty lasso
+      // is: applying it would blank the pair. Plotly has already moved the
+      // axes to the box, and handing it the ranges it started from changes
+      // nothing it can see — a new uirevision is what makes it let go of
+      // its own view and take ours.
+      if (!inside.size) {
+        setViewEpoch((epoch) => epoch + 1);
+        return;
+      }
+      setLassoCells(inside);
     }
+    // every view is a square at 1:1 — a Square Zoom box already is one; a
+    // Rectangle Zoom box settles on the square around it
+    setViewRange(squareView(change, current));
   }
 
   // Experimental (the open lasso-behavior question from the NCIATWP-10324
   // comment): the lasso acts as a free-shape ZOOM into just the drawn cells —
   // the pair zooms to the outline's bounding box and every cell OUTSIDE the
   // lasso is hidden (opacity 0) on both plots, so the view shows exactly the
-  // lassoed region. Double-click resets view + visibility. In Proportional
-  // zoom the box widens to keep 1:1; in Free zoom it is exact.
+  // lassoed region. Double-click resets view + visibility. The box widens on
+  // its shorter side to a square, whichever zoom tool was last picked.
   function handleSelected(event) {
     if (!event) return; // deselect / programmatic clears
     const outline = event.lassoPoints ?? event.range;
@@ -402,16 +478,52 @@ function SamplePairRow({
     const ox = outline?.x ?? outline?.x2;
     const oy = outline?.y ?? outline?.y2;
     if (!ox?.length || !oy?.length) return;
-    setViewRange({
-      x: [Math.min(...ox), Math.max(...ox)],
-      y: [Math.min(...oy), Math.max(...oy)],
-    });
+    // the frame stays square: the box grows on its shorter side (the cells
+    // out there are hidden by the lasso anyway)
+    setViewRange(squareBounds(polygonBounds({ x: ox, y: oy })));
     setLassoCells(
       event.points?.length
         ? new Set(event.points.map((pt) => pt.customdata))
         : null,
     );
   }
+
+  // The resting view: the sample's full extent widened to a square, so every
+  // row draws the same square frame at the same 1:1 scale whatever the shape
+  // of its tissue. Measured from the stable cells slice — never the filtered
+  // traces — so legend toggles and lassos don't move it.
+  const defaultRange = useMemo(
+    () => squareBounds(recordBounds(leftRecords), 0.05),
+    [leftRecords],
+  );
+  const rangeX = viewRange?.x ?? defaultRange?.x;
+  const rangeY = viewRange?.y ?? defaultRange?.y;
+
+  // Each subplot is laid out as a pixel SQUARE, centered in the cell the pair
+  // arrangement gives it — with square ranges on a square frame the scale is
+  // 1:1 by construction, which is what lets Rectangle Zoom drop the aspect
+  // lock (needed to draw a free-shape box) without the frame stretching to
+  // fill its cell.
+  const [plotArea, plotAreaHandlers] = usePlotArea(makeToolbarOperable);
+  const cells = stacked
+    ? { x1: [0, 1], y1: [1 - PAIR_CELL, 1], x2: [0, 1], y2: [0, PAIR_CELL] }
+    : { x1: [0, PAIR_CELL], y1: [0, 1], x2: [1 - PAIR_CELL, 1], y2: [0, 1] };
+  const side =
+    plotArea &&
+    Math.min(
+      plotArea.w * (cells.x1[1] - cells.x1[0]),
+      plotArea.h * (cells.y1[1] - cells.y1[0]),
+    );
+  // until the first draw has been measured the lock stays on in either mode,
+  // so the frame is square from the first paint
+  const lockAspect = !freeZoom || !plotArea;
+  // while the lock is on Plotly cuts the same centered square out of each
+  // cell by itself, so the cells go in as they are — Square Zoom, the
+  // default, then needs no second pass to lay out
+  const domainX = (cell) =>
+    lockAspect ? cell : centeredDomain(cell, side / plotArea.w);
+  const domainY = (cell) =>
+    lockAspect ? cell : centeredDomain(cell, side / plotArea.h);
 
   const units = config.units ?? "mm";
   // ONE figure holds both plots as side-by-side subplots — one WebGL context
@@ -431,37 +543,36 @@ function SamplePairRow({
       ...axisStyle(stacked ? "" : `Spatial X (${units})`),
       // side by side on wide screens; stacked (full-width, top half) under
       // the xl breakpoint
-      domain: stacked ? [0, 1] : [0, 0.42],
-      // aspect lock is optional (the "Enable rectangular zoom" checkbox):
-      // locked keeps 1:1 so tissue isn't distorted; the lock must go the
-      // moment the box is checked — while scaleanchor is active Plotly
-      // constrains the zoombox DURING the drag, so the free-drawn rectangle
-      // otherwise never exists to zoom into.
-      ...(!freeZoom && {
+      domain: domainX(cells.x1),
+      // the aspect lock belongs to Square Zoom: while scaleanchor is active
+      // Plotly constrains the zoombox DURING the drag (to a square, here),
+      // so Rectangle Zoom has to drop it for a free-drawn rectangle to exist
+      // at all — the square frame and ranges keep its scale at 1:1
+      ...(lockAspect && {
         scaleanchor: "y",
         scaleratio: 1,
         constrain: "domain",
       }),
-      ...(viewRange?.x && { range: [...viewRange.x], autorange: false }),
+      ...(rangeX && { range: [...rangeX], autorange: false }),
     },
     yaxis: {
       ...axisStyle(`Spatial Y (${units})`),
-      ...(stacked && { domain: [0.58, 1] }),
+      domain: domainY(cells.y1),
       // constrain "domain" (as on x): without it Plotly's constraint pass
       // WIDENS an explicit y range (a lasso bbox) to keep 1:1, showing cells
       // the header count excludes
-      ...(!freeZoom && { constrain: "domain" }),
-      ...(viewRange?.y && { range: [...viewRange.y], autorange: false }),
+      ...(lockAspect && { constrain: "domain" }),
+      ...(rangeY && { range: [...rangeY], autorange: false }),
     },
     xaxis2: {
       ...axisStyle(`Spatial X (${units})`),
-      domain: stacked ? [0, 1] : [0.58, 1],
+      domain: domainX(cells.x2),
       ...(stacked && { anchor: "y2" }),
       matches: "x",
     },
     yaxis2: {
       ...axisStyle(`Spatial Y (${units})`),
-      ...(stacked && { domain: [0, 0.42] }),
+      domain: domainY(cells.y2),
       anchor: "x2",
       matches: "y",
     },
@@ -517,35 +628,19 @@ function SamplePairRow({
           y: 1,
           yanchor: "top",
         },
-    // stacked: the full-width top subplot would otherwise run under the
-    // hovering modebar, so the plot area starts lower
-    margin: { t: stacked ? 72 : 36, r: 10, b: 40, l: 50 },
+    margin: { ...PAIR_MARGIN, ...(stacked && { t: STACKED_MARGIN_TOP }) },
+    // the figure follows its container, whose height tracks the row's width
+    autosize: true,
     hovermode: "closest",
     dragmode,
-    uirevision: sample,
+    modebar: MODEBAR_COLORS,
+    uirevision: `${sample}:${viewEpoch}`,
   };
 
-  const plotConfig = {
-    displayModeBar: true,
-    displaylogo: false,
-    // the lasso here ZOOMS to the drawn region (isolating its cells), so the
-    // toolbar names it accordingly — the locale dictionary is how Plotly
-    // retitles a stock modebar button
-    locale: "en",
-    locales: { en: { dictionary: { "Lasso Select": "Lasso zoom" } } },
-    toImageButtonOptions: {
-      format: "svg",
-      filename: `${config.id}_${sample}`,
-      height: 1000,
-      width: 1000,
-      scale: 1,
-    },
-    modeBarButtonsToRemove: [
-      "select2d",
-      "hoverCompareCartesian",
-      "hoverClosestCartesian",
-    ],
-  };
+  const plotConfig = toolbarConfig({
+    filename: `${config.id}_${sample}`,
+    modeBarButtons,
+  });
 
   // colors looked up by the types PRESENT in this sample (getTraces colors
   // groups by sorted index) — a sample missing a cell type must not shift the
@@ -823,13 +918,15 @@ function SamplePairRow({
       {cellsError ? (
         errorBox(cellsError)
       ) : near ? (
-        leftShown ? (
-          <div className="position-relative">
+        // drawn once the row's width is known, at its real height
+        leftShown && rowWidth ? (
+          <div {...zoomModeProps(dragmode, freeZoom)}>
             <Plot
               key={plotEpoch}
               data={pairData}
               layout={pairLayout}
               config={plotConfig}
+              {...plotAreaHandlers}
               onRelayout={handleRelayout}
               onSelected={handleSelected}
               onDeselect={() => setLassoCells(null)}
@@ -915,12 +1012,9 @@ function StickyBar(headerProps) {
 }
 
 // Shared plots heading: the cohort's title alone — what the expression plots
-// show is named in each plot's own title — with the Proportional/Free zoom
-// radios beneath (moved out of the plot options row — they act on the
-// graphs, so they live with them).
+// show is named in each plot's own title. (The zoom tools are in each
+// figure's toolbar.)
 function PlotsHeader({ title, updating, updatingTitle, subtitle }) {
-  const { config, plotOptionsState } = useSpatialCohort();
-  const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   return (
     // mt-2: a small step between the filter rows above and the title
     <div className="text-center mt-2 mb-2">
@@ -936,29 +1030,6 @@ function PlotsHeader({ title, updating, updatingTitle, subtitle }) {
         )}
       </h2>
       <span className="text-muted small">{subtitle}</span>
-      {/* centered under the title */}
-      {/* the client's vocabulary for the two zoom behaviors: proportional
-          keeps the square 1:1 aspect; free zooms to the exact drawn box */}
-      <div className="d-flex justify-content-center gap-4">
-        <Form.Check
-          type="radio"
-          name={`${config.id}-zoom-mode`}
-          id={`${config.id}-zoom-proportional`}
-          label="Proportional zoom"
-          title="Zoom boxes keep the square 1:1 aspect so tissue is never stretched"
-          checked={!plotOptions.freeZoom}
-          onChange={() => setPlotOptions({ ...plotOptions, freeZoom: false })}
-        />
-        <Form.Check
-          type="radio"
-          name={`${config.id}-zoom-mode`}
-          id={`${config.id}-zoom-free`}
-          label="Free zoom"
-          title="Zoom to the exact drawn rectangle without preserving the square 1:1 aspect (allows stretching)"
-          checked={plotOptions.freeZoom}
-          onChange={() => setPlotOptions({ ...plotOptions, freeZoom: true })}
-        />
-      </div>
     </div>
   );
 }
@@ -1008,7 +1079,7 @@ function FullFetchPlots() {
   );
   // samples: null = all; otherwise keep only the selected samples' rows.
   // Memoized: these scans cover every record, and plotOptionsState commits on
-  // each keystroke in the size/opacity inputs and every zoom-mode toggle.
+  // each keystroke in the size/opacity inputs and every zoom-tool switch.
   const sampleIds = useMemo(() => {
     const sampleSet = samples == null ? null : new Set(samples);
     return Object.keys(cellsBySample)
