@@ -9,8 +9,8 @@ import { useSpatialCohort } from "./spatial-cohort-context";
 
 // Plot controls for a spatial cohort's scatter pairs: Cell Size / Cell Opacity
 // (defaults 4 / 0.8), a Samples multi-select (initial selection from the
-// cohort's defaultSelectedSamples; all samples when unset), and
-// Reset/free-zoom. The gene search lives in SpatialCohortGenePicker, laid out
+// cohort's defaultSelectedSamples; all samples when unset), and Reset (which
+// also returns the figures' zoom tool to Square Zoom). The gene search lives in SpatialCohortGenePicker, laid out
 // beside the Gene Sets panel. The sample list comes from samplesQuery
 // (configured, or derived from the cells).
 export default function SpatialCohortPlotOptions() {
