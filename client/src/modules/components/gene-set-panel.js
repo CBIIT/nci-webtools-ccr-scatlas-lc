@@ -2,13 +2,14 @@ import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import CreateGeneSetModal from "./create-gene-set-modal";
 import GeneMultiSelect from "./gene-multi-select";
+import { countOf, featureNoun } from "./feature-noun";
 
 // Smallest "Gene Set N" (N >= 1) not already taken, used to prefill the create modal.
-function nextDefaultName(existingNames) {
+function nextDefaultName(existingNames, noun) {
   const taken = new Set(existingNames.map((n) => n.toLowerCase()));
   let n = 1;
-  while (taken.has(`gene set ${n}`)) n += 1;
-  return `Gene Set ${n}`;
+  while (taken.has(`${noun.one} set ${n}`)) n += 1;
+  return `${noun.One} Set ${n}`;
 }
 
 // Shared "Gene Sets" panel: lists the user's named gene sets and a Create-new action.
@@ -27,6 +28,8 @@ export default function GeneSetPanel({
   onSetGenes,
   onRemoveGene,
   onDelete,
+  // what the sets hold, for the wording (see feature-noun.js)
+  noun = featureNoun(),
 }) {
   const [showCreate, setShowCreate] = useState(false);
   const [expanded, setExpanded] = useState({});
@@ -46,7 +49,7 @@ export default function GeneSetPanel({
       <div className="d-flex align-items-center gap-3 mb-2">
         {/* form-label on a plain div: literally the same styling as the "Gene"
             label beside it (an h6's weight/line-height read differently) */}
-        <div className="form-label mb-0">Gene Sets</div>
+        <div className="form-label mb-0">{noun.One} Sets</div>
         {/* link-styled so it hugs its text — a bordered button read too wide */}
         <Button
           variant="link"
@@ -57,13 +60,14 @@ export default function GeneSetPanel({
         {/* the droplet toggles are only on screen once a set exists */}
         {sets.length > 0 && (
           <span className="text-muted small">
-            Click water drop to show gene expression
+            Click water drop to show {noun.one} expression
           </span>
         )}
       </div>
       {sets.length === 0 ? (
         <div className="text-muted small">
-          No gene sets yet. Create one to color the plot by its mean expression.
+          No {noun.one} sets yet. Create one to color the plot by its mean
+          expression.
         </div>
       ) : (
         <ul className="list-group">
@@ -83,7 +87,7 @@ export default function GeneSetPanel({
                       disabled={isEmpty}
                       title={
                         isEmpty
-                          ? "Add genes to color the plot by this set"
+                          ? `Add ${noun.many} to color the plot by this set`
                           : "Color the plot by this set's mean expression"
                       }
                       aria-label={`Color the plot by ${set.name}`}
@@ -108,7 +112,7 @@ export default function GeneSetPanel({
                   </div>
                   <div className="d-flex align-items-center gap-2">
                     <span className="text-muted small">
-                      {set.genes.length} gene{set.genes.length === 1 ? "" : "s"}
+                      {countOf(set.genes.length, noun)}
                     </span>
                     <Button
                       size="sm"
@@ -124,7 +128,9 @@ export default function GeneSetPanel({
                 {isOpen && (
                   <div className="mt-2">
                     {isEmpty ? (
-                      <div className="text-muted small mb-2">No genes yet.</div>
+                      <div className="text-muted small mb-2">
+                        No {noun.many} yet.
+                      </div>
                     ) : (
                       <div className="d-flex flex-wrap gap-1 mb-2">
                         {set.genes.map((gene) => {
@@ -143,7 +149,7 @@ export default function GeneSetPanel({
                                 title={
                                   toggled
                                     ? `Remove ${gene} from the plotted subset`
-                                    : `Color the plot by ${gene} (toggle more genes to build a subset)`
+                                    : `Color the plot by ${gene} (toggle more ${noun.many} to build a subset)`
                                 }
                                 aria-pressed={toggled}
                                 aria-label={`Toggle ${gene} in the plotted subset of ${set.name}`}
@@ -175,6 +181,7 @@ export default function GeneSetPanel({
                         options={geneOptions}
                         value={set.genes}
                         onChange={(genes) => onSetGenes(set, genes)}
+                        label={noun.many}
                       />
                     </div>
                   </div>
@@ -191,7 +198,8 @@ export default function GeneSetPanel({
           onCreate={handleCreate}
           geneOptions={geneOptions}
           existingNames={existingNames}
-          defaultName={nextDefaultName(existingNames)}
+          defaultName={nextDefaultName(existingNames, noun)}
+          noun={noun}
         />
       )}
     </div>

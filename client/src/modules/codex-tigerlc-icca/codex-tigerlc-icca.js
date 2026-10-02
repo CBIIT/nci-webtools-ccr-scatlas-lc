@@ -43,6 +43,8 @@ const state = createSpatialCohortState({
     "Epithelial",
   ],
   defaultGene: "EPCAM",
+  // a protein panel: the page reads Protein wherever it would read Gene
+  featureNoun: "protein",
   fetch: "perSample",
   // prettier-ignore
   samples: [

@@ -9,6 +9,7 @@ import Button from "react-bootstrap/Button";
 import Plot from "react-plotly.js";
 import groupBy from "lodash/groupBy";
 import { getTraces } from "../../services/plot";
+import { featureNoun } from "../components/feature-noun";
 import { useSpatialCohort } from "./spatial-cohort-context";
 import SpatialCohortPlotOptions from "./spatial-cohort-plot-options";
 import SpatialCohortGenePicker from "./spatial-cohort-gene-picker";
@@ -279,13 +280,13 @@ function useNearViewport({ mountMargin = "600px", unmountMargin = "1600px" }) {
 
 // Names what the right plots show: the gene, the k-of-n subset, or the full
 // set — so set-level vs gene-level coloring is always explicit.
-function featureLabelOf(activeFeature) {
+function featureLabelOf(activeFeature, noun) {
   if (activeFeature.kind !== "set") return activeFeature.label;
   const { label, genes, setSize } = activeFeature;
   if (genes.length === 1) return `${label}: ${genes[0]}`;
   if (setSize && genes.length < setSize)
-    return `${label} (mean, ${genes.length} of ${setSize} genes)`;
-  return `${label} (mean, ${genes.length} genes)`;
+    return `${label} (mean, ${genes.length} of ${setSize} ${noun.many})`;
+  return `${label} (mean, ${genes.length} ${noun.many})`;
 }
 
 // One sample: left plot colored by cell type, right by the active feature's
@@ -317,6 +318,7 @@ function SamplePairRow({
   onRetry,
 }) {
   const { config } = useSpatialCohort();
+  const noun = featureNoun(config.featureNoun);
   const stacked = useStackedPair();
   const plotHeight = stacked ? STACKED_PLOT_HEIGHT : PLOT_HEIGHT;
   const rowMinHeight = plotHeight + 56; // plots + heading, keeps scroll stable
@@ -479,7 +481,7 @@ function SamplePairRow({
       },
       {
         // the active gene / gene set named in the title per client feedback
-        text: `Gene expression — ${featureLabel}`,
+        text: `${noun.One} expression — ${featureLabel}`,
         x: stacked ? 0.5 : 0.79,
         y: stacked ? 0.42 : 1,
         xref: "paper",
@@ -972,7 +974,10 @@ function FullFetchPlots() {
   // stable base records (coords/types/samples): drives the row list and the
   // left plots, and never re-fetches on gene changes
   const cells = useRecoilValue(state.cellsQuery);
-  const currentLabel = featureLabelOf(activeFeature);
+  const currentLabel = featureLabelOf(
+    activeFeature,
+    featureNoun(config.featureNoun),
+  );
 
   // the expression fetch is a non-suspending loadable — while a new gene/set
   // loads, the previous coloring (and ITS label, so old data never wears the
@@ -1237,7 +1242,10 @@ function PerSamplePlots() {
   const { config } = state;
   const { activeFeature, samples } = useRecoilValue(state.plotOptionsState);
   const allSamples = useRecoilValue(state.samplesQuery);
-  const currentLabel = featureLabelOf(activeFeature);
+  const currentLabel = featureLabelOf(
+    activeFeature,
+    featureNoun(config.featureNoun),
+  );
   const genesKey = activeFeature.genes.join(",");
 
   const sampleSet = samples == null ? null : new Set(samples);

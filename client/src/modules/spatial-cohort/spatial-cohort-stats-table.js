@@ -2,6 +2,7 @@ import { useMemo, useCallback } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
 import Button from "react-bootstrap/Button";
 import Table, { TextFilter, RangeFilter } from "../components/table";
+import { featureNoun } from "../components/feature-noun";
 import { useSpatialCohort } from "./spatial-cohort-context";
 
 // Statistics table below a cohort's plots: the client-provided per-cell-type
@@ -33,14 +34,15 @@ export default function SpatialCohortStatsTable() {
     [stats],
   );
 
+  const noun = featureNoun(config.featureNoun);
   const columns = useMemo(
     () => [
       {
         accessor: "gene",
-        Header: "Gene",
+        Header: noun.One,
         Filter: TextFilter,
-        placeholder: "Enter gene",
-        aria: "Gene",
+        placeholder: `Enter ${noun.one}`,
+        aria: noun.One,
         Cell: ({ value }) => (
           <Button variant="link" className="p-0" onClick={() => setGene(value)}>
             {value}
@@ -70,7 +72,7 @@ export default function SpatialCohortStatsTable() {
         Cell: ({ value }) => <span>{Number(value).toFixed(2)}</span>,
       })),
     ],
-    [setGene, config.statsTableTypes],
+    [setGene, config.statsTableTypes, noun],
   );
 
   const sortBy = useMemo(() => [{ id: "gene", desc: false }], []);
