@@ -16,7 +16,8 @@ const subtypeAnnotation = (x, y, text) => ({
 const state = createSingleCellCohortState({
   id: "scTCell",
   countsTitle: "T-Cell Counts",
-  defaultGene: "EPCAM",
+  // opens on "All genes": the cell-type view
+  defaultGene: null,
   // the legacy T-Cell table says "Level" where the other cohorts say "Levels"
   countsHeaders: { mean: "Normalized Expression Level" },
   panels: [

@@ -18,9 +18,10 @@ import { query } from "../../services/query";
 //                keys can never collide with the legacy per-module atoms
 //                while both coexist during the migration)
 //   countsTitle  heading of the counts card, e.g. "Cell Counts"
-//   defaultGene  the feature active on page load; clearing the picker shows
-//                the cell-type cluster view (activeFeature: null), Reset
-//                returns to this gene
+//   defaultGene  the gene coloring the panels on page load, which Reset
+//                returns to — or null to open on "All genes", the cell-type
+//                cluster view (activeFeature: null), as every cohort now
+//                does. Clearing the picker shows that view either way.
 //   panels       one entry per plot on the page:
 //     id           panel key, used in Recoil keys and counts accessors
 //     label        plot title base, e.g. "Malignant Cells"
@@ -120,16 +121,18 @@ export function createSingleCellCohortState(config) {
 
   // activeFeature: what colors the plots — { kind: "gene" | "set", label,
   // genes: [...] }, or null for the cell-type cluster view ("All genes").
-  // Unlike the spatial pages the null state is reachable: it IS the cluster
-  // view these pages have always opened with a gene away.
+  // Unlike the spatial pages the null state is reachable, and it is where
+  // these pages open unless the cohort names a default gene.
   const defaultPlotOptions = {
     size: 4,
     opacity: 0.8,
-    activeFeature: {
-      kind: "gene",
-      label: config.defaultGene,
-      genes: [config.defaultGene],
-    },
+    activeFeature: config.defaultGene
+      ? {
+          kind: "gene",
+          label: config.defaultGene,
+          genes: [config.defaultGene],
+        }
+      : null,
     // when true, drag-zoom goes to the exact drawn rectangle instead of
     // snapping to the 1:1 aspect (allows stretch distortion)
     freeZoom: false,
