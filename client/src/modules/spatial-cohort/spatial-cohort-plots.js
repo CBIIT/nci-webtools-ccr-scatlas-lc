@@ -8,7 +8,7 @@ import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Plot from "react-plotly.js";
 import groupBy from "lodash/groupBy";
-import { getTraces } from "../../services/plot";
+import { colorRange, getTraces } from "../../services/plot";
 import { featureNoun } from "../components/feature-noun";
 import { useSpatialCohort } from "./spatial-cohort-context";
 import SpatialCohortPlotOptions from "./spatial-cohort-plot-options";
@@ -1026,7 +1026,7 @@ function FullFetchPlots() {
         }
       }
     }
-    return [min, max];
+    return colorRange(min, max);
   }, [featureBySample, sampleIds]);
   const totalShown = useMemo(() => {
     let n = 0;
@@ -1207,7 +1207,7 @@ function PerSampleRow({ sample, currentLabel, genesKey }) {
       if (r.__value < min) min = r.__value;
       if (r.__value > max) max = r.__value;
     }
-    return [min, max];
+    return colorRange(min, max);
   }, [rightRecords]);
 
 
