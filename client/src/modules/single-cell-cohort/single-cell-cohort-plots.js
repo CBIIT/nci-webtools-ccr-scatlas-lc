@@ -21,7 +21,11 @@ import {
   squareView,
 } from "../../services/geometry";
 import { isDrawnRectangle, relayoutView } from "../../services/plot-view";
-import { useElementWidth, usePlotArea } from "../components/use-plot-area";
+import {
+  useElementWidth,
+  usePlotArea,
+  usePlotAreaPress,
+} from "../components/use-plot-area";
 import {
   MODEBAR_COLORS,
   makeToolbarOperable,
@@ -196,8 +200,12 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
   // bumped to make Plotly drop the view it holds and take the one it is
   // given (see handleRelayout) — it is part of the figure's uirevision
   const [viewEpoch, setViewEpoch] = useState(0);
+  // whether the gesture behind a view change began on the plot area — what
+  // tells a drawn zoom box from a drag on an axis or a corner of the frame
+  const [takePlotAreaPress, plotAreaPressHandlers] = usePlotAreaPress();
 
   function handleRelayout(event) {
+    const pressedPlotArea = takePlotAreaPress();
     if (event.dragmode) setDragmode(event.dragmode);
     const change = relayoutView(event);
     if (change.reset) {
@@ -214,17 +222,19 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
     // the square around the rectangle, and the cells that widening would
     // bring into frame are hidden, exactly as a lasso hides them (the box
     // joins the same stack of outlines).
-    if (freeZoom && isDrawnRectangle(change, current)) {
+    if (freeZoom && isDrawnRectangle(change, current, pressedPlotArea)) {
       const [x0, x1] = change.x;
       const [y0, y1] = change.y;
       const polygon = { x: [x0, x1, x1, x0], y: [y0, y0, y1, y1] };
       const boxed = { polygons: [...(lasso?.polygons ?? []), polygon] };
-      // a box that caught no cells is ignored outright, as an empty lasso
-      // is: applying it would blank the panel. Plotly has already moved the
-      // axes to the box, and handing it the ranges it started from changes
-      // nothing it can see — a new uirevision is what makes it let go of
-      // its own view and take ours.
-      if (!records.some((r) => isRecordVisible(r, { lasso: boxed }))) {
+      // a box that caught no cells on show is ignored outright, as an empty
+      // lasso is: applying it would blank the panel (cells of a type hidden
+      // in the legend don't count — they aren't drawn). Plotly has already
+      // moved the axes to the box, and handing it the ranges it started from
+      // changes nothing it can see — a new uirevision is what makes it let
+      // go of its own view and take ours.
+      const caught = { hiddenTypes: activeHidden, lasso: boxed };
+      if (!records.some((r) => isRecordVisible(r, caught))) {
         setViewEpoch((epoch) => epoch + 1);
         return;
       }
@@ -461,7 +471,10 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
   }, [baseData, lasso, opacity, expression, hiddenTypes]);
 
   return (
-    <div {...zoomModeProps(dragmode, freeZoom)} ref={wrapperRef}>
+    <div
+      {...zoomModeProps(dragmode, freeZoom)}
+      {...plotAreaPressHandlers}
+      ref={wrapperRef}>
       {/* drawn once the panel's width is known, at its real height (a panel
           in a hidden tab has none until it is shown) */}
       {!wrapperWidth && <div style={{ height: `${plotHeight}px` }} />}

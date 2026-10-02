@@ -36,15 +36,27 @@ function isWithin(range, outer) {
   return from >= lo - slack && to <= hi + slack;
 }
 
+// Whether a pointer press landed on a subplot's plot area — the surface a
+// zoom box is drawn on. Plotly lays its own drag targets over a figure: this
+// one across each plot area, the others along the axes and at the frame's
+// corners.
+export function isPlotAreaPress(event) {
+  return !!event.target?.classList?.contains("nsewdrag");
+}
+
 // Whether a view change is a box drawn with Rectangle Zoom, as opposed to
 // anything else that moves both axes. The event itself doesn't say, so it is
-// told from the result: a drawn box is not square (every other tool keeps the
-// view square, so a pan or the toolbar's zoom in/out never qualifies) and it
-// lies INSIDE the view it was drawn on. The second test is what rules out
-// zooming OUT by dragging a corner of the frame, which also leaves the axes
-// unequal while Rectangle Zoom has the aspect lock off — nothing was boxed
-// there, so nothing should be hidden.
-export function isDrawnRectangle(next, current) {
+// told from where the gesture began and from its result.
+//   `pressedPlotArea`  the press behind the change landed on the plot area
+//          (see usePlotAreaPress). Dragging a corner of the frame moves both
+//          axes too, and by unequal amounts while Rectangle Zoom has the
+//          aspect lock off — dragged inward, the result reads exactly like a
+//          box. Nothing was boxed there, so nothing should be hidden.
+//   the result         a drawn box is not square (every other tool keeps the
+//          view square, so a pan or the toolbar's zoom in/out never
+//          qualifies) and it lies INSIDE the view it was drawn on.
+export function isDrawnRectangle(next, current, pressedPlotArea) {
+  if (!pressedPlotArea) return false;
   if (!next.x || !next.y || !current?.x || !current?.y) return false;
   if (isSquare(next)) return false;
   return isWithin(next.x, current.x) && isWithin(next.y, current.y);

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { isPlotAreaPress } from "../../services/plot-view";
 
 // The pixel size of a Plotly figure's plot area — the figure minus its
 // margins, INCLUDING the room Plotly reserves on its own for a legend or a
@@ -87,4 +88,30 @@ export function useElementWidth(ref) {
     };
   }, [ref]);
   return width;
+}
+
+// Where the gesture behind a figure's view change began: on a plot area, or
+// anywhere else on the figure (an axis, a corner of the frame, the toolbar).
+// Plotly reports a view change as the ranges it ended on and nothing more,
+// so the press that started it is noted as it happens.
+//
+// Returns [take, handlers]: spread `handlers` onto the wrapper AROUND the
+// figure, and call `take()` once per view change — true when its press
+// landed on a plot area. A press is spent by the change it led to.
+//
+// The handlers listen in the capture phase: Plotly handles the press on its
+// own drag targets, and this must hear it whatever Plotly does with it.
+export function usePlotAreaPress() {
+  const onPlotArea = useRef(false);
+  return useMemo(() => {
+    const note = (event) => {
+      onPlotArea.current = isPlotAreaPress(event);
+    };
+    const take = () => {
+      const pressed = onPlotArea.current;
+      onPlotArea.current = false;
+      return pressed;
+    };
+    return [take, { onMouseDownCapture: note, onTouchStartCapture: note }];
+  }, []);
 }
