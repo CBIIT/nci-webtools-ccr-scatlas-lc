@@ -3,19 +3,60 @@ import {
   useRecoilState,
   useRecoilValue,
   useRecoilValueLoadable,
+  useSetRecoilState,
 } from "recoil";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Form from "react-bootstrap/Form";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import Spinner from "react-bootstrap/Spinner";
 import Plot from "react-plotly.js";
 import { getTraces } from "../../services/plot";
-import { pointInPolygon, polygonBounds } from "../../services/geometry";
+import {
+  centeredDomain,
+  pointInPolygon,
+  polygonBounds,
+  recordBounds,
+  squareBounds,
+  squareView,
+} from "../../services/geometry";
+import { isDrawnRectangle, relayoutView } from "../../services/plot-view";
+import {
+  useElementWidth,
+  usePlotArea,
+  usePlotAreaPress,
+} from "../components/use-plot-area";
+import {
+  MODEBAR_COLORS,
+  makeToolbarOperable,
+  toolbarConfig,
+  useZoomModeBar,
+  zoomModeProps,
+} from "../components/zoom-mode-bar";
 import { useSingleCellCohort } from "./single-cell-cohort-context";
 
+// figure height until the panel has been measured (one render)
 const PLOT_HEIGHT = 800;
+// Plotly's default margins (the panels set none), and an allowance for what
+// it adds on the right for the legend or the expression colorbar
+const PLOT_MARGIN_X = 160;
+const PLOT_MARGIN_Y = 180;
+const LEGEND_ROOM = 120;
+// the largest and smallest a panel's square is drawn
+const MAX_PLOT_SIDE = 720;
+const MIN_PLOT_SIDE = 300;
+
+// The figure height at which the panel's square FILLS the width it is given:
+// the square takes all the width the column offers (up to the cap), and the
+// figure is as tall as that makes it — no bands left above and below.
+function panelHeight(width) {
+  if (!width) return PLOT_HEIGHT;
+  const side = width - PLOT_MARGIN_X - LEGEND_ROOM;
+  return (
+    Math.round(Math.min(MAX_PLOT_SIDE, Math.max(MIN_PLOT_SIDE, side))) +
+    PLOT_MARGIN_Y
+  );
+}
 
 // Names what an expression panel shows: the gene, or the k-of-n subset of a
 // set — mirrored from the spatial pages so labels stay consistent.
@@ -98,43 +139,9 @@ function filterByLasso(traces, lasso) {
   });
 }
 
-// The client's vocabulary for the two zoom behaviors: proportional keeps the
-// 1:1 aspect; free zooms to the exact drawn box. Centered above the panels —
-// the radios act on the graphs, so they live with them.
-function ZoomModeRadios() {
-  const { config, plotOptionsState } = useSingleCellCohort();
-  const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
-  return (
-    <div className="d-flex justify-content-center gap-4 mb-2">
-      <Form.Check
-        type="radio"
-        name={`${config.id}-zoom-mode`}
-        id={`${config.id}-zoom-proportional`}
-        label="Proportional zoom"
-        title="Zoom boxes keep the 1:1 aspect so clusters are never stretched"
-        checked={!plotOptions.freeZoom}
-        onChange={() => setPlotOptions({ ...plotOptions, freeZoom: false })}
-      />
-      <Form.Check
-        type="radio"
-        name={`${config.id}-zoom-mode`}
-        id={`${config.id}-zoom-free`}
-        label="Free zoom"
-        title="Zoom to the exact drawn rectangle without preserving the 1:1 aspect (allows stretching)"
-        checked={plotOptions.freeZoom}
-        onChange={() => setPlotOptions({ ...plotOptions, freeZoom: true })}
-      />
-    </div>
-  );
-}
-
-// One panel: the cell-type cluster view when no feature is active (or when
-// this panel's table has none of the feature's genes), expression coloring
-// otherwise. Each panel is an independent population with its own table,
-// colors, axes, initial ranges and view state — nothing is mirrored between
-// panels.
 function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) {
-  const { config } = useSingleCellCohort();
+  const { config, plotOptionsState } = useSingleCellCohort();
+  const setPlotOptions = useSetRecoilState(plotOptionsState);
   const cells = useRecoilValue(panel.cellsQuery);
 
   // The expression fetch is a non-suspending loadable — while a new feature
@@ -183,49 +190,67 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
   // the tool choice through state forces that replot up front and makes the
   // choice stick.
   const [dragmode, setDragmode] = useState("zoom");
+  // Square Zoom / Rectangle Zoom: picking either arms the zoom tool on THIS
+  // panel; which of the two it is belongs to the page, so every panel's zoom
+  // tool draws the same kind of box
+  const modeBarButtons = useZoomModeBar((rectangle) => {
+    setDragmode("zoom");
+    setPlotOptions((options) => ({ ...options, freeZoom: rectangle }));
+  });
+  // bumped to make Plotly drop the view it holds and take the one it is
+  // given (see handleRelayout) — it is part of the figure's uirevision
+  const [viewEpoch, setViewEpoch] = useState(0);
+  // whether the gesture behind a view change began on the plot area — what
+  // tells a drawn zoom box from a drag on an axis or a corner of the frame
+  const [takePlotAreaPress, plotAreaPressHandlers] = usePlotAreaPress();
 
   function handleRelayout(event) {
+    const pressedPlotArea = takePlotAreaPress();
     if (event.dragmode) setDragmode(event.dragmode);
-    // A reset arrives in one of two forms. An axis with no starting range on
-    // record is put back on autorange; one drawn with an explicit range — as
-    // these panels are, from their configured initialRange — gets that whole
-    // range back under a single `<axis>.range` key. Plotly moves the axes
-    // itself either way, so missing the second form left the plot reset while
-    // the zoom and lasso recorded here (and the title's count) stayed applied.
-    // Drag-zooms report the two ends separately (`range[0]` / `range[1]`), so
-    // the keys tell a reset apart.
-    if (
-      event["xaxis.autorange"] ||
-      event["yaxis.autorange"] ||
-      event["xaxis.range"] ||
-      event["yaxis.range"]
-    ) {
+    const change = relayoutView(event);
+    if (change.reset) {
       setViewRange(null); // double-click / reset-axes restores the full view
       setLasso(null); // ...and brings all cells back
       return;
     }
-    const rx =
-      event["xaxis.range[0]"] !== undefined
-        ? [event["xaxis.range[0]"], event["xaxis.range[1]"]]
-        : null;
-    const ry =
-      event["yaxis.range[0]"] !== undefined
-        ? [event["yaxis.range[0]"], event["yaxis.range[1]"]]
-        : null;
-    if (rx || ry) {
-      setViewRange((prev) => ({
-        x: rx ?? prev?.x ?? null,
-        y: ry ?? prev?.y ?? null,
-      }));
+    if (!change.x && !change.y) return;
+    const current = {
+      x: viewRange?.x ?? defaultRange?.x,
+      y: viewRange?.y ?? defaultRange?.y,
+    };
+    // A Rectangle Zoom box shows ONLY what it enclosed: the view widens to
+    // the square around the rectangle, and the cells that widening would
+    // bring into frame are hidden, exactly as a lasso hides them (the box
+    // joins the same stack of outlines).
+    if (freeZoom && isDrawnRectangle(change, current, pressedPlotArea)) {
+      const [x0, x1] = change.x;
+      const [y0, y1] = change.y;
+      const polygon = { x: [x0, x1, x1, x0], y: [y0, y0, y1, y1] };
+      const boxed = { polygons: [...(lasso?.polygons ?? []), polygon] };
+      // a box that caught no cells on show is ignored outright, as an empty
+      // lasso is: applying it would blank the panel (cells of a type hidden
+      // in the legend don't count — they aren't drawn). Plotly has already
+      // moved the axes to the box, and handing it the ranges it started from
+      // changes nothing it can see — a new uirevision is what makes it let
+      // go of its own view and take ours.
+      const caught = { hiddenTypes: activeHidden, lasso: boxed };
+      if (!records.some((r) => isRecordVisible(r, caught))) {
+        setViewEpoch((epoch) => epoch + 1);
+        return;
+      }
+      setLasso(boxed);
     }
+    // every view is a square at 1:1 — a Square Zoom box already is one; a
+    // Rectangle Zoom box settles on the square around it
+    setViewRange(squareView(change, current));
   }
 
   // The lasso acts as a free-shape ZOOM into just the drawn cells (the
   // behavior established on the spatial pages): the panel zooms to the
   // outline's bounding box and every cell outside the outline disappears from
   // this panel. Drawing again drills further down; double-click resets view +
-  // visibility. In Proportional zoom the box widens to keep 1:1; in Free zoom
-  // it is exact.
+  // visibility. The box widens on its shorter side to a square, whichever
+  // zoom tool was last picked.
   function handleSelected(event) {
     if (!event) return; // deselect / programmatic clears
     // an outline that caught no cells is ignored outright — appending it
@@ -240,7 +265,9 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
     const polygon = event.lassoPoints
       ? { x: ox, y: oy }
       : { x: [ox[0], ox[1], ox[1], ox[0]], y: [oy[0], oy[0], oy[1], oy[1]] };
-    setViewRange(polygonBounds(polygon));
+    // the frame stays square: the box grows on its shorter side (the cells
+    // out there are hidden by the lasso anyway)
+    setViewRange(squareBounds(polygonBounds(polygon)));
     setLasso((prev) => ({ polygons: [...(prev?.polygons ?? []), polygon] }));
   }
 
@@ -294,40 +321,74 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
     ].join("<br>");
   }
 
-  // explicit ranges: the zoomed view when one is set, the configured initial
-  // ranges otherwise (a null initial member autoranges)
-  const rangeX = viewRange?.x ?? panel.initialRange.x;
-  const rangeY = viewRange?.y ?? panel.initialRange.y;
+  // The resting view: the configured initial ranges widened to a square, so
+  // every panel draws a square frame at a 1:1 scale. A null initial member
+  // (an axis the config leaves to fit itself) is measured from the cells.
+  const defaultRange = useMemo(() => {
+    const { x, y } = panel.initialRange;
+    const measured = x && y ? null : recordBounds(cells);
+    return squareBounds(
+      { x: x ?? measured?.x, y: y ?? measured?.y },
+      x && y ? 0 : 0.05,
+    );
+  }, [panel.initialRange, cells]);
+
+  // explicit ranges: the zoomed view when one is set, the square resting view
+  // otherwise
+  const rangeX = viewRange?.x ?? defaultRange?.x;
+  const rangeY = viewRange?.y ?? defaultRange?.y;
+
+  // The plot is laid out as a pixel SQUARE, centered in the figure's plot
+  // area — with square ranges on a square frame the scale is 1:1 by
+  // construction, which is what lets Rectangle Zoom drop the aspect lock
+  // (needed to draw a free-shape box) without the frame stretching to fill
+  // the panel.
+  const [plotArea, plotAreaHandlers] = usePlotArea(makeToolbarOperable);
+  const side = plotArea && Math.min(plotArea.w, plotArea.h);
+  // the figure is as tall as its width makes the square (a panel with a
+  // configured width is no wider than that)
+  const wrapperRef = useRef(null);
+  const wrapperWidth = useElementWidth(wrapperRef);
+  const maxWidth = parseInt(panel.layout?.width, 10);
+  const plotHeight = panelHeight(
+    wrapperWidth && maxWidth ? Math.min(wrapperWidth, maxWidth) : wrapperWidth,
+  );
+  // until the first draw has been measured the lock stays on in either mode,
+  // so the frame is square from the first paint
+  const lockAspect = !freeZoom || !plotArea;
 
   const layout = {
     xaxis: {
       title: panel.axes.x,
       zeroline: false,
-      // aspect lock is optional (the zoom-mode radios): locked keeps 1:1 so
-      // clusters aren't distorted; the lock must go the moment Free zoom is
-      // chosen — while scaleanchor is active Plotly constrains the zoombox
-      // DURING the drag, so the free-drawn rectangle otherwise never exists
-      ...(!freeZoom && {
+      // while the lock is on Plotly cuts the same centered square out of
+      // the plot area by itself — Square Zoom, the default, then needs no
+      // second pass to lay out
+      ...(!lockAspect && {
+        domain: centeredDomain([0, 1], side / plotArea.w),
+      }),
+      // the aspect lock belongs to Square Zoom: while scaleanchor is active
+      // Plotly constrains the zoombox DURING the drag (to a square, here),
+      // so Rectangle Zoom has to drop it for a free-drawn rectangle to exist
+      // at all — the square frame and ranges keep its scale at 1:1
+      ...(lockAspect && {
         scaleanchor: "y",
         scaleratio: 1,
         constrain: "domain",
       }),
-      ...(rangeX && {
-        range: [...rangeX],
-        ...(viewRange?.x && { autorange: false }),
-      }),
+      ...(rangeX && { range: [...rangeX], autorange: false }),
     },
     yaxis: {
       title: panel.axes.y,
       zeroline: false,
+      ...(!lockAspect && {
+        domain: centeredDomain([0, 1], side / plotArea.h),
+      }),
       // constrain "domain" (as on x): without it Plotly's constraint pass
       // WIDENS an explicit y range (a lasso bbox) to keep 1:1, showing cells
       // the title count excludes
-      ...(!freeZoom && { constrain: "domain" }),
-      ...(rangeY && {
-        range: [...rangeY],
-        ...(viewRange?.y && { autorange: false }),
-      }),
+      ...(lockAspect && { constrain: "domain" }),
+      ...(rangeY && { range: [...rangeY], autorange: false }),
     },
     legend: {
       itemsizing: "constant",
@@ -340,34 +401,20 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
     },
     hovermode: "closest",
     dragmode,
+    modebar: MODEBAR_COLORS,
+    // the figure follows its container, whose height tracks the panel's width
+    autosize: true,
     // constant per panel: zoom, lasso and legend state survive gene changes —
     // the swap between cluster and expression coloring only changes the data
-    uirevision: panel.id,
+    uirevision: `${panel.id}:${viewEpoch}`,
     ...(panel.annotations && { annotations: panel.annotations }),
     title: titleOf(),
   };
 
-  const plotConfig = {
-    displayModeBar: true,
-    // the lasso here ZOOMS to the drawn region (isolating its cells), so the
-    // toolbar names it accordingly — the locale dictionary is how Plotly
-    // retitles a stock modebar button
-    locale: "en",
-    locales: { en: { dictionary: { "Lasso Select": "Lasso zoom" } } },
-    toImageButtonOptions: {
-      format: "svg",
-      filename: `${config.id}_${panel.id}`,
-      height: 1000,
-      width: 1000,
-      scale: 1,
-    },
-    displaylogo: false,
-    modeBarButtonsToRemove: [
-      "select2d",
-      "hoverCompareCartesian",
-      "hoverClosestCartesian",
-    ],
-  };
+  const plotConfig = toolbarConfig({
+    filename: `${config.id}_${panel.id}`,
+    modeBarButtons,
+  });
 
   const traceConfig = {
     showlegend: !expression,
@@ -424,26 +471,35 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
   }, [baseData, lasso, opacity, expression, hiddenTypes]);
 
   return (
-    <div className="position-relative">
-      <Plot
-        data={data}
-        layout={layout}
-        config={plotConfig}
-        onRelayout={handleRelayout}
-        onSelected={handleSelected}
-        onDeselect={() => setLasso(null)}
-        onLegendClick={handleLegendClick}
-        onLegendDoubleClick={handleLegendDoubleClick}
-        useResizeHandler
-        className="w-100"
-        style={{
-          height: `${PLOT_HEIGHT}px`,
-          ...(panel.layout?.width && {
-            maxWidth: panel.layout.width,
-            margin: "0 auto",
-          }),
-        }}
-      />
+    <div
+      {...zoomModeProps(dragmode, freeZoom)}
+      {...plotAreaPressHandlers}
+      ref={wrapperRef}>
+      {/* drawn once the panel's width is known, at its real height (a panel
+          in a hidden tab has none until it is shown) */}
+      {!wrapperWidth && <div style={{ height: `${plotHeight}px` }} />}
+      {wrapperWidth && (
+        <Plot
+          data={data}
+          layout={layout}
+          config={plotConfig}
+          {...plotAreaHandlers}
+          onRelayout={handleRelayout}
+          onSelected={handleSelected}
+          onDeselect={() => setLasso(null)}
+          onLegendClick={handleLegendClick}
+          onLegendDoubleClick={handleLegendDoubleClick}
+          useResizeHandler
+          className="w-100"
+          style={{
+            height: `${plotHeight}px`,
+            ...(panel.layout?.width && {
+              maxWidth: panel.layout.width,
+              margin: "0 auto",
+            }),
+          }}
+        />
+      )}
       {updating && currentLabel && (
         <div
           className="position-absolute top-0 start-0 d-flex align-items-center text-muted mt-2 ms-4"
@@ -486,12 +542,7 @@ export default function SingleCellCohortPlots() {
   );
 
   if (!config.tabs) {
-    return (
-      <div>
-        <ZoomModeRadios />
-        {panelGrid(panels)}
-      </div>
-    );
+    return <div>{panelGrid(panels)}</div>;
   }
 
   // plots initialized inside a hidden tab render 0-width, so a tab switch
@@ -503,7 +554,6 @@ export default function SingleCellCohortPlots() {
 
   return (
     <div>
-      <ZoomModeRadios />
       <Tabs
         activeKey={tab}
         id={`${config.id}Tabs`}

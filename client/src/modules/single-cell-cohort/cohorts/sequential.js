@@ -7,7 +7,8 @@ import SingleCellCohortPage from "../single-cell-cohort-page";
 const state = createSingleCellCohortState({
   id: "scSequential",
   countsTitle: "Cell Counts",
-  defaultGene: "EPCAM",
+  // opens on "All genes": the cell-type view
+  defaultGene: null,
   panels: [
     {
       id: "tumor",
