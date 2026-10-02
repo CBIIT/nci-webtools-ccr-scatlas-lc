@@ -10,7 +10,8 @@ import Ref from "../components/ref-link";
 // All copy below is final client wording — render it verbatim.
 
 // widget images per the client's "Images assigned to each widget" map;
-// descriptions are the client's exact cohort copy with linked references
+// descriptions are the client's exact cohort copy with linked references,
+// each link labeled for what it leads to (Data / Manuscript / PMID)
 const transcriptomicsCohorts = [
   {
     title: "Multi-Regional",
@@ -23,7 +24,8 @@ const transcriptomicsCohorts = [
         tumor border (B) were profiled. For one patient, an adjacent normal (N)
         tissue sample was also included. In total, 15 samples were included in
         this study
-        <br />(
+        <br />
+        (Data:{" "}
         <Ref href="https://zenodo.org/doi/10.5281/zenodo.13773977">Zenodo</Ref>,
         PMID:{" "}
         <Ref href="https://pubmed.ncbi.nlm.nih.gov/41723121/">41723121</Ref>).
@@ -39,8 +41,9 @@ const transcriptomicsCohorts = [
         This cohort consists of 4,657,511 cells from tumors of 28 patients with
         iCCA. Two tumor samples were collected from a subset of patients,
         resulting in a total of 36 samples across the cohort
-        <br />(
-        <Ref href="https://doi.org/10.5281/zenodo.18391527">Zenodo</Ref>,{" "}
+        <br />
+        (Data: <Ref href="https://doi.org/10.5281/zenodo.18391527">Zenodo</Ref>,
+        Manuscript:{" "}
         <Ref href="https://www.biorxiv.org/content/10.64898/2026.06.02.729644v1">
           BioRxiv
         </Ref>
@@ -57,8 +60,9 @@ const transcriptomicsCohorts = [
         This cohort consists of 270,906 cells from 131 iCCA patients. Some
         tumors were profiled in duplicate. Overall, 130 samples were retained
         after quality control
-        <br />(
-        <Ref href="https://doi.org/10.5281/zenodo.18391527">Zenodo</Ref>,{" "}
+        <br />
+        (Data: <Ref href="https://doi.org/10.5281/zenodo.18391527">Zenodo</Ref>,
+        Manuscript:{" "}
         <Ref href="https://www.biorxiv.org/content/10.64898/2026.06.02.729644v1">
           BioRxiv
         </Ref>
@@ -76,8 +80,9 @@ const proteomicsCohorts = [
     description: (
       <>
         This cohort consists of 465,632 cells from 190 HCC patients
-        <br />(
-        <Ref href="https://github.com/MaLab621/CODEX_HCC">MaLab621</Ref>, PMID:{" "}
+        <br />
+        (Data: <Ref href="https://github.com/MaLab621/CODEX_HCC">MaLab621</Ref>,
+        PMID:{" "}
         <Ref href="https://pubmed.ncbi.nlm.nih.gov/37725716/">37725716</Ref>).
       </>
     ),
@@ -91,8 +96,9 @@ const proteomicsCohorts = [
         This cohort consists of 117,270 cells from 68 HCC patients. For most
         patients, one tumor sample and one adjacent normal tissue sample were
         included, resulting in a total of 116 samples in this study
-        <br />(
-        <Ref href="https://github.com/MaLab621/CODEX_HCC">MaLab621</Ref>, PMID:{" "}
+        <br />
+        (Data: <Ref href="https://github.com/MaLab621/CODEX_HCC">MaLab621</Ref>,
+        PMID:{" "}
         <Ref href="https://pubmed.ncbi.nlm.nih.gov/37725716/">37725716</Ref>).
       </>
     ),
@@ -107,8 +113,9 @@ const proteomicsCohorts = [
         This cohort consists of 1,121,604 cells from 131 iCCA patients. For each
         patient, one tumor sample and one adjacent normal tissue sample were
         included. In total, 262 samples were collected across all patients
-        <br />(
-        <Ref href="https://zenodo.org/records/15419271">Zenodo</Ref>,{" "}
+        <br />
+        (Data: <Ref href="https://zenodo.org/records/15419271">Zenodo</Ref>,
+        Manuscript:{" "}
         <Ref href="https://www.biorxiv.org/content/10.64898/2026.06.02.729644v1">
           BioRxiv
         </Ref>
