@@ -186,7 +186,20 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
 
   function handleRelayout(event) {
     if (event.dragmode) setDragmode(event.dragmode);
-    if (event["xaxis.autorange"] || event["yaxis.autorange"]) {
+    // A reset arrives in one of two forms. An axis with no starting range on
+    // record is put back on autorange; one drawn with an explicit range — as
+    // these panels are, from their configured initialRange — gets that whole
+    // range back under a single `<axis>.range` key. Plotly moves the axes
+    // itself either way, so missing the second form left the plot reset while
+    // the zoom and lasso recorded here (and the title's count) stayed applied.
+    // Drag-zooms report the two ends separately (`range[0]` / `range[1]`), so
+    // the keys tell a reset apart.
+    if (
+      event["xaxis.autorange"] ||
+      event["yaxis.autorange"] ||
+      event["xaxis.range"] ||
+      event["yaxis.range"]
+    ) {
       setViewRange(null); // double-click / reset-axes restores the full view
       setLasso(null); // ...and brings all cells back
       return;
