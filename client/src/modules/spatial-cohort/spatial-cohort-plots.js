@@ -20,7 +20,11 @@ import {
   squareView,
 } from "../../services/geometry";
 import { isDrawnRectangle, relayoutView } from "../../services/plot-view";
-import { useElementWidth, usePlotArea } from "../components/use-plot-area";
+import {
+  useElementWidth,
+  usePlotArea,
+  usePlotAreaPress,
+} from "../components/use-plot-area";
 import {
   MODEBAR_COLORS,
   makeToolbarOperable,
@@ -404,6 +408,9 @@ function SamplePairRow({
   // bumped to make Plotly drop the view it holds and take the one it is
   // given (see handleRelayout) — it is part of the figure's uirevision
   const [viewEpoch, setViewEpoch] = useState(0);
+  // whether the gesture behind a view change began on a plot area — what
+  // tells a drawn zoom box from a drag on an axis or a corner of the frame
+  const [takePlotAreaPress, plotAreaPressHandlers] = usePlotAreaPress();
 
   // A perSample row's records are released when it leaves the mount window;
   // the lasso's cell-id Set has to go with them, or it pins up to ~330k
@@ -422,6 +429,7 @@ function SamplePairRow({
   }, [releasesRecords, near, lassoCells]);
 
   function handleRelayout(event) {
+    const pressedPlotArea = takePlotAreaPress();
     if (event.dragmode) setDragmode(event.dragmode);
     // both subplots share one figure and one view, whichever was dragged
     const change = relayoutView(event);
@@ -439,21 +447,28 @@ function SamplePairRow({
     // the square around the rectangle, and the cells that widening would
     // bring into frame are hidden, exactly as a lasso hides them. Drawn
     // inside an applied selection, it narrows it.
-    if (freeZoom && leftRecords && isDrawnRectangle(change, current)) {
+    if (
+      freeZoom &&
+      leftRecords &&
+      isDrawnRectangle(change, current, pressedPlotArea)
+    ) {
       const [x0, x1] = [...change.x].sort((a, b) => a - b);
       const [y0, y1] = [...change.y].sort((a, b) => a - b);
       const inside = new Set();
+      let shown = 0;
       for (const r of leftRecords) {
         if (r.x < x0 || r.x > x1 || r.y < y0 || r.y > y1) continue;
         if (lassoCells && !lassoCells.has(r.cell_id)) continue;
         inside.add(r.cell_id);
+        if (!hiddenTypes.has(r.type)) shown += 1;
       }
-      // a box that caught no cells is ignored outright, as an empty lasso
-      // is: applying it would blank the pair. Plotly has already moved the
-      // axes to the box, and handing it the ranges it started from changes
-      // nothing it can see — a new uirevision is what makes it let go of
-      // its own view and take ours.
-      if (!inside.size) {
+      // a box that caught no cells on show is ignored outright, as an empty
+      // lasso is: applying it would blank the pair (cells of a type hidden
+      // in the legend don't count — they aren't drawn). Plotly has already
+      // moved the axes to the box, and handing it the ranges it started from
+      // changes nothing it can see — a new uirevision is what makes it let
+      // go of its own view and take ours.
+      if (!shown) {
         setViewEpoch((epoch) => epoch + 1);
         return;
       }
@@ -920,7 +935,9 @@ function SamplePairRow({
       ) : near ? (
         // drawn once the row's width is known, at its real height
         leftShown && rowWidth ? (
-          <div {...zoomModeProps(dragmode, freeZoom)}>
+          <div
+            {...zoomModeProps(dragmode, freeZoom)}
+            {...plotAreaPressHandlers}>
             <Plot
               key={plotEpoch}
               data={pairData}
