@@ -914,17 +914,18 @@ function StickyBar(headerProps) {
   );
 }
 
-// Shared plots heading: cohort title + what the expression plots show, with
-// the Proportional/Free zoom radios beneath (moved out of the plot options
-// row — they act on the graphs, so they live with them).
-function PlotsHeader({ title, featureLabel, updating, updatingTitle, subtitle }) {
+// Shared plots heading: the cohort's title alone — what the expression plots
+// show is named in each plot's own title — with the Proportional/Free zoom
+// radios beneath (moved out of the plot options row — they act on the
+// graphs, so they live with them).
+function PlotsHeader({ title, updating, updatingTitle, subtitle }) {
   const { config, plotOptionsState } = useSpatialCohort();
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   return (
     // mt-2: a small step between the filter rows above and the title
     <div className="text-center mt-2 mb-2">
       <h2 className="h5 mb-0">
-        {title} <span className="text-muted fw-normal">— {featureLabel}</span>
+        {title}
         {updating && (
           <Spinner
             animation="border"
@@ -1038,7 +1039,6 @@ function FullFetchPlots() {
     <div>
       <StickyBar
         title={config.title}
-        featureLabel={featureLabel}
         updating={updating}
         updatingTitle={`Loading ${currentLabel}…`}
         subtitle={`${sampleIds.length} sample${sampleIds.length === 1 ? "" : "s"}, n=${totalShown}`}
@@ -1256,7 +1256,6 @@ function PerSamplePlots() {
     <div>
       <StickyBar
         title={config.title}
-        featureLabel={currentLabel}
         subtitle={`${sampleIds.length} sample${sampleIds.length === 1 ? "" : "s"}`}
       />
       {sampleIds.map((sample) => (
