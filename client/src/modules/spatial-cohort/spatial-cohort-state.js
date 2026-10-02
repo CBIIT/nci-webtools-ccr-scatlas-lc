@@ -13,6 +13,9 @@ import { query } from "../../services/query";
 //   cellTypeColors  { [type]: color } for the cell-type plot/legend
 //   statsTableTypes cell types (display order) for the statistics table columns
 //   defaultGene     the always-active default feature (clearing snaps back)
+//   featureNoun     what the cohort measures, for the page's wording: "gene"
+//                   (the default) or "protein" (the proteomics cohorts). Only
+//                   the wording changes — the keys here stay `gene`-named.
 //   fetch           "full"  — download the whole cells table once (small cohorts)
 //                   "perSample" — fetch each sample's cells on demand via the
 //                   API's sample filter (large cohorts; requires `samples`)

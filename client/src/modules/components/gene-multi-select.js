@@ -7,6 +7,7 @@ import Button from "react-bootstrap/Button";
 // gene-list semantics: no "Select all" (a whole-panel selection is
 // meaningless), `value` is always a concrete gene array, and the checkbox list
 // renders incrementally on scroll instead of mounting thousands of rows.
+// `label` is the plural noun it is worded with ("genes", "proteins").
 // Used by the gene-set create modal ("select genes from the multi-select
 // list", NCIATWP-10327 AC2); reusable for the proteomics pages later.
 const InputToggle = forwardRef(function InputToggle(

@@ -54,6 +54,8 @@ const state = createSpatialCohortState({
     "CD163+CD20+CD31+",
   ],
   defaultGene: "E-cadherin",
+  // a protein panel: the page reads Protein wherever it would read Gene
+  featureNoun: "protein",
   fetch: "full",
   samples: null,
     // client-chosen sample the Samples filter starts with (9/4 feedback)

@@ -44,6 +44,8 @@ const state = createSpatialCohortState({
     "Endothelial",
   ],
   defaultGene: "E-cadherin",
+  // a protein panel: the page reads Protein wherever it would read Gene
+  featureNoun: "protein",
   fetch: "perSample",
   // prettier-ignore
   samples: [

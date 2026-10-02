@@ -1,5 +1,6 @@
 import { useRecoilState, useRecoilValue } from "recoil";
 import GeneSetPanel from "../components/gene-set-panel";
+import { featureNoun } from "../components/feature-noun";
 import { useSpatialCohort } from "./spatial-cohort-context";
 
 // Connects the shared GeneSetPanel to a cohort's state: the session-only
@@ -9,8 +10,13 @@ import { useSpatialCohort } from "./spatial-cohort-context";
 // same activeFeature, so they are mutually exclusive by construction —
 // activating one visually clears the other.
 export default function SpatialCohortGeneSets() {
-  const { geneSetsState, plotOptionsState, cellsStatsQuery, defaultPlotOptions } =
-    useSpatialCohort();
+  const {
+    config,
+    geneSetsState,
+    plotOptionsState,
+    cellsStatsQuery,
+    defaultPlotOptions,
+  } = useSpatialCohort();
   const [sets, setSets] = useRecoilState(geneSetsState);
   const [plotOptions, setPlotOptions] = useRecoilState(plotOptionsState);
   const stats = useRecoilValue(cellsStatsQuery);
@@ -134,6 +140,7 @@ export default function SpatialCohortGeneSets() {
       onSetGenes={handleSetGenes}
       onRemoveGene={handleRemoveGene}
       onDelete={handleDelete}
+      noun={featureNoun(config.featureNoun)}
     />
   );
 }
