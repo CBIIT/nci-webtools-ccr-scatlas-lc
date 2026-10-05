@@ -1,5 +1,15 @@
 import { createSpatialCohortState } from "../spatial-cohort/spatial-cohort-state";
 import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
+import {
+  ENDOTHELIAL,
+  EPITHELIAL,
+  FIBROBLAST,
+  IMMUNE,
+  MACROPHAGE,
+  MALIGNANT,
+  T_CELL,
+  UNCLASSIFIED,
+} from "../spatial-cohort/cell-type-palette";
 
 // Spatial TIGER-LC iCCA proteomics (CODEX) cohort — a configuration of the
 // shared spatial-cohort template. 1.09M cells over 229 samples (~4.8k each,
@@ -17,18 +27,17 @@ const state = createSpatialCohortState({
     stats: "codex_tigerlc_icca_stats",
     statsTable: "codex_tigerlc_icca_stats_table",
   },
-  // shared palette across cohorts where types recur (Epithelial blue,
-  // Endothelial orange, Fibroblast green); Malignant keeps TIGER-LC's red, so
-  // Myeloid takes purple; Unknown is gray
+  // the shared palette: Lymphocyte in the T cell cyan, Myeloid in the
+  // macrophage brown, Other Immune cells in the untyped-immune magenta
   cellTypeColors: {
-    Endothelial: "#FF8C00",
-    Epithelial: "#3A5FCD",
-    Fibroblast: "#32CD32",
-    Lymphocyte: "#17BECF",
-    Malignant: "#EE2C2C",
-    Myeloid: "#9467BD",
-    "Other Immune cells": "#8C564B",
-    Unknown: "#A9A9A9",
+    Endothelial: ENDOTHELIAL,
+    Epithelial: EPITHELIAL,
+    Fibroblast: FIBROBLAST,
+    Lymphocyte: T_CELL,
+    Malignant: MALIGNANT,
+    Myeloid: MACROPHAGE,
+    "Other Immune cells": IMMUNE,
+    Unknown: UNCLASSIFIED,
   },
   // display order of the statistics table's value columns — follows the
   // client's stats_table_tigerlc.csv column order

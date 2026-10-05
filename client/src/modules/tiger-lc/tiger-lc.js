@@ -1,5 +1,11 @@
 import { createSpatialCohortState } from "../spatial-cohort/spatial-cohort-state";
 import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
+import {
+  EPITHELIAL,
+  FIBROBLAST,
+  IMMUNE,
+  MALIGNANT,
+} from "../spatial-cohort/cell-type-palette";
 
 // Spatial TIGER-LC iCCA cohort — a configuration of the shared spatial-cohort
 // template. The cohort is small enough (~270k cells over ~130 samples) to
@@ -15,10 +21,10 @@ const state = createSpatialCohortState({
     statsTable: "tigerlc_stats_table",
   },
   cellTypeColors: {
-    Epithelial: "#3A5FCD",
-    Immune: "#FF8C00",
-    Malignant: "#EE2C2C",
-    Stromal: "#32CD32",
+    Epithelial: EPITHELIAL,
+    Immune: IMMUNE,
+    Malignant: MALIGNANT,
+    Stromal: FIBROBLAST,
   },
   statsTableTypes: ["Malignant", "Immune", "Stromal", "Epithelial"],
   defaultGene: "EPCAM",
