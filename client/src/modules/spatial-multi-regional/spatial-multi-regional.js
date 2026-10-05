@@ -1,5 +1,14 @@
 import { createSpatialCohortState } from "../spatial-cohort/spatial-cohort-state";
 import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
+import {
+  B_CELL,
+  ENDOTHELIAL,
+  EPITHELIAL,
+  FIBROBLAST,
+  MACROPHAGE,
+  MALIGNANT,
+  T_CELL,
+} from "../spatial-cohort/cell-type-palette";
 
 // Spatial Multi-Regional (CosMx) cohort — a configuration of the shared
 // spatial-cohort template. At 2.35M cells over 15 samples (~20k–330k cells
@@ -24,34 +33,42 @@ const state = createSpatialCohortState({
     stats: "multiregional_stats",
     statsTable: "multiregional_stats_table",
   },
+  // the v2 cell types: the tumor cells (the data's "Tumorcells", shown as
+  // Malignant like every other cohort's) are split out of Epithelial, and the
+  // tumor-associated macrophages, fibroblasts and endothelial cells carry
+  // their TAM / CAF / TEC names — each in its lineage's shared color
   cellTypeColors: {
-    "B cell": "#9467BD",
-    Endothelial: "#FF8C00",
-    Epithelial: "#3A5FCD",
-    Fibroblast: "#32CD32",
-    Myeloid: "#EE2C2C",
-    "T cell": "#17BECF",
+    "B cell": B_CELL,
+    CAF: FIBROBLAST,
+    Epithelial: EPITHELIAL,
+    Malignant: MALIGNANT,
+    TAM: MACROPHAGE,
+    TEC: ENDOTHELIAL,
+    "T cell": T_CELL,
   },
   // display order of the statistics table's value columns — follows the
-  // client's stats_table_multiregional.csv column order
+  // client's stats_table_multiregional.csv (v2) column order
   statsTableTypes: [
-    "Myeloid",
-    "Fibroblast",
+    "TAM",
+    "CAF",
     "B cell",
-    "Endothelial",
-    "Epithelial",
+    "TEC",
+    "Malignant",
     "T cell",
+    "Epithelial",
   ],
   defaultGene: "EPCAM",
   fetch: "perSample",
+  // v2 sample ids: case number + T (tumor core) / B (tumor border) / N
+  // (adjacent normal); C = iCCA, H = HCC
   samples: [
-    "1CB", "1CT", "1HB", "1HT",
-    "2CB", "2CT", "2HB", "2HT",
-    "3CB", "3CT", "3HB", "3HT",
-    "4HB", "4HN", "4HT",
+    "C74B", "C74T", "C76B", "C76T", "C78B", "C78T",
+    "H135B", "H135T", "H136B", "H136T", "H138B", "H138T",
+    "H1680B", "H1680N", "H1680T",
   ],
-    // client-chosen sample the Samples filter starts with (9/4 feedback)
-  defaultSelectedSamples: ["1CB"],
+  // client-chosen sample the Samples filter starts with (9/4 feedback; 1CB
+  // before the v2 ids)
+  defaultSelectedSamples: ["C74B"],
   renderer: "scattergl",
   // The hysteresis band (unmountMargin - mountMargin) must exceed the height a
   // row GAINS when it mounts, or the two thresholds oscillate: below the xl

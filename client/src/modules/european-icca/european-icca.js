@@ -1,5 +1,12 @@
 import { createSpatialCohortState } from "../spatial-cohort/spatial-cohort-state";
 import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
+import {
+  EPITHELIAL,
+  FIBROBLAST,
+  IMMUNE,
+  MALIGNANT,
+  UNCLASSIFIED,
+} from "../spatial-cohort/cell-type-palette";
 
 // Spatial European iCCA (CosMx) cohort — a configuration of the shared
 // spatial-cohort template. The atlas's largest cohort: 4.66M cells over 36
@@ -17,11 +24,11 @@ const state = createSpatialCohortState({
     statsTable: "european_icca_stats_table",
   },
   cellTypeColors: {
-    Epithelial: "#3A5FCD",
-    Immune: "#FF8C00",
-    Malignant: "#EE2C2C",
-    Stromal: "#32CD32",
-    unclassified: "#A9A9A9",
+    Epithelial: EPITHELIAL,
+    Immune: IMMUNE,
+    Malignant: MALIGNANT,
+    Stromal: FIBROBLAST,
+    unclassified: UNCLASSIFIED,
   },
   // display order of the statistics table's value columns — follows the
   // client's stats_table_germany.csv column order
