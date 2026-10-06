@@ -433,3 +433,9 @@ $modebar-icon-size: 22px;
     display: none;
   }
 }
+
+// citation links (PMID, BioRxiv) read at the weight of the citation around
+// them — the theme's medium weight for every link made them look bold
+.references a {
+  font-weight: normal;
+}

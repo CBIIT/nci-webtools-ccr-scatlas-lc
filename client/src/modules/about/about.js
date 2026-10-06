@@ -232,7 +232,7 @@ export default function About() {
           <h2 className="text-primary h4 mt-4">References</h2>
 
           <h3 className="h6 mt-3">Single-cell publications</h3>
-          <ul className="ps-4">
+          <ul className="ps-4 references">
             <li className="mb-2">
               M. Revsine, L. Wang, M. Forgues, S. Behrens, A.J. Craig, M. Liu,
               B. Tran, M. Kelly, A. Budhu, C. Monge, C. Xie, J.M. Hernandez,
@@ -269,7 +269,7 @@ export default function About() {
           </ul>
 
           <h3 className="h6 mt-3">Spatial publications</h3>
-          <ul className="ps-4">
+          <ul className="ps-4 references">
             <li className="mb-2">
               M. Liu, M.O. Hernandez, D. Castven, H.P. Lee, W. Wu, L. Wang, M.
               Forgues, J.M. Hernandez, J.U. Marquardt#, L. Ma#. Tumor cell
@@ -302,7 +302,7 @@ export default function About() {
           </ul>
 
           <h3 className="h6 mt-3">Review</h3>
-          <ul className="ps-4">
+          <ul className="ps-4 references">
             <li className="mb-2">
               L. Ma#, B. Xiong, M. Liu, K. Tan#. Cellular neighborhoods in
               cancer. Nature Cancer 7, 16-28 (2026). <Pmid id="41545713" />
