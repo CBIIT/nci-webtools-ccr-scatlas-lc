@@ -354,11 +354,16 @@ $modebar-icon-size: 22px;
 }
 
 // spatial plot pairs render as ONE figure per row, so there is a single
-// modebar — center it over the figure instead of Plotly's default top-right
+// modebar — center it over the figure instead of Plotly's default top-right.
+// Its own width, not the half of the figure that `left: 50%` leaves it: sized
+// by the space to its right, the toolbar broke onto a second row on narrower
+// windows and ran down into the subplot titles and the legend.
 .spatial-pair .modebar {
   right: auto !important;
   left: 50%;
   transform: translateX(-50%);
+  width: max-content;
+  max-width: 100%;
 }
 
 /* Back to Top — the NCI-standard quarter-circle pinned to the viewport's

@@ -256,11 +256,14 @@ const STACKED_PLOT_HEIGHT = 680;
 
 // The pair figure's margins, and the share of its plot area each subplot's
 // cell spans along the direction the pair is arranged in (the rest is the
-// gap holding the legend).
-const PAIR_MARGIN = { t: 36, r: 10, b: 40, l: 50 };
-// stacked: the full-width top subplot would otherwise run under the hovering
-// modebar, so the plot area starts lower
-const STACKED_MARGIN_TOP = 72;
+// gap holding the legend). The top margin holds the toolbar (its bottom edge
+// 32px down) and, below it, the subplot titles — which on a narrower row are
+// wide enough to reach in under the centered toolbar — so everything starts
+// clear of it.
+const PAIR_MARGIN = { t: 58, r: 10, b: 40, l: 50 };
+// stacked: the top subplot's title sits under the centered toolbar rather
+// than beside it, so the plot area starts lower still
+const STACKED_MARGIN_TOP = 80;
 const PAIR_CELL = 0.42;
 // what Plotly adds to the right margin for the expression colorbar — an
 // allowance, not a measurement: the height has to be known before anything

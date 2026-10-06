@@ -42,6 +42,11 @@ const PLOT_HEIGHT = 800;
 const PLOT_MARGIN_X = 160;
 const PLOT_MARGIN_Y = 180;
 const LEGEND_ROOM = 120;
+// where the title is anchored, measured down from the figure's top edge:
+// Plotly sets a top-anchored title's first line about one line-height (17px)
+// above the anchor, so this puts the text ~14px under the toolbar (whose
+// bottom edge is 30px down)
+const TITLE_TOP = 62;
 // the largest and smallest a panel's square is drawn
 const MAX_PLOT_SIDE = 720;
 const MIN_PLOT_SIDE = 300;
@@ -408,7 +413,16 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
     // the swap between cluster and expression coloring only changes the data
     uirevision: `${panel.id}:${viewEpoch}`,
     ...(panel.annotations && { annotations: panel.annotations }),
-    title: titleOf(),
+    // the title hangs a fixed distance below the figure's top edge, under the
+    // toolbar, rather than centered in the top margin — there it rode up into
+    // the toolbar once the panel narrowed. Plotly places it in fractions of
+    // the figure's height, hence the division.
+    title: {
+      text: titleOf(),
+      yref: "container",
+      y: 1 - TITLE_TOP / plotHeight,
+      yanchor: "top",
+    },
   };
 
   const plotConfig = toolbarConfig({
