@@ -1,5 +1,17 @@
 import { createSpatialCohortState } from "../spatial-cohort/spatial-cohort-state";
 import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
+import {
+  B_CELL,
+  ENDOTHELIAL,
+  GREEN,
+  IMMUNE,
+  MACROPHAGE,
+  MALIGNANT,
+  OLIVE,
+  PINK,
+  T_CELL,
+  UNCLASSIFIED,
+} from "../spatial-cohort/cell-type-palette";
 
 // Spatial LCI HCC proteomics (CODEX) cohort — a configuration of the shared
 // spatial-cohort template. 402k cells over 132 samples (~3k each, max ~10k):
@@ -18,16 +30,16 @@ const state = createSpatialCohortState({
   },
   // the TIGER-LC HCC palette, minus the phenotype clusters this cohort lacks
   cellTypeColors: {
-    "B cell": "#9467BD",
-    "CD44+": "#BCBD22",
-    "CD45+": "#32CD32",
-    DC: "#E377C2",
-    Endothelial: "#FF8C00",
-    "Ki67+": "#2F4F4F",
-    Macrophage: "#8C564B",
-    Malignant: "#EE2C2C",
-    "T cell": "#17BECF",
-    Unclassified: "#A9A9A9",
+    "B cell": B_CELL,
+    "CD44+": OLIVE,
+    "CD45+": IMMUNE,
+    DC: PINK,
+    Endothelial: ENDOTHELIAL,
+    "Ki67+": GREEN,
+    Macrophage: MACROPHAGE,
+    Malignant: MALIGNANT,
+    "T cell": T_CELL,
+    Unclassified: UNCLASSIFIED,
   },
   // display order of the statistics table's value columns — follows the
   // client's stats_table_lcihcc.csv column order
@@ -44,6 +56,8 @@ const state = createSpatialCohortState({
     "Endothelial",
   ],
   defaultGene: "E-cadherin",
+  // a protein panel: the page reads Protein wherever it would read Gene
+  featureNoun: "protein",
   fetch: "perSample",
   // prettier-ignore
   samples: [

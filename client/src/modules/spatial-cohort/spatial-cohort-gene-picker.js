@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Select from "../components/select";
+import { featureNoun } from "../components/feature-noun";
 import { useSpatialCohort } from "./spatial-cohort-context";
 
 // Single-gene search for a spatial cohort. Picking a gene colors the plots by
@@ -20,14 +21,15 @@ export default function SpatialCohortGenePicker() {
     [lookup],
   );
   const mergePlotOptions = (obj) => setPlotOptions({ ...plotOptions, ...obj });
+  const noun = featureNoun(config.featureNoun);
 
   return (
     <Form.Group controlId="plot-gene" className="mb-3">
-      <Form.Label>Gene</Form.Label>
+      <Form.Label>{noun.One}</Form.Label>
       <InputGroup className="flex-nowrap">
         <Select
           name="gene"
-          label="Gene"
+          label={noun.One}
           className="form-control"
           options={geneOptions}
           allOption={null}
@@ -41,8 +43,8 @@ export default function SpatialCohortGenePicker() {
           }}
           placeholder={
             plotOptions.activeFeature?.kind === "set"
-              ? "Gene set active"
-              : "Search genes…"
+              ? `${noun.One} set active`
+              : `Search ${noun.many}…`
           }
           value={
             plotOptions.activeFeature?.kind === "gene"
@@ -56,7 +58,7 @@ export default function SpatialCohortGenePicker() {
           <Button
             variant="light"
             className="bg-transparent border-0 right-0 position-absolute"
-            title={`Reset to the default gene (${config.defaultGene})`}
+            title={`Reset to the default ${noun.one} (${config.defaultGene})`}
             onClick={(_) =>
               mergePlotOptions({
                 activeFeature: defaultPlotOptions.activeFeature,

@@ -13,6 +13,9 @@ import { query } from "../../services/query";
 //   cellTypeColors  { [type]: color } for the cell-type plot/legend
 //   statsTableTypes cell types (display order) for the statistics table columns
 //   defaultGene     the always-active default feature (clearing snaps back)
+//   featureNoun     what the cohort measures, for the page's wording: "gene"
+//                   (the default) or "protein" (the proteomics cohorts). Only
+//                   the wording changes — the keys here stay `gene`-named.
 //   fetch           "full"  — download the whole cells table once (small cohorts)
 //                   "perSample" — fetch each sample's cells on demand via the
 //                   API's sample filter (large cohorts; requires `samples`)
@@ -210,8 +213,9 @@ export function createSpatialCohortState(config) {
       genes: [config.defaultGene],
     },
     samples: config.defaultSelectedSamples ?? null,
-    // experimental: when true, drag-zoom goes to the exact drawn rectangle
-    // instead of snapping to the 1:1 mm aspect (allows stretch distortion)
+    // which zoom tool is live — false: Square Zoom (the box is held square
+    // while dragging); true: Rectangle Zoom (any rectangle; the view settles
+    // on the square around it and shows only the cells it enclosed)
     freeZoom: false,
   };
 

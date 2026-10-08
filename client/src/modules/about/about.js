@@ -232,41 +232,58 @@ export default function About() {
           <h2 className="text-primary h4 mt-4">References</h2>
 
           <h3 className="h6 mt-3">Single-cell publications</h3>
-          <ul className="ps-4">
+          <ul className="ps-4 references">
             <li className="mb-2">
-              Revsine, M. et al. Lineage and ecology define liver tumor
-              evolution in response to treatment. Cell Rep Med 5, 101394
+              M. Revsine, L. Wang, M. Forgues, S. Behrens, A.J. Craig, M. Liu,
+              B. Tran, M. Kelly, A. Budhu, C. Monge, C. Xie, J.M. Hernandez,
+              T.F. Greten, X.W. Wang#, L. Ma#. Lineage and ecology define liver
+              tumor evolution in response to treatment. Cell Rep Med 5, 101394
               (2024). <Pmid id="38280378" />
             </li>
             <li className="mb-2">
-              Ma, L. et al. Multiregional single-cell dissection of tumor and
-              immune cells reveals stable lock-and-key features in liver
-              cancer. Nature Communications 13 (2022). <Pmid id="36476645" />
+              L. Ma*, S. Heinrich*, L. Wang, F.L. Keggenhoff, S.A. Khatib, M.
+              Forgues, M. Kelly, S.M. Hewitt, A. Saif, J.M. Hernandez, D. Mabry,
+              R. Kloeckner, T.F. Greten, J. Chaisaingmongkol, M. Ruchirawat,
+              J.U. Marquardt, X.W. Wang. Multiregional single-cell dissection of
+              tumor and immune cells reveals stable lock-and-key features in
+              liver cancer. Nature Communications 13 (2022).{" "}
+              <Pmid id="36476645" />
             </li>
             <li className="mb-2">
-              Ma, L. et al. Single-cell atlas of tumor cell evolution in
-              response to therapy in hepatocellular carcinoma and intrahepatic
-              cholangiocarcinoma. J Hepatol 75, 1397-1408 (2021).{" "}
+              L. Ma*, L. Wang*, S.A. Khatib*, C.W. Chang, S. Heinrich, D.
+              Dominguez, M. Forgues, J. Candia, M.O. Hernandez, M. Kelly, Y.
+              Zhao, B. Tran, J.M. Hernandez, J.L. Davis, D.E. Kleiner, B.J.
+              Wood, T.F. Greten, X.W. Wang. Single-cell atlas of tumor cell
+              evolution in response to therapy in hepatocellular carcinoma and
+              intrahepatic cholangiocarcinoma. J Hepatol 75, 1397-1408 (2021).{" "}
               <Pmid id="34216724" />
             </li>
             <li className="mb-2">
-              Ma, L. et al. Tumor Cell Biodiversity Drives Microenvironmental
-              Reprogramming in Liver Cancer. Cancer Cell 36, 418-430 e416
-              (2019). <Pmid id="31588021" />
+              L. Ma*, M.O. Hernandez*, Y. Zhao, M. Mehta, B. Tran, M.A. Kelly,
+              Z. Rae, J.M. Hernandez, J.L. Davis, S.P. Martin, D.E. Kleiner,
+              S.M. Hewitt, K. Ylaya, B.J. Wood, T.F. Greten, X.W. Wang. Tumor
+              Cell Biodiversity Drives Microenvironmental Reprogramming in Liver
+              Cancer. Cancer Cell 36, 418-430 e416 (2019).{" "}
+              <Pmid id="31588021" />
             </li>
           </ul>
 
           <h3 className="h6 mt-3">Spatial publications</h3>
-          <ul className="ps-4">
+          <ul className="ps-4 references">
             <li className="mb-2">
-              Liu, M. et al. Tumor cell villages define the co-dependency of
-              tumor and microenvironment in liver cancer. Nature Communications
-              17 (2026). <Pmid id="41723121" />
+              M. Liu, M.O. Hernandez, D. Castven, H.P. Lee, W. Wu, L. Wang, M.
+              Forgues, J.M. Hernandez, J.U. Marquardt#, L. Ma#. Tumor cell
+              villages define the co-dependency of tumor and microenvironment in
+              liver cancer. Nature Communications 17 (2026).{" "}
+              <Pmid id="41723121" />
             </li>
             <li className="mb-2">
-              Lee, H. et al. Cell type-centric interaction networks define
-              spatial architecture of intrahepatic cholangiocarcinoma. BioRxiv
-              (2026).{" "}
+              H.P. Lee*, M. Liu*, W. Wu*, N.T.L. Nguyen, J. Chaisaingmongkol, D.
+              Castven, E. Levy, N. Kedei, M.O. Hernandez, M. Kundu, M. Forgues,
+              M.H. Hung, A. Budhu, N. Alani, S.M. Hewitt, R. Lake, E. Ruppin, S.
+              Lipkowitz, X.W. Wang, J.U. Marquardt#, M. Ruchirawat#, L. Ma#.
+              Cell type-centric interaction networks define spatial architecture
+              of intrahepatic cholangiocarcinoma. BioRxiv (2026).{" "}
               <a
                 href="https://www.biorxiv.org/content/10.64898/2026.06.02.729644v1"
                 target="_blank"
@@ -276,43 +293,42 @@ export default function About() {
               .
             </li>
             <li className="mb-2">
-              Maestri, E. et al. Spatial proximity of tumor-immune interactions
-              predicts patient outcome in hepatocellular carcinoma. Hepatology
-              79, 768-779 (2024). <Pmid id="37725716" />
+              E. Maestri, N. Kedei, S. Khatib, M. Forgues, K. Ylaya, S.M.
+              Hewitt, L. Wang, J. Chaisaingmongkol, M. Ruchirawat, L. Ma#, X.W.
+              Wang#. Spatial proximity of tumor-immune interactions predicts
+              patient outcome in hepatocellular carcinoma. Hepatology 79,
+              768-779 (2024). <Pmid id="37725716" />
             </li>
           </ul>
 
           <h3 className="h6 mt-3">Review</h3>
-          <ul className="ps-4">
+          <ul className="ps-4 references">
             <li className="mb-2">
-              Ma, L. C., Xiong, B., Liu, M. &amp; Tan, K. Cellular
-              neighborhoods in cancer. Nature Cancer 7, 16-28 (2026).{" "}
-              <Pmid id="41545713" />
+              L. Ma#, B. Xiong, M. Liu, K. Tan#. Cellular neighborhoods in
+              cancer. Nature Cancer 7, 16-28 (2026). <Pmid id="41545713" />
             </li>
             <li className="mb-2">
-              Ma, L., Li, C. C. &amp; Wang, X. W. Roles of Cellular
-              Neighborhoods in Hepatocellular Carcinoma Pathogenesis. Annual
-              Review of Pathology: Mechanisms of Disease 20, 169-192 (2025).{" "}
-              <Pmid id="39854188" />
+              L. Ma, C.C. Li, X.W. Wang. Roles of Cellular Neighborhoods in
+              Hepatocellular Carcinoma Pathogenesis. Annual Review of Pathology:
+              Mechanisms of Disease 20, 169-192 (2025). <Pmid id="39854188" />
             </li>
             <li className="mb-2">
-              Li, C. C., Liu, M., Lee, H. P., Wu, W. &amp; Ma, L. Heterogeneity
-              in Liver Cancer Immune Microenvironment: Emerging Single-Cell and
-              Spatial Perspectives. Semin Liver Dis 44, 133-146 (2024).{" "}
+              C.C. Li, M. Liu, H.P. Lee, W. Wu, L. Ma. Heterogeneity in Liver
+              Cancer Immune Microenvironment: Emerging Single-Cell and Spatial
+              Perspectives. Semin Liver Dis 44, 133-146 (2024).{" "}
               <Pmid id="38788780" />
             </li>
             <li className="mb-2">
-              Ma, L., Khatib, S., Craig, A. J. &amp; Wang, X. W. Toward a Liver
-              Cell Atlas: Understanding Liver Biology in Health and Disease at
+              L. Ma#, S. Khatib, A.J. Craig, X.W. Wang#. Toward a Liver Cell
+              Atlas: Understanding Liver Biology in Health and Disease at
               Single-Cell Resolution. Semin Liver Dis 41, 321-330 (2021).{" "}
               <Pmid id="34130336" />
             </li>
             <li className="mb-2">
-              Heinrich, S., Craig, A. J., Ma, L. C., Heinrich, B., Greten, T.
-              F. &amp; Wang, X. W. Understanding tumour cell heterogeneity and
-              its implication for immunotherapy in liver cancer using
-              single-cell analysis. Journal of Hepatology 74, 700-715 (2021).{" "}
-              <Pmid id="33271159" />
+              S. Heinrich, A.J. Craig, L. Ma, B. Heinrich, T.F. Greten, X.W.
+              Wang. Understanding tumour cell heterogeneity and its implication
+              for immunotherapy in liver cancer using single-cell analysis.
+              Journal of Hepatology 74, 700-715 (2021). <Pmid id="33271159" />
             </li>
           </ul>
         </Card.Body>

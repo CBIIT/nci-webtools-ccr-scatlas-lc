@@ -1,5 +1,21 @@
 import { createSpatialCohortState } from "../spatial-cohort/spatial-cohort-state";
 import SpatialCohortPage from "../spatial-cohort/spatial-cohort-page";
+import {
+  B_CELL,
+  BROWN,
+  ENDOTHELIAL,
+  EPITHELIAL,
+  GOLD,
+  GREEN,
+  IMMUNE,
+  MACROPHAGE,
+  MALIGNANT,
+  NAVY,
+  OLIVE,
+  PINK,
+  T_CELL,
+  UNCLASSIFIED,
+} from "../spatial-cohort/cell-type-palette";
 
 // Spatial TIGER-LC HCC proteomics (CODEX) cohort — a configuration of the
 // shared spatial-cohort template. At 133k cells over 116 samples (~1.1k each)
@@ -16,24 +32,26 @@ const state = createSpatialCohortState({
     stats: "codex_tigerlc_hcc_stats",
     statsTable: "codex_tigerlc_hcc_stats_table",
   },
-  // shared hues for types that recur across cohorts (Epithelial blue,
-  // Endothelial orange, Malignant red, B/T cell purple/cyan); the phenotype
-  // clusters unique to this panel take the remaining distinct hues
+  // the shared palette: the types that recur across cohorts in their own
+  // colors (CD45+, the pan-immune cluster, in the untyped-immune magenta);
+  // the phenotype clusters unique to this panel in the spare ones, plus the
+  // fibroblast green, free here because the panel types no fibroblasts. With
+  // 14 types this is the page that uses every color in the palette.
   cellTypeColors: {
-    "B cell": "#9467BD",
-    "CD163+CD20+CD31+": "#654321",
-    "CD31+CD20+": "#008B8B",
-    "CD44+": "#BCBD22",
-    "CD45+": "#32CD32",
-    DC: "#E377C2",
-    "E-cadherin+CD8+": "#FFD700",
-    Endothelial: "#FF8C00",
-    Epithelial: "#3A5FCD",
-    "Ki67+": "#2F4F4F",
-    Macrophage: "#8C564B",
-    Malignant: "#EE2C2C",
-    "T cell": "#17BECF",
-    Unclassified: "#A9A9A9",
+    "B cell": B_CELL,
+    "CD163+CD20+CD31+": BROWN,
+    "CD31+CD20+": NAVY,
+    "CD44+": OLIVE,
+    "CD45+": IMMUNE,
+    DC: PINK,
+    "E-cadherin+CD8+": GOLD,
+    Endothelial: ENDOTHELIAL,
+    Epithelial: EPITHELIAL,
+    "Ki67+": GREEN,
+    Macrophage: MACROPHAGE,
+    Malignant: MALIGNANT,
+    "T cell": T_CELL,
+    Unclassified: UNCLASSIFIED,
   },
   // display order of the statistics table's value columns — follows the
   // client's stats_table_tigerlc.csv column order
@@ -54,6 +72,8 @@ const state = createSpatialCohortState({
     "CD163+CD20+CD31+",
   ],
   defaultGene: "E-cadherin",
+  // a protein panel: the page reads Protein wherever it would read Gene
+  featureNoun: "protein",
   fetch: "full",
   samples: null,
     // client-chosen sample the Samples filter starts with (9/4 feedback)

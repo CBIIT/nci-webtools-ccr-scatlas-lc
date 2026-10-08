@@ -321,12 +321,49 @@
     background-color: rgba(255, 255, 255, 0.9);
   }
 }
+// Plotly's toolbar, enlarged, on every figure (all of them are cohort plots). Plotly has no size option for it: the icons are
+// drawn 1em square, so the button's font-size IS the icon size (16px stock,
+// in a 22px-tall button). Plotly injects its own rules at runtime under
+// `.js-plotly-plot .plotly`, so these carry one more class to win on
+// specificity rather than on load order.
+$modebar-icon-size: 22px;
+.js-plotly-plot .plotly .modebar {
+  .modebar-btn {
+    font-size: $modebar-icon-size;
+    height: $modebar-icon-size + 8px;
+    padding: 4px 6px;
+  }
+  .modebar-group {
+    padding-left: 10px;
+  }
+  // reachable by keyboard (zoom-mode-bar.js) — show where the focus is
+  .modebar-btn:focus-visible {
+    outline: 2px solid #027bbd;
+    outline-offset: -2px;
+  }
+}
+
+// Square Zoom / Rectangle Zoom: Plotly lights a toolbar button by matching
+// it to the drag mode, and both of these are the same drag mode to it — so
+// the live one is lit from here, off the class the figure's wrapper carries
+// (components/zoom-mode-bar.js), in the color that wrapper hands over.
+// !important: Plotly colors the icons with a rule keyed to each toolbar's id.
+.zoom-mode-square .modebar-btn[data-title="Square Zoom"] .icon path,
+.zoom-mode-rectangle .modebar-btn[data-title="Rectangle Zoom"] .icon path {
+  fill: var(--modebar-active-color) !important;
+}
+
 // spatial plot pairs render as ONE figure per row, so there is a single
-// modebar — center it over the figure instead of Plotly's default top-right
+// modebar — center it over the figure instead of Plotly's default top-right.
+// Its own width, not the half of the figure that `left: 50%` leaves it: sized
+// by the space to its right, the toolbar broke onto a second row on narrower
+// windows and ran down into the subplot titles and the legend.
 .spatial-pair .modebar {
   right: auto !important;
   left: 50%;
   transform: translateX(-50%);
+  width: max-content;
+  max-width: 100%;
 }
 
 /* Back to Top — the NCI-standard quarter-circle pinned to the viewport's
@@ -400,4 +437,10 @@
   .back-to-top {
     display: none;
   }
+}
+
+// citation links (PMID, BioRxiv) read at the weight of the citation around
+// them — the theme's medium weight for every link made them look bold
+.references a {
+  font-weight: normal;
 }

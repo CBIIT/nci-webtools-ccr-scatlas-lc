@@ -13,11 +13,24 @@ function extent(array) {
   return [min, max];
 }
 
+// The color scale's range for a set of expression values, given their
+// extent. Expression is never negative, so the scale starts at 0 — the true
+// floor — whatever the smallest value present; should a table ever carry
+// negatives, the floor follows them down. The ceiling is the largest value,
+// but always above the floor: handed an empty range (a gene no shown cell
+// expresses is 0 to 0), Plotly pads it by half a unit each way and the
+// colorbar reads -0.5 to 0.5, values the data cannot take.
+export function colorRange(min, max) {
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return [null, null];
+  const floor = Math.min(0, min);
+  return [floor, max > floor ? max : floor + 1];
+}
+
 export function getTraces(records, config, gene, colorArray = colors) {
   const valueIndex = gene || "type";
   const groups = groupBy(records, "type");
   const [minValue, maxValue] = gene
-    ? extent(records.map((r) => r[valueIndex]))
+    ? colorRange(...extent(records.map((r) => r[valueIndex])))
     : [null, null];
   const formatNumber = (value, precision = 4) =>
     isNumber(value) ? +value.toPrecision(precision) : value;
