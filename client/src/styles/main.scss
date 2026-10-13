@@ -456,3 +456,73 @@ $modebar-icon-size: 22px;
 .references a {
   font-weight: normal;
 }
+
+// The handles laid over a figure's colorbar (components/color-range-handles.js)
+// — a grip to the left of the bar and a line across it, at the value where the
+// gradient starts or ends. The layer itself lets the pointer through to the
+// figure; only the handles take it.
+.color-range {
+  position: absolute;
+  pointer-events: none;
+}
+
+.color-range-handle {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  cursor: ns-resize;
+  touch-action: none;
+
+  // the grip
+  &::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    border-style: solid;
+    border-width: 6px 0 6px 10px;
+    border-color: transparent transparent transparent #333;
+  }
+
+  // the line across the bar
+  &::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 0;
+    top: 7px;
+    height: 2px;
+    background: #333;
+    box-shadow: 0 0 0 1px #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 1px;
+  }
+}
+
+// the handle's value, shown beside the grip while it is being moved
+.color-range-value {
+  display: none;
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 2px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 16px;
+  white-space: nowrap;
+  color: #fff;
+  background: #333;
+  border-radius: 2px;
+}
+
+.color-range-handle.dragging .color-range-value,
+.color-range-handle:focus-visible .color-range-value {
+  display: block;
+}
