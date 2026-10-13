@@ -11,7 +11,12 @@ import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Plot from "react-plotly.js";
 import groupBy from "lodash/groupBy";
-import { colorRange, getTraces } from "../../services/plot";
+import {
+  EXPRESSION_COLORSCALE,
+  colorRange,
+  getTraces,
+  narrowedColorscale,
+} from "../../services/plot";
 import {
   centeredDomain,
   polygonBounds,
@@ -32,6 +37,10 @@ import {
   useZoomModeBar,
   zoomModeProps,
 } from "../components/zoom-mode-bar";
+import ColorRangeHandles, {
+  FULL_COLOR_SPAN,
+  useColorbarBox,
+} from "../components/color-range-handles";
 import { featureNoun } from "../components/feature-noun";
 import { useSpatialCohort } from "./spatial-cohort-context";
 import SpatialCohortPlotOptions from "./spatial-cohort-plot-options";
@@ -374,6 +383,10 @@ function SamplePairRow({
   updating,
   cmin,
   cmax,
+  // where the color gradient starts and ends within cmin–cmax, as fractions
+  // of it (set by dragging the handles on the colorbar)
+  colorSpan = FULL_COLOR_SPAN,
+  onColorSpanChange,
   freeZoom,
   cellsError,
   featureError,
@@ -522,7 +535,12 @@ function SamplePairRow({
   // 1:1 by construction, which is what lets Rectangle Zoom drop the aspect
   // lock (needed to draw a free-shape box) without the frame stretching to
   // fill its cell.
-  const [plotArea, plotAreaHandlers] = usePlotArea(makeToolbarOperable);
+  const figureRef = useRef(null);
+  const [colorbarBox, measureColorbar] = useColorbarBox(figureRef);
+  const [plotArea, plotAreaHandlers] = usePlotArea((graphDiv) => {
+    makeToolbarOperable(graphDiv);
+    measureColorbar();
+  });
   const cells = stacked
     ? { x1: [0, 1], y1: [1 - PAIR_CELL, 1], x2: [0, 1], y2: [0, PAIR_CELL] }
     : { x1: [0, PAIR_CELL], y1: [0, 1], x2: [1 - PAIR_CELL, 1], y2: [0, 1] };
@@ -757,14 +775,17 @@ function SamplePairRow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [leftData, lassoCells, opacity, hiddenTypes],
   );
-  const rightShown = useMemo(
-    () =>
-      rightData
-        ? applyHidden(withLasso(rightData, lassoCells, opacity), true)
-        : null,
+  const rightShown = useMemo(() => {
+    if (!rightData) return null;
+    const traces = applyHidden(withLasso(rightData, lassoCells, opacity), true);
+    // a narrowed color range redraws the gradient only — applied here, after
+    // the traces are built, so moving a handle doesn't rebuild them
+    const [lo, hi] = colorSpan;
+    if (lo <= 0 && hi >= 1) return traces;
+    const colorscale = narrowedColorscale(EXPRESSION_COLORSCALE, lo, hi);
+    return traces.map((t) => ({ ...t, marker: { ...t.marker, colorscale } }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rightData, lassoCells, opacity, hiddenTypes],
-  );
+  }, [rightData, lassoCells, opacity, hiddenTypes, colorSpan]);
 
   // legend interactions on the cell-type plot drive BOTH plots: single click
   // toggles a type, double click isolates it (or restores all when it is
@@ -940,7 +961,8 @@ function SamplePairRow({
         leftShown && rowWidth ? (
           <div
             {...zoomModeProps(dragmode, freeZoom)}
-            {...plotAreaPressHandlers}>
+            {...plotAreaPressHandlers}
+            ref={figureRef}>
             <Plot
               key={plotEpoch}
               data={pairData}
@@ -974,6 +996,15 @@ function SamplePairRow({
               </div>
             )}
             {featureError && !rightShown && errorBox(featureError)}
+            {rightShown && onColorSpanChange && (
+              <ColorRangeHandles
+                box={colorbarBox}
+                span={colorSpan}
+                min={cmin}
+                max={cmax}
+                onChange={onColorSpanChange}
+              />
+            )}
           </div>
         ) : (
           loadingBox(`Loading ${sample}…`)
@@ -1057,6 +1088,17 @@ function PlotsHeader({ title, updating, updatingTitle, subtitle }) {
 // "full" fetch mode: one download of the whole cells table drives every row;
 // expression is fetched globally and grouped, and the color scale is global so
 // expression color is comparable across all sample rows.
+// The narrowed color range, as fractions of the full one — back to the full
+// range whenever the gene / protein (set) changes, since the values it was
+// chosen against are gone. Shared by every row when the rows share one scale
+// (full fetch); a row's own when each row has its own scale (perSample).
+function useColorSpan(genesKey) {
+  const [chosen, setChosen] = useState({ genesKey, span: FULL_COLOR_SPAN });
+  const span = chosen.genesKey === genesKey ? chosen.span : FULL_COLOR_SPAN;
+  const setSpan = (next) => setChosen({ genesKey, span: next });
+  return [span, setSpan];
+}
+
 function FullFetchPlots() {
   const state = useSpatialCohort();
   const { config } = state;
@@ -1076,6 +1118,7 @@ function FullFetchPlots() {
   // new name) stays on screen; only the right plots swap when the data
   // arrives. No page-level Suspense flash.
   const genesKey = activeFeature.genes.join(",");
+  const [colorSpan, setColorSpan] = useColorSpan(genesKey);
   const loadable = useRecoilValueLoadable(
     state.featureExpressionQuery(genesKey),
   );
@@ -1145,6 +1188,8 @@ function FullFetchPlots() {
           featureLabel={featureLabel}
           cmin={cmin}
           cmax={cmax}
+          colorSpan={colorSpan}
+          onColorSpanChange={setColorSpan}
           freeZoom={freeZoom}
         />
       ))}
@@ -1174,6 +1219,7 @@ function PerSampleRow({ sample, currentLabel, genesKey }) {
   const state = useSpatialCohort();
   const { config } = state;
   const { size, opacity, freeZoom } = useRecoilValue(state.plotOptionsState);
+  const [colorSpan, setColorSpan] = useColorSpan(genesKey);
   const [ref, nearViewport] = useNearViewport(config);
   const near = useMountSlot(config, sample, nearViewport, ref);
   const settled = useScrollSettled(near);
@@ -1316,6 +1362,8 @@ function PerSampleRow({ sample, currentLabel, genesKey }) {
       updating={updating}
       cmin={cmin}
       cmax={cmax}
+      colorSpan={colorSpan}
+      onColorSpanChange={setColorSpan}
       freeZoom={freeZoom}
       cellsError={cellsError}
       featureError={featureError}
