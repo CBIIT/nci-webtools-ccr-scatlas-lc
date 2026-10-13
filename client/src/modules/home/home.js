@@ -32,10 +32,11 @@ const TOTAL_COUNTS = [
 
 export default function Home() {
   return (
-    // Background is a 2560px web derivative of the client's Homepage_figure.jpg
-    // (original is 18000px/15MB — too heavy to ship; full-res source lives with the
-    // ticket docs); set inline from the public folder (CRA serves /images/* at the
-    // root) over a dark fallback.
+    // Background is a 3840px, lightly sharpened web derivative of the client's
+    // homepage figure (the 21000px original is far too heavy to ship, and holds
+    // only ~2000px of real detail — hence the sharpening; full-res source lives
+    // with the ticket docs); set inline from the public folder (CRA serves
+    // /images/* at the root) over a dark fallback.
     <div
       className="home-hero"
       style={{
