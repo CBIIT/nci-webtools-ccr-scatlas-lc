@@ -32,6 +32,16 @@ export default function App() {
 
       <div id="content" className="bg-light flex-grow-auto">
         <Route exact path="/" component={Home} />
+        {/* the home page with candidate background images, for comparison */}
+        <Route exact path="/old-sharpened">
+          <Home background="oldSharpened" />
+        </Route>
+        <Route exact path="/new">
+          <Home background="new" />
+        </Route>
+        <Route exact path="/new-sharpened">
+          <Home background="newSharpened" />
+        </Route>
 
         <Route exact path="/single-cell" component={SingleCellSummary} />
         <Route exact path="/spatial" component={SpatialSummary} />

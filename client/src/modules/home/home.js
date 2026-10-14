@@ -21,6 +21,23 @@ const EXPLORE_LINKS = [
   { label: "Explore Spatial Atlas", to: "/spatial" },
 ];
 
+// Background images, by name. "default" is the page at "/"; the others are
+// candidates under review, each shown at its own route (see app.js) so they can be
+// compared side by side. All are web derivatives of the client's figures (the
+// originals are far too heavy to ship; full-res sources live with the ticket
+// docs), saved as progressive JPEG at quality 82 with metadata stripped:
+// - default: 2560px, from the 18000px original
+// - oldSharpened: the same 2560px image with an unsharp mask
+// - new: 3840px, from the newer 21000px figure (which holds only ~2000px of real
+//   detail, so a larger copy alone adds little sharpness)
+// - newSharpened: the same 3840px image with an unsharp mask
+export const HOME_BACKGROUNDS = {
+  default: "/images/homepage_figure.jpg",
+  oldSharpened: "/images/homepage_figure_old_sharpened.jpg",
+  new: "/images/homepage_figure_new.jpg",
+  newSharpened: "/images/homepage_figure_new_sharpened.jpg",
+};
+
 // Total Counts — client-provided static values, in the client's display order;
 // becomes a query if a dynamic counts source is ever defined.
 const TOTAL_COUNTS = [
@@ -30,16 +47,14 @@ const TOTAL_COUNTS = [
   { label: "Cohorts", value: "7" },
 ];
 
-export default function Home() {
+export default function Home({ background = "default" }) {
   return (
-    // Background is a 2560px web derivative of the client's Homepage_figure.jpg
-    // (original is 18000px/15MB — too heavy to ship; full-res source lives with the
-    // ticket docs); set inline from the public folder (CRA serves /images/* at the
-    // root) over a dark fallback.
+    // Background set inline from the public folder (CRA serves /images/* at the
+    // root) over a dark fallback; which image is chosen by the route.
     <div
       className="home-hero"
       style={{
-        backgroundImage: "url(/images/homepage_figure.jpg)",
+        backgroundImage: `url(${HOME_BACKGROUNDS[background]})`,
       }}>
       <Container className="pt-5 d-flex flex-column align-items-center align-self-stretch">
         <div className="home-intro text-center rounded shadow p-4 p-md-5">
