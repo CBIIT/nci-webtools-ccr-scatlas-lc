@@ -93,7 +93,9 @@ export default function Home() {
               rel="noopener noreferrer">
               Liver Cancer Program
             </a>
-            , Center for Cancer Research, National Cancer Institute.
+            , Center for Cancer Research, National Cancer Institute in
+            collaboration with the NCI's Center for Biomedical Informatics &amp;
+            Information Technology (CBIIT).
           </p>
           <p className="h6 mb-1">Disclaimer</p>
           <p className="mb-0 small">
