@@ -135,3 +135,39 @@ export function zoomModeProps(dragmode, rectangle) {
     style: { "--modebar-active-color": MODEBAR_COLORS.activecolor },
   };
 }
+
+// After a zoom box, Plotly pops up a "Double-click to zoom back out" tip
+// (once per page load); after a lasso it shows nothing, though a double-click
+// resets the lasso's zoom the same way. Plotly keeps its notifier to itself,
+// so this builds the same note out of the classes Plotly's own stylesheet
+// already styles — same look, same corner, same 3 s on screen and fade.
+let doubleClickTipShown = false;
+export function showDoubleClickTip() {
+  if (doubleClickTipShown) return;
+  doubleClickTipShown = true;
+  let container = document.querySelector(".plotly-notifier");
+  if (!container) {
+    container = document.createElement("div");
+    container.className = "plotly-notifier";
+    document.body.appendChild(container);
+  }
+  const note = document.createElement("div");
+  note.className = "notifier-note";
+  note.style.opacity = "0";
+  note.style.transition = "opacity 700ms";
+  const close = document.createElement("button");
+  close.className = "notifier-close";
+  close.innerHTML = "&times;";
+  const text = document.createElement("p");
+  text.textContent = "Double-click to zoom back out";
+  note.append(close, text);
+  container.appendChild(note);
+
+  const dismiss = () => {
+    note.style.opacity = "0";
+    setTimeout(() => note.remove(), 700);
+  };
+  close.addEventListener("click", dismiss);
+  requestAnimationFrame(() => (note.style.opacity = "1"));
+  setTimeout(dismiss, 700 + 3000);
+}

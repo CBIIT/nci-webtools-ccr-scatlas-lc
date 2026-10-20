@@ -29,6 +29,7 @@ import {
 import {
   MODEBAR_COLORS,
   makeToolbarOperable,
+  showDoubleClickTip,
   toolbarConfig,
   useZoomModeBar,
   zoomModeProps,
@@ -274,6 +275,16 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
     // out there are hidden by the lasso anyway)
     setViewRange(squareBounds(polygonBounds(polygon)));
     setLasso((prev) => ({ polygons: [...(prev?.polygons ?? []), polygon] }));
+    showDoubleClickTip();
+  }
+
+  // With the lasso tool active, Plotly turns a double-click into a deselect
+  // instead of the view reset it does under the zoom tool — so the deselect
+  // resets too, and a double-click means the same as the house icon
+  // whichever tool is picked
+  function handleDeselect() {
+    setViewRange(null);
+    setLasso(null);
   }
 
   function handleLegendClick(event) {
@@ -500,7 +511,7 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
           {...plotAreaHandlers}
           onRelayout={handleRelayout}
           onSelected={handleSelected}
-          onDeselect={() => setLasso(null)}
+          onDeselect={handleDeselect}
           onLegendClick={handleLegendClick}
           onLegendDoubleClick={handleLegendDoubleClick}
           useResizeHandler

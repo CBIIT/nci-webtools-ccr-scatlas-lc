@@ -28,6 +28,7 @@ import {
 import {
   MODEBAR_COLORS,
   makeToolbarOperable,
+  showDoubleClickTip,
   toolbarConfig,
   useZoomModeBar,
   zoomModeProps,
@@ -439,6 +440,12 @@ function SamplePairRow({
     if (change.reset) {
       setViewRange(null); // double-click / reset-axes on one resets both
       setLassoCells(null); // ...and brings all cells back
+      // Without the aspect lock (Rectangle Zoom), Plotly resets the right
+      // subplot's matched axes — which never record a starting range — to
+      // autorange, and keeps that over the square resting view handed to it
+      // (the layout's own range didn't change, so the GUI value wins under
+      // the same uirevision). A new uirevision makes it take ours.
+      setViewEpoch((epoch) => epoch + 1);
       return;
     }
     if (!change.x && !change.y) return;
@@ -504,6 +511,16 @@ function SamplePairRow({
         ? new Set(event.points.map((pt) => pt.customdata))
         : null,
     );
+    showDoubleClickTip();
+  }
+
+  // With the lasso tool active, Plotly turns a double-click into a deselect
+  // instead of the view reset it does under the zoom tool — so the deselect
+  // resets too, and a double-click means the same as the house icon
+  // whichever tool is picked
+  function handleDeselect() {
+    setViewRange(null);
+    setLassoCells(null);
   }
 
   // The resting view: the sample's full extent widened to a square, so every
@@ -949,7 +966,7 @@ function SamplePairRow({
               {...plotAreaHandlers}
               onRelayout={handleRelayout}
               onSelected={handleSelected}
-              onDeselect={() => setLassoCells(null)}
+              onDeselect={handleDeselect}
               onLegendClick={handleLegendClick}
               onLegendDoubleClick={handleLegendDoubleClick}
               useResizeHandler
