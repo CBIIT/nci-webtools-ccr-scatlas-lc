@@ -506,6 +506,15 @@ function SamplePairRow({
     );
   }
 
+  // With the lasso tool active, Plotly turns a double-click into a deselect
+  // instead of the view reset it does under the zoom tool — so the deselect
+  // resets too, and a double-click means the same as the house icon
+  // whichever tool is picked
+  function handleDeselect() {
+    setViewRange(null);
+    setLassoCells(null);
+  }
+
   // The resting view: the sample's full extent widened to a square, so every
   // row draws the same square frame at the same 1:1 scale whatever the shape
   // of its tissue. Measured from the stable cells slice — never the filtered
@@ -949,7 +958,7 @@ function SamplePairRow({
               {...plotAreaHandlers}
               onRelayout={handleRelayout}
               onSelected={handleSelected}
-              onDeselect={() => setLassoCells(null)}
+              onDeselect={handleDeselect}
               onLegendClick={handleLegendClick}
               onLegendDoubleClick={handleLegendDoubleClick}
               useResizeHandler
