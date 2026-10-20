@@ -28,6 +28,7 @@ import {
 import {
   MODEBAR_COLORS,
   makeToolbarOperable,
+  showDoubleClickTip,
   toolbarConfig,
   useZoomModeBar,
   zoomModeProps,
@@ -504,6 +505,7 @@ function SamplePairRow({
         ? new Set(event.points.map((pt) => pt.customdata))
         : null,
     );
+    showDoubleClickTip();
   }
 
   // With the lasso tool active, Plotly turns a double-click into a deselect

@@ -29,6 +29,7 @@ import {
 import {
   MODEBAR_COLORS,
   makeToolbarOperable,
+  showDoubleClickTip,
   toolbarConfig,
   useZoomModeBar,
   zoomModeProps,
@@ -274,6 +275,7 @@ function PanelPlot({ panel, size, opacity, activeFeature, genesKey, freeZoom }) 
     // out there are hidden by the lasso anyway)
     setViewRange(squareBounds(polygonBounds(polygon)));
     setLasso((prev) => ({ polygons: [...(prev?.polygons ?? []), polygon] }));
+    showDoubleClickTip();
   }
 
   // With the lasso tool active, Plotly turns a double-click into a deselect
