@@ -440,6 +440,12 @@ function SamplePairRow({
     if (change.reset) {
       setViewRange(null); // double-click / reset-axes on one resets both
       setLassoCells(null); // ...and brings all cells back
+      // Without the aspect lock (Rectangle Zoom), Plotly resets the right
+      // subplot's matched axes — which never record a starting range — to
+      // autorange, and keeps that over the square resting view handed to it
+      // (the layout's own range didn't change, so the GUI value wins under
+      // the same uirevision). A new uirevision makes it take ours.
+      setViewEpoch((epoch) => epoch + 1);
       return;
     }
     if (!change.x && !change.y) return;
