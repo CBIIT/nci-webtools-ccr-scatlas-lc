@@ -21,14 +21,15 @@ WORKDIR /deploy/server
 COPY server/package.json server/package-lock.json /deploy/server/
 
 # duckdb needs only @mapbox/node-pre-gyp's .find() at runtime, not its download
-# chain — drop socks/ip (CVE-2024-29415, no upstream fix) and node-gyp's
-# http-cache-semantics (CVE-2026-93748, no upstream fix), which are install-only.
+# chain — drop socks/ip (CVE-2024-29415, no upstream fix), node-gyp's
+# http-cache-semantics (CVE-2026-93748, no upstream fix) and glob/cacache, which
+# carry minimatch 3.x (CVE-2026-118764, fixed only in 11), all install-only.
 # Node 24's node-gyp compiles addons as C++20, which duckdb 0.9.2's bundled re2
 # doesn't parse; it only uses the C-based N-API, so C++17 is safe (this flag
 # comes after node-gyp's own -std and wins).
 RUN CXXFLAGS="-std=gnu++17" npm ci \
  && rm -rf node_modules/ip node_modules/socks node_modules/socks-proxy-agent \
-    node_modules/http-cache-semantics
+    node_modules/http-cache-semantics node_modules/glob node_modules/cacache
 
 # ---- runtime stage: run the app with nodejs only (no npm CLI, no build toolchain) ----
 # The minimal base has no Python (the standard image needs it for dnf), so the
