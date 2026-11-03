@@ -1,2 +1,4 @@
 **/node_modules
 database
+# the data-import image needs this one script from the excluded directory
+!database/apply_delta.sh

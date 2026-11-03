@@ -1,0 +1,62 @@
+family: "${ECS_DATA_IMPORT_TASK}"
+networkMode: awsvpc
+cpu: "${ECS_DATA_IMPORT_CPU_UNITS}"
+memory: "${ECS_DATA_IMPORT_MEMORY_UNITS}"
+executionRoleArn: "${ROLE_ARN}"
+taskRoleArn: "${ROLE_ARN}"
+requiresCompatibilities:
+  - FARGATE
+# the delta download and DuckDB's disk spill both land on task-local storage
+ephemeralStorage:
+  sizeInGiB: 40
+runtimePlatform:
+  cpuArchitecture: X86_64
+  operatingSystemFamily: LINUX
+volumes:
+  - name: data
+    efsVolumeConfiguration:
+      fileSystemId: "${EFS_FILESYSTEM_ID}"
+      authorizationConfig:
+        accessPointId: "${EFS_ACCESS_POINT_ID}"
+        iam: ENABLED
+      transitEncryption: ENABLED
+containerDefinitions:
+  - name: data-import
+    image: "${DATA_IMPORT_IMAGE}"
+    essential: true
+    environment:
+      - name: AWS_DEFAULT_REGION
+        value: "${AWS_REGION}"
+      - name: DELTA_S3_URI
+        value: "${DELTA_S3_URI}"
+      - name: TABLES
+        value: "${TABLES}"
+      - name: DUCKDB_MEMORY_LIMIT
+        value: "${DUCKDB_MEMORY_LIMIT}"
+    secrets:
+      - name: DATABASE_PATH
+        valueFrom: "${PARAMETER_PATH}/database_path"
+    mountPoints:
+      - sourceVolume: data
+        containerPath: "/data"
+        readOnly: false
+    logConfiguration:
+      logDriver: awslogs
+      options:
+        awslogs-group: "/analysistools/${TIER}/${APP}/data-import"
+        awslogs-region: "${AWS_REGION}"
+        awslogs-stream-prefix: data-import
+        awslogs-create-group: "true"
+tags:
+  - key: Project
+    value: "${APP}"
+  - key: ApplicationName
+    value: "${APP}"
+  - key: ResourceName
+    value: "${TIER}-${APP}-data-import-ecs-task"
+  - key: EnvironmentTier
+    value: "${TIER_UPPER}"
+  - key: ResourceFunction
+    value: compute
+  - key: Creator
+    value: TF
