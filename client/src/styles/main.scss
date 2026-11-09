@@ -276,16 +276,28 @@
     max-width: 800px;
     margin-top: 5rem; // drop the main group below the navbar per client feedback
     background-color: rgba(255, 255, 255, 0.9); // 90% white over the hero
+    // keep the text clear of the Explore buttons that overlap the card's bottom
+    // edge (overrides the p-4 / p-md-5 utilities, which are !important)
+    padding-bottom: calc(var(--explore-overlap) + 0.75rem) !important;
+
+    @media (max-width: 540px) {
+      padding-bottom: 1.5rem !important;
+    }
   }
 
   // Explore buttons straddle the intro card's bottom edge (half on the card,
-  // half on the hero image) — pulled up by half their own height. Once the
-  // buttons wrap/stack on narrow screens, drop the overlap so they sit below
-  // the card instead of covering the description text.
+  // half on the hero image). The overlap is a fixed half of a one-line button,
+  // not half the button's own height: when the labels wrap to two lines on
+  // medium screens, the buttons grow downward instead of up over the text.
+  // Once the buttons stack on narrow screens, drop the overlap so they sit
+  // below the card.
+  --explore-overlap: calc((2rem + 1.55rem * 1.5) / 2 + 1px); // (padding + line height) / 2 + border
+
   .home-explore {
     position: relative;
     z-index: 2;
-    transform: translateY(-50%);
+    margin-top: calc(-1 * var(--explore-overlap));
+    margin-bottom: var(--explore-overlap); // keeps the counts where they were
     // auto-width grid with equal (1fr) columns: both buttons take the widest
     // label's width, so the gap between them lands exactly on the center line
     display: inline-grid;
@@ -299,8 +311,8 @@
     }
 
     @media (max-width: 540px) {
-      transform: none;
       margin-top: 1rem;
+      margin-bottom: 0;
       grid-auto-flow: row; // stack the buttons instead of overflowing
     }
   }
@@ -443,4 +455,74 @@ $modebar-icon-size: 22px;
 // them — the theme's medium weight for every link made them look bold
 .references a {
   font-weight: normal;
+}
+
+// The handles laid over a figure's colorbar (components/color-range-handles.js)
+// — a grip to the left of the bar and a line across it, at the value where the
+// gradient starts or ends. The layer itself lets the pointer through to the
+// figure; only the handles take it.
+.color-range {
+  position: absolute;
+  pointer-events: none;
+}
+
+.color-range-handle {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  cursor: ns-resize;
+  touch-action: none;
+
+  // the grip
+  &::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    border-style: solid;
+    border-width: 6px 0 6px 10px;
+    border-color: transparent transparent transparent #333;
+  }
+
+  // the line across the bar
+  &::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 0;
+    top: 7px;
+    height: 2px;
+    background: #333;
+    box-shadow: 0 0 0 1px #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 1px;
+  }
+}
+
+// the handle's value, shown beside the grip while it is being moved
+.color-range-value {
+  display: none;
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 2px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 16px;
+  white-space: nowrap;
+  color: #fff;
+  background: #333;
+  border-radius: 2px;
+}
+
+.color-range-handle.dragging .color-range-value,
+.color-range-handle:focus-visible .color-range-value {
+  display: block;
 }

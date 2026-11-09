@@ -26,6 +26,28 @@ export function colorRange(min, max) {
   return [floor, max > floor ? max : floor + 1];
 }
 
+// Plotly's own default for values that are never negative ("Reds"), spelled
+// out so a narrowed range can be drawn from it
+export const EXPRESSION_COLORSCALE = [
+  [0, "rgb(220,220,220)"],
+  [0.2, "rgb(245,195,157)"],
+  [0.4, "rgb(245,160,105)"],
+  [1, "rgb(178,10,28)"],
+];
+
+// A color scale whose gradient runs between two points of the value range
+// (`lo` and `hi`, as fractions of it) instead of across all of it: everything
+// below `lo` takes the first color, everything above `hi` the last. The range
+// itself (cmin/cmax) is left alone, so the colorbar keeps its full axis and
+// shows where the gradient now sits on it.
+export function narrowedColorscale(scale, lo, hi) {
+  if (lo <= 0 && hi >= 1) return scale;
+  const stops = scale.map(([at, color]) => [lo + at * (hi - lo), color]);
+  if (lo > 0) stops.unshift([0, scale[0][1]]);
+  if (hi < 1) stops.push([1, scale[scale.length - 1][1]]);
+  return stops;
+}
+
 export function getTraces(records, config, gene, colorArray = colors) {
   const valueIndex = gene || "type";
   const groups = groupBy(records, "type");

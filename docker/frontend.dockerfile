@@ -4,8 +4,8 @@ FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS build
 RUN dnf -y update \
  && dnf -y install \
     make \
-    nodejs \
-    npm \
+    nodejs24 \
+    nodejs24-npm \
  && dnf clean all
 
 WORKDIR /deploy/client
@@ -24,12 +24,14 @@ ENV REACT_APP_GTAG=${REACT_APP_GTAG}
 RUN npm run build
 
 # ---- runtime stage: serve the static build with httpd (no node_modules) ----
-FROM public.ecr.aws/amazonlinux/amazonlinux:2023
+# The minimal base has no Python (the standard image needs it for dnf), so the
+# image doesn't carry python3.9 and its scanner findings.
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023-minimal
 
-RUN dnf -y update \
- && dnf -y install \
+RUN microdnf -y update \
+ && microdnf -y install \
     httpd \
- && dnf clean all
+ && microdnf clean all
 
 # copy only the compiled static assets from the build stage
 COPY --from=build /deploy/client/build/ /var/www/html/
