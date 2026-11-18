@@ -257,80 +257,200 @@
   }
 }
 
-/* Home portal — full-bleed hero with the spatial-tissue background image and a
-   centered intro card. Explore buttons / Total Counts tiles sit below the intro. */
-.home-hero {
+/* Home portal — a navy hero (title + description on the left, the tissue image
+   on the right fading into the navy, a curved bottom edge) above a white section
+   with the counts, the Explore buttons and the credit. */
+$home-navy: $primary-darker;
+
+// While the home page is shown, the hero carries the site title and continues the
+// navbar's navy: hide the header's title band and turn the navbar navy so the two
+// read as one band (the class is set by the Home component).
+body.route-home {
+  header .bg-primary {
+    display: none;
+  }
+  // from sm up the navbar floats on the hero, so the image runs up behind it as
+  // in the design; below sm (toggler menu, which grows in place when opened) it
+  // stays solid navy and the hero starts beneath it
+  .navbar.bg-dark {
+    background-color: $home-navy !important;
+
+    @media (min-width: 576px) {
+      background-color: transparent !important;
+    }
+  }
+}
+$home-navbar-height: 54px; // the navbar's rendered height (link padding + borders)
+
+.home {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 56px); // fill the viewport below the navbar
-  padding: 2rem 0 0; // no bottom padding — the credit card sits flush on the hero's bottom edge
-  background-color: #0b1020; // dark fallback that matches the micrograph
-  // background-image is set inline in home.js from the public asset
-  // (/images/homepage_figure.jpg) — CRA doesn't resolve public files via CSS url()
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  flex-direction: column;
+  min-height: calc(100vh - 56px - 88px); // viewport below the navbar and logo bar
+  background-color: #fff;
+}
 
-  .home-intro {
-    max-width: 800px;
-    margin-top: 5rem; // drop the main group below the navbar per client feedback
-    background-color: rgba(255, 255, 255, 0.9); // 90% white over the hero
-    // keep the text clear of the Explore buttons that overlap the card's bottom
-    // edge (overrides the p-4 / p-md-5 utilities, which are !important)
-    padding-bottom: calc(var(--explore-overlap) + 0.75rem) !important;
+.home-hero {
+  position: relative;
+  overflow: hidden;
+  background-color: $home-navy;
+  color: #fff;
+  // room under the text for the curve, which scales with the width
+  // pull up under the transparent navbar; room under the text for the curve,
+  // which scales with the width
+  margin-top: -$home-navbar-height;
+  padding: calc(#{$home-navbar-height} + 2.5rem) 0 calc(6vw + 3rem);
 
-    @media (max-width: 540px) {
-      padding-bottom: 1.5rem !important;
+  @media (max-width: 575.98px) {
+    margin-top: 0;
+    padding-top: 1.5rem;
+  }
+
+  // the image covers the right part and fades into the navy toward the text
+  .home-hero-image {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 62%;
+    // the figure is a round tissue section: zoom past its dark rim into the
+    // dense middle (the hero is always much wider than tall here)
+    background-size: 140% auto;
+    background-position: center;
+    background-repeat: no-repeat;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
+    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
+  }
+
+  .home-hero-content {
+    position: relative; // above the image
+    z-index: 1;
+  }
+
+  .home-title {
+    font-size: calc(1.6rem + 1vw);
+    margin-bottom: 1rem;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .home-description {
+    max-width: 50rem;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  }
+
+  .home-hero-curve {
+    position: absolute;
+    left: 0;
+    bottom: -1px; // no hairline gap above the white section
+    width: 100%;
+    height: 6vw;
+    min-height: 2.5rem;
+  }
+  .home-hero-curve-rim {
+    fill: #b8c7da; // the pale band along the edge
+  }
+  .home-hero-curve-fill {
+    fill: #fff;
+  }
+
+  // mid widths: narrower image and text column so the description stays on the
+  // navy rather than running onto the bright part of the image
+  @media (min-width: 992px) and (max-width: 1399.98px) {
+    .home-hero-image {
+      width: 52%;
+    }
+    .home-description {
+      max-width: 34rem;
     }
   }
 
-  // Explore buttons straddle the intro card's bottom edge (half on the card,
-  // half on the hero image). The overlap is a fixed half of a one-line button,
-  // not half the button's own height: when the labels wrap to two lines on
-  // medium screens, the buttons grow downward instead of up over the text.
-  // Once the buttons stack on narrow screens, drop the overlap so they sit
-  // below the card.
-  --explore-overlap: calc((2rem + 1.55rem * 1.5) / 2 + 1px); // (padding + line height) / 2 + border
+  // narrow screens: the text spans the full width, so the image sits behind it,
+  // dimmed, instead of beside it
+  @media (max-width: 991.98px) {
+    .home-hero-image {
+      width: 100%;
+      background-size: cover; // the hero can be taller than wide here
+      opacity: 0.35;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+}
 
+.home-body {
+  flex: 1 0 auto;
+  padding: 1.5rem 0 2.5rem;
+  background-color: #fff;
+  color: $home-navy;
+
+  .home-count-value {
+    font-size: calc(2.25rem + 1.5vw);
+    font-weight: 800;
+    line-height: 1.05;
+  }
+
+  .home-counts {
+    max-width: 64rem;
+    margin: 0 auto;
+  }
+
+  .home-count-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  // auto-width grid with equal (1fr) columns: both buttons take the widest
+  // label's width, so the gap between them lands on the center line
   .home-explore {
-    position: relative;
-    z-index: 2;
-    margin-top: calc(-1 * var(--explore-overlap));
-    margin-bottom: var(--explore-overlap); // keeps the counts where they were
-    // auto-width grid with equal (1fr) columns: both buttons take the widest
-    // label's width, so the gap between them lands exactly on the center line
     display: inline-grid;
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
+    gap: 1rem;
+    margin: 2.25rem 0;
 
-    // sized up beyond btn-lg
     .btn {
-      padding: 1rem 2.25rem;
-      font-size: 1.55rem;
+      padding: 0.6rem 3rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      white-space: nowrap;
+      background-color: $home-navy;
+      border-color: $home-navy;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+
+      &:hover,
+      &:focus {
+        background-color: $primary;
+        border-color: $primary;
+      }
     }
 
-    @media (max-width: 540px) {
-      margin-top: 1rem;
-      margin-bottom: 0;
-      grid-auto-flow: row; // stack the buttons instead of overflowing
+    @media (max-width: 991.98px) {
+      .btn {
+        padding: 0.55rem 1.75rem;
+        font-size: 1.25rem;
+      }
+    }
+
+    // two one-line labels no longer fit side by side: stack them
+    @media (max-width: 767.98px) {
+      grid-auto-flow: row;
     }
   }
 
-  // Total Counts tiles — translucent cards over the hero, like the intro box.
-  .home-counts {
-    margin-top: 2rem;
-  }
-
-  .home-count-tile {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-
-  // credit sentence + disclaimer at the page bottom (moved from the footer's
-  // References section — see NCIATWP-11120) — same translucent card treatment
   .home-credit {
-    max-width: 800px;
-    background-color: rgba(255, 255, 255, 0.9);
+    max-width: 66rem;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    color: $body-color;
+
+    a {
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: $body-color;
+    }
   }
 }
 // Plotly's toolbar, enlarged, on every figure (all of them are cohort plots). Plotly has no size option for it: the icons are
