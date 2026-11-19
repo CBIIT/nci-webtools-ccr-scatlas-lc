@@ -309,14 +309,25 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
   .home-hero-image {
     position: absolute;
     inset: 0 0 0 auto;
-    width: 62%;
+    width: 58%;
     // the figure is a round tissue section: zoom past its dark rim into the
     // dense middle (the hero is always much wider than tall here)
     background-size: 140% auto;
     background-position: center;
     background-repeat: no-repeat;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
-    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
+    // a long, eased fade whose midpoint sits right of the page center
+    $home-hero-fade: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(0, 0, 0, 0.08) 15%,
+      rgba(0, 0, 0, 0.25) 30%,
+      rgba(0, 0, 0, 0.5) 45%,
+      rgba(0, 0, 0, 0.75) 60%,
+      rgba(0, 0, 0, 0.92) 72%,
+      #000 82%
+    );
+    -webkit-mask-image: $home-hero-fade;
+    mask-image: $home-hero-fade;
   }
 
   .home-hero-content {
@@ -325,14 +336,14 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
   }
 
   .home-title {
-    font-size: calc(1.6rem + 1vw);
+    font-size: calc(1.35rem + 0.8vw);
     margin-bottom: 1rem;
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
   }
 
   .home-description {
     max-width: 50rem;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     line-height: 1.6;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   }
@@ -346,7 +357,7 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
     min-height: 2.5rem;
   }
   .home-hero-curve-rim {
-    fill: #b8c7da; // the pale band along the edge
+    fill: rgba(200, 214, 232, 0.8); // the pale band along the edge, translucent so the image shows through
   }
   .home-hero-curve-fill {
     fill: #fff;
@@ -378,19 +389,24 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
 
 .home-body {
   flex: 1 0 auto;
-  padding: 1.5rem 0 2.5rem;
+  padding: 0.25rem 0 2.5rem;
   background-color: #fff;
   color: $home-navy;
 
   .home-count-value {
-    font-size: calc(2.25rem + 1.5vw);
+    font-size: calc(1.85rem + 1.1vw);
     font-weight: 800;
     line-height: 1.05;
   }
 
   .home-counts {
     max-width: 64rem;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
+    // rise into the white part of the hero's curve, above the hero
+    position: relative;
+    z-index: 1;
+    margin-top: -2.75vw;
   }
 
   .home-count-label {
@@ -439,8 +455,14 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
   .home-credit {
     max-width: 66rem;
     margin: 0 auto;
-    font-size: 1.1rem;
     color: $body-color;
+
+    // body text matches the footer's link text (1rem, medium weight)
+    p {
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.5;
+    }
 
     a {
       font-weight: 700;
