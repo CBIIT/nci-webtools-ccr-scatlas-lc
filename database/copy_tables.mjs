@@ -56,11 +56,28 @@ try {
     await run(`DROP TABLE IF EXISTS ${q(t)}`);
     await run(`CREATE TABLE ${q(t)} AS SELECT * FROM src.${q(t)} LIMIT 0`);
     const [{ n }] = await run(`SELECT count(*) AS n FROM src.${q(t)}`);
-    for (let off = 0; off < Number(n); off += batchRows) {
-      await run(
-        `INSERT INTO ${q(t)} SELECT * FROM src.${q(t)} WHERE rowid >= ${off} AND rowid < ${off + batchRows}`,
-      );
-      await run("CHECKPOINT");
+    // Batch by sample when the table has one, as apply_delta.sh does: rowid
+    // predicates are not pushed into the scan of an attached database, so every
+    // rowid batch re-reads the whole table and wide cohorts run out of memory.
+    const [{ has_sample }] = await run(
+      `SELECT count(*) AS has_sample FROM information_schema.columns
+       WHERE table_catalog = 'src' AND table_schema = 'main' AND table_name = '${t}' AND column_name = 'sample'`,
+    );
+    if (Number(has_sample) && Number(n) > batchRows) {
+      const samples = await run(`SELECT DISTINCT sample FROM src.${q(t)} ORDER BY sample`);
+      for (const { sample } of samples) {
+        await run(
+          `INSERT INTO ${q(t)} SELECT * FROM src.${q(t)} WHERE sample = '${String(sample).replace(/'/g, "''")}'`,
+        );
+        await run("CHECKPOINT");
+      }
+    } else {
+      for (let off = 0; off < Number(n); off += batchRows) {
+        await run(
+          `INSERT INTO ${q(t)} SELECT * FROM src.${q(t)} WHERE rowid >= ${off} AND rowid < ${off + batchRows}`,
+        );
+        await run("CHECKPOINT");
+      }
     }
     const [{ c }] = await run(`SELECT count(*) AS c FROM ${q(t)}`);
     if (Number(c) !== Number(n)) {

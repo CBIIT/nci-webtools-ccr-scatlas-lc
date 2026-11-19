@@ -44,7 +44,7 @@ on:
 
 jobs:
   data-import:
-    timeout-minutes: 150
+    timeout-minutes: 300
     runs-on: ubuntu-latest
     environment: ${{ inputs.tier }}
     # one import per tier at a time: concurrent runs share the task family and
@@ -81,7 +81,9 @@ jobs:
           role-to-assume: ${{ env.CICD_ROLE_ARN }}
           role-session-name: ${{ env.TIER }}-scatlaslc-data-import-${{ github.run_id }}
           aws-region: ${{ env.AWS_REGION }}
-          role-duration-seconds: 3600
+          # must outlast the whole job: an expired session loses sight of the
+          # running task and can no longer stop it or restart the web service
+          role-duration-seconds: 18000
 
       - name: Validate inputs
         run: |
@@ -135,6 +137,20 @@ jobs:
           done
           test "$missing" = "0"
 
+      # upper tiers read a different bucket from the one deltas are uploaded to:
+      # set vars.DATA_SOURCE_BUCKET on those environments to copy the file across
+      # first; leave it unset where DATA_BUCKET already holds the deltas
+      - name: Sync delta from the source bucket
+        if: ${{ vars.DATA_SOURCE_BUCKET != '' }}
+        env:
+          DATA_SOURCE_BUCKET: ${{ vars.DATA_SOURCE_BUCKET }}
+        run: |
+          aws s3 sync "s3://$DATA_SOURCE_BUCKET/scatlas/data/deltas/" "s3://$DATA_BUCKET/scatlas/data/deltas/" \
+            --exclude "*" --include "$DELTA_FILE" --no-progress
+          # sync exits 0 when the include matches nothing (a misspelled name)
+          aws s3api head-object --bucket "$DATA_BUCKET" --key "scatlas/data/deltas/$DELTA_FILE" >/dev/null \
+            || { echo "::error::$DELTA_FILE is not in $DATA_BUCKET after the sync"; exit 1; }
+
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2.1.0
         with:
@@ -185,11 +201,11 @@ jobs:
         run: |
           # the built-in tasks-stopped waiter gives up after ~10 minutes; a
           # multi-GB delta can take longer still (the European cohort delta is
-          # 14GB), so poll for up to 120 minutes.
+          # 14GB), so poll for up to 240 minutes.
           # A transient describe error must not abort the step (bash -e), and
           # a task that no longer exists reports "None" - treat that as gone.
           STATUS=""
-          for i in $(seq 1 241); do
+          for i in $(seq 1 481); do
             STATUS=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
               --query 'tasks[0].lastStatus' --output text 2>/dev/null || echo "UNKNOWN")
             echo "task status: $STATUS"
@@ -197,10 +213,10 @@ jobs:
               STOPPED) break ;;
               None) echo "::error::task $TASK_ARN no longer exists"; exit 1 ;;
             esac
-            # 240 sleeps then a final check at the 120-minute boundary (no sleep after it)
-            [ "$i" -lt 241 ] && sleep 30
+            # 480 sleeps then a final check at the 240-minute boundary (no sleep after it)
+            [ "$i" -lt 481 ] && sleep 30
           done
-          test "$STATUS" = "STOPPED" || { echo "::error::data-import task still running after 120 minutes"; exit 1; }
+          test "$STATUS" = "STOPPED" || { echo "::error::data-import task still running after 240 minutes"; exit 1; }
           echo "TASK_DONE=true" >> "$GITHUB_ENV"
 
       # runs on every exit path (timeout, describe failure, cancel, job
