@@ -269,6 +269,11 @@ body.route-home {
   header .bg-primary {
     display: none;
   }
+  // the page ends at its content: the footer sits right under the white
+  // section, and any spare height on a tall window falls below the footer
+  main.flex-grow-1 {
+    flex-grow: 0 !important;
+  }
   // from sm up the navbar floats on the hero, so the image runs up behind it as
   // in the design; below sm (toggler menu, which grows in place when opened) it
   // stays solid navy and the hero starts beneath it
@@ -285,7 +290,6 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
 .home {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 56px - 88px); // viewport below the navbar and logo bar
   background-color: #fff;
 }
 
@@ -389,7 +393,7 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
 
 .home-body {
   flex: 1 0 auto;
-  padding: 0.25rem 0 2.5rem;
+  padding: 0 0 1.25rem;
   background-color: #fff;
   color: $home-navy;
 
@@ -406,7 +410,7 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
     // rise into the white part of the hero's curve, above the hero
     position: relative;
     z-index: 1;
-    margin-top: -2.75vw;
+    margin-top: -3.25vw;
   }
 
   .home-count-label {
