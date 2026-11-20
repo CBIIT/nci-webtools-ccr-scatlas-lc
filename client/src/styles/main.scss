@@ -16,6 +16,16 @@
   opacity: 0.6;
 }
 
+/* the menu sits in one row from sm up; on small tablets (576–767px) the four
+   top-level items are wider than the window, so tighten their side padding */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .main-nav > .nav-link,
+  .main-nav > .dropdown > .nav-link {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
 /* the navbar is static, so its open dropdown menus (z-index ~1000) would slip
    under the pinned spatial plot controls (1020) — give the whole navbar a
    stacking context above them */
