@@ -41,9 +41,8 @@ const TOTAL_COUNTS = [
 ];
 
 export default function Home() {
-  // The hero carries the site title and continues the navbar's navy, so while the
-  // home page is shown the header's title band is hidden and the navbar turns navy
-  // (see .route-home in main.scss); other pages keep the standard header.
+  // The hero continues the navbar's navy, so while the home page is shown the navbar
+  // blends into it (see .route-home in main.scss).
   useEffect(() => {
     document.body.classList.add("route-home");
     return () => document.body.classList.remove("route-home");

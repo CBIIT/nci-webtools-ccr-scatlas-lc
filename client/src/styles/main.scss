@@ -262,13 +262,9 @@
    with the counts, the Explore buttons and the credit. */
 $home-navy: $primary-darker;
 
-// While the home page is shown, the hero carries the site title and continues the
-// navbar's navy: hide the header's title band and turn the navbar navy so the two
+// While the home page is shown, the hero continues the navbar's navy so the two
 // read as one band (the class is set by the Home component).
 body.route-home {
-  header .bg-primary {
-    display: none;
-  }
   // the page ends at its content: the footer sits right under the white
   // section, and any spare height on a tall window falls below the footer
   main.flex-grow-1 {
