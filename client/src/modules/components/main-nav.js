@@ -181,7 +181,7 @@ function Branch({ item, level, pathname }) {
 // The main site navigation. Renders the recursive 3-level menu from `navMenu`.
 export default function MainNav({ pathname }) {
   return (
-    <Navbar bg="dark" expand="sm" className="navbar-dark py-0 flex-none-auto">
+    <Navbar bg="primary-darker" expand="sm" className="navbar-dark py-0 flex-none-auto">
       <Container>
         <Navbar.Toggle aria-controls="app-navbar" />
         <Navbar.Collapse id="app-navbar">

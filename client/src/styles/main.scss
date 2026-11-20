@@ -272,10 +272,8 @@ body.route-home {
   }
   // from sm up the navbar floats on the hero, so the image runs up behind it as
   // in the design; below sm (toggler menu, which grows in place when opened) it
-  // stays solid navy and the hero starts beneath it
-  .navbar.bg-dark {
-    background-color: $home-navy !important;
-
+  // keeps its solid navy and the hero starts beneath it
+  .navbar.bg-primary-darker {
     @media (min-width: 576px) {
       background-color: transparent !important;
     }
