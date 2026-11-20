@@ -5,7 +5,8 @@ import { Container, Navbar, Nav, Dropdown } from "react-bootstrap";
 // 3-level main menu. A `route` of null marks a placeholder leaf not yet wired to a
 // page (the top-level Atlas entries point at summary pages that don't exist yet).
 export const navMenu = [
-  { title: "Home", route: "/" },
+  // the site name keeps its own capitalisation (the other top-level items are uppercased)
+  { title: "scAtlasLC", route: "/", keepCase: true },
   {
     title: "Single-Cell Atlas",
     route: "/single-cell", // Single-Cell Atlas Summary (full page: NCIATWP-10324)
@@ -63,12 +64,12 @@ function Leaf({ item, asDropdownItem }) {
     );
   }
 
-  // top-level leaf (Home / About) rendered as a NavLink in the navbar
+  // top-level leaf (scAtlasLC home / About) rendered as a NavLink in the navbar
   return (
     <NavLink
       exact
       activeClassName="active"
-      className="nav-link px-3 text-uppercase font-weight-bold"
+      className={`nav-link px-3 font-weight-bold ${item.keepCase ? "" : "text-uppercase"}`}
       to={item.route}>
       {item.title}
     </NavLink>
