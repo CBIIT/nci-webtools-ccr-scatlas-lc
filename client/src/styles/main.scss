@@ -16,6 +16,16 @@
   opacity: 0.6;
 }
 
+/* the menu sits in one row from sm up; on small tablets (576–767px) the four
+   top-level items are wider than the window, so tighten their side padding */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .main-nav > .nav-link,
+  .main-nav > .dropdown > .nav-link {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
 /* the navbar is static, so its open dropdown menus (z-index ~1000) would slip
    under the pinned spatial plot controls (1020) — give the whole navbar a
    stacking context above them */
@@ -262,19 +272,18 @@
    with the counts, the Explore buttons and the credit. */
 $home-navy: $primary-darker;
 
-// While the home page is shown, the hero carries the site title and continues the
-// navbar's navy: hide the header's title band and turn the navbar navy so the two
+// While the home page is shown, the hero continues the navbar's navy so the two
 // read as one band (the class is set by the Home component).
 body.route-home {
-  header .bg-primary {
-    display: none;
+  // the page ends at its content: the footer sits right under the white
+  // section, and any spare height on a tall window falls below the footer
+  main.flex-grow-1 {
+    flex-grow: 0 !important;
   }
   // from sm up the navbar floats on the hero, so the image runs up behind it as
   // in the design; below sm (toggler menu, which grows in place when opened) it
-  // stays solid navy and the hero starts beneath it
-  .navbar.bg-dark {
-    background-color: $home-navy !important;
-
+  // keeps its solid navy and the hero starts beneath it
+  .navbar.bg-primary-darker {
     @media (min-width: 576px) {
       background-color: transparent !important;
     }
@@ -285,7 +294,6 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
 .home {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 56px - 88px); // viewport below the navbar and logo bar
   background-color: #fff;
 }
 
@@ -309,14 +317,25 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
   .home-hero-image {
     position: absolute;
     inset: 0 0 0 auto;
-    width: 62%;
+    width: 58%;
     // the figure is a round tissue section: zoom past its dark rim into the
     // dense middle (the hero is always much wider than tall here)
     background-size: 140% auto;
     background-position: center;
     background-repeat: no-repeat;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
-    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.55) 30%, #000 60%);
+    // a long, eased fade whose midpoint sits right of the page center
+    $home-hero-fade: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(0, 0, 0, 0.08) 15%,
+      rgba(0, 0, 0, 0.25) 30%,
+      rgba(0, 0, 0, 0.5) 45%,
+      rgba(0, 0, 0, 0.75) 60%,
+      rgba(0, 0, 0, 0.92) 72%,
+      #000 82%
+    );
+    -webkit-mask-image: $home-hero-fade;
+    mask-image: $home-hero-fade;
   }
 
   .home-hero-content {
@@ -325,14 +344,14 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
   }
 
   .home-title {
-    font-size: calc(1.6rem + 1vw);
+    font-size: calc(1.35rem + 0.8vw);
     margin-bottom: 1rem;
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
   }
 
   .home-description {
     max-width: 50rem;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     line-height: 1.6;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   }
@@ -346,7 +365,7 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
     min-height: 2.5rem;
   }
   .home-hero-curve-rim {
-    fill: #b8c7da; // the pale band along the edge
+    fill: rgba(200, 214, 232, 0.8); // the pale band along the edge, translucent so the image shows through
   }
   .home-hero-curve-fill {
     fill: #fff;
@@ -378,19 +397,24 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
 
 .home-body {
   flex: 1 0 auto;
-  padding: 1.5rem 0 2.5rem;
+  padding: 0 0 1.25rem;
   background-color: #fff;
   color: $home-navy;
 
   .home-count-value {
-    font-size: calc(2.25rem + 1.5vw);
+    font-size: calc(1.85rem + 1.1vw);
     font-weight: 800;
     line-height: 1.05;
   }
 
   .home-counts {
     max-width: 64rem;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
+    // rise into the white part of the hero's curve, above the hero
+    position: relative;
+    z-index: 1;
+    margin-top: -3.25vw;
   }
 
   .home-count-label {
@@ -439,8 +463,14 @@ $home-navbar-height: 54px; // the navbar's rendered height (link padding + borde
   .home-credit {
     max-width: 66rem;
     margin: 0 auto;
-    font-size: 1.1rem;
     color: $body-color;
+
+    // body text matches the footer's link text (1rem, medium weight)
+    p {
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.5;
+    }
 
     a {
       font-weight: 700;
