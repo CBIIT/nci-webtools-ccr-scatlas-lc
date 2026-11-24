@@ -41,9 +41,8 @@ const TOTAL_COUNTS = [
 ];
 
 export default function Home() {
-  // The hero carries the site title and continues the navbar's navy, so while the
-  // home page is shown the header's title band is hidden and the navbar turns navy
-  // (see .route-home in main.scss); other pages keep the standard header.
+  // The hero continues the navbar's navy, so while the home page is shown the navbar
+  // blends into it (see .route-home in main.scss).
   useEffect(() => {
     document.body.classList.add("route-home");
     return () => document.body.classList.remove("route-home");
@@ -134,8 +133,13 @@ export default function Home() {
             </p>
             <h2 className="h5 mb-1">Disclaimer</h2>
             <p className="mb-0">
-              Each dataset was normalized independently. Gene expression levels
-              may not be comparable between datasets.
+              scAtlasLC data and results are provided for research use only.
+              Datasets were normalized independently; gene expression levels may
+              not be directly comparable across datasets. All data and resources
+              are provided “as is.” Users are responsible for validating findings.
+              Use of the portal and its contents is at the user’s own risk. Please
+              acknowledge scAtlasLC as the source when using figures downloaded
+              from or generated through the portal.
             </p>
           </div>
         </Container>
