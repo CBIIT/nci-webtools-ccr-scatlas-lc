@@ -13,6 +13,9 @@ permissions:
 # copy and swaps it in atomically
 # (previous file kept as .bak); the workflow then restarts the web service so
 # the backend re-reads the schema.
+#
+# Deltas are uploaded to the nonprod bucket (dev/qa). For stage or prod, run
+# copy-delta.yml first: it copies the file into the prod bucket those tiers read.
 on:
   workflow_dispatch:
     inputs:
@@ -136,20 +139,6 @@ jobs:
             if [ -z "${!v}" ]; then echo "::error::$v missing from SSM under $PARAMETER_PATH"; missing=1; fi
           done
           test "$missing" = "0"
-
-      # upper tiers read a different bucket from the one deltas are uploaded to:
-      # set vars.DATA_SOURCE_BUCKET on those environments to copy the file across
-      # first; leave it unset where DATA_BUCKET already holds the deltas
-      - name: Sync delta from the source bucket
-        if: ${{ vars.DATA_SOURCE_BUCKET != '' }}
-        env:
-          DATA_SOURCE_BUCKET: ${{ vars.DATA_SOURCE_BUCKET }}
-        run: |
-          aws s3 sync "s3://$DATA_SOURCE_BUCKET/scatlas/data/deltas/" "s3://$DATA_BUCKET/scatlas/data/deltas/" \
-            --exclude "*" --include "$DELTA_FILE" --no-progress
-          # sync exits 0 when the include matches nothing (a misspelled name)
-          aws s3api head-object --bucket "$DATA_BUCKET" --key "scatlas/data/deltas/$DELTA_FILE" >/dev/null \
-            || { echo "::error::$DELTA_FILE is not in $DATA_BUCKET after the sync"; exit 1; }
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2.1.0
