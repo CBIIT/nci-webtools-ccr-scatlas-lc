@@ -1,183 +1,149 @@
+import { useEffect } from "react";
 import Container from "react-bootstrap/Container";
-import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Button from "react-bootstrap/Button";
 import { Link } from "react-router-dom";
-import { ReactComponent as HomeImage } from "./home.svg";
+
+// Home page — a high-level portal in two bands: a navy hero (title + description
+// on the left, the tissue image on the right fading into the navy, a curved
+// bottom edge), then a white section with the Total Counts, the Explore buttons,
+// and the credit + disclaimer. The buttons and counts are data-driven so more
+// can be added without restructuring the page.
+const TITLE = "Spatial and Single-Cell Atlas of Liver Cancer (scAtlasLC)";
+const DESCRIPTION =
+  "The scAtlasLC is a publicly available multi-omics data portal for characterizing " +
+  "cellular communities in liver cancer at single-cell and spatial resolution. It " +
+  "includes single-cell transcriptomics, spatial transcriptomics, and spatial " +
+  "proteomics data from hepatocellular carcinoma (HCC) and intrahepatic " +
+  "cholangiocarcinoma (iCCA), the two major subtypes of primary liver cancer.";
+
+// Atlas entry points — add an entry here to surface another "Explore" button.
+const EXPLORE_LINKS = [
+  { label: "Explore Single-Cell Atlas", to: "/single-cell" },
+  { label: "Explore Spatial Atlas", to: "/spatial" },
+];
+
+// Hero image: a 3840px web derivative of the client's newer 21000px figure, with
+// an unsharp mask (that figure holds only ~2000px of real detail, so a larger copy
+// alone adds little sharpness); progressive JPEG, quality 82, metadata stripped.
+// Full-resolution sources live with the ticket docs. Served from the public
+// folder (CRA serves /images/* at the root).
+const HERO_IMAGE = "/images/homepage_figure.jpg";
+
+// Total Counts — client-provided static values, in the client's display order;
+// becomes a query if a dynamic counts source is ever defined.
+const TOTAL_COUNTS = [
+  { label: "Cases", value: "463" },
+  { label: "Biospecimens", value: "847" },
+  { label: "Cells", value: "9.2M" },
+  { label: "Cohorts", value: "7" },
+];
 
 export default function Home() {
+  // The hero continues the navbar's navy, so while the home page is shown the navbar
+  // blends into it (see .route-home in main.scss).
+  useEffect(() => {
+    document.body.classList.add("route-home");
+    return () => document.body.classList.remove("route-home");
+  }, []);
+
   return (
-    <Container className="h-100">
-      <Card className="h-100 shadow rounded-0">
-        <Card.Body>
-          <Row>
-            <Col md={6}>
-              <figure className="figure">
-                <HomeImage className="figure-img img-fluid" />
-                <figcaption className="figure-caption">
-                  CAFs, cancer-associated fibroblasts; TAMs, tumor-associated
-                  macrophages; TECs, tumor-associated endothelial cells.
-                </figcaption>
-              </figure>
-            </Col>
+    <div className="home">
+      <section className="home-hero">
+        {/* a mask fades the image's left edge into the navy */}
+        <div
+          className="home-hero-image"
+          style={{ backgroundImage: `url(${HERO_IMAGE})` }}
+          aria-hidden="true"
+        />
+        <Container className="home-hero-content">
+          <h1 className="home-title">{TITLE}</h1>
+          <p className="home-description mb-0">{DESCRIPTION}</p>
+        </Container>
+        {/* curved bottom edge: the white section rises into the hero */}
+        <svg
+          className="home-hero-curve"
+          viewBox="0 0 1440 100"
+          preserveAspectRatio="none"
+          aria-hidden="true">
+          <path
+            className="home-hero-curve-rim"
+            d="M0,34 C420,-6 940,0 1440,86 L1440,100 L0,100 Z"
+          />
+          <path
+            className="home-hero-curve-fill"
+            d="M0,44 C420,6 940,12 1440,96 L1440,100 L0,100 Z"
+          />
+        </svg>
+      </section>
 
-            <Col md={6}>
-              <h1 className="h3">About scAtlasLC</h1>
-              <p>
-                scAtlasLC (single-cell Atlas in Liver Cancer) is a publicly
-                available data portal of single-cell transcriptomic profiles of
-                tumor cell communities in hepatocellular carcinoma and
-                intrahepatic cholangiocarcinoma.
-              </p>
-
-              <p>
-                scAtlasLC can be used to evaluate gene expression in malignant
-                cells and various non-malignant cells in liver cancer. It can be
-                further used to determine gene expression in different subtypes
-                of stromal cells and immune cells.
-              </p>
-
-              {/* <p>
-                The single-cell data used for scAtlasLC can be downloaded from
-                Gene Expression Omnibus:
-                <a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE151530
-                </a>,
-                <a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE189903
-                </a>,
-                <a
-                  href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772"
-                  className="ms-1"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  GSE229772
-                </a>
-              </p> */}
-              <p>
-                Current single-cell data used for scAtlasLC includes the
-                following:
-              </p>
-              <ul>
-                <li>
-                  NCI-CLARITY (
-                  <a
-                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE151530"
-                    className="ms-1"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    GSE151530
-                  </a>
-                  ). This cohort includes single cell transcriptomic profiles of
-                  52,789 cells derived from 46 hepatocellular carcinoma (HCC)
-                  and intrahepatic cholangiocarcinoma (iCCA) biopsies of 37
-                  patients.
-                </li>
-                <li>
-                  Multi-Regional (
-                  <a
-                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE189903"
-                    className="ms-1"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    GSE189903
-                  </a>
-                  ). This cohort consists of 112,506 cells from four HCC
-                  patients and three iCCA patients. For each tumor, single cells
-                  from five separate regions, i.e., three tumor cores (T1, T2,
-                  and T3), one tumor border (B) and an adjacent normal tissue
-                  (N), were prepared. A total of 34 samples were included in
-                  this study.
-                </li>
-                <li>
-                  Sequential NCI-CLARITY (
-                  <a
-                    href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE229772"
-                    className="ms-1"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    GSE229772
-                  </a>
-                  ). This cohort consists of 57,567 cells from nine HCC patients
-                  and two iCCA patients. Tumor biopsies were collected
-                  longitudinally, with two to five samples for each patient.
-                  Overall, 31 samples were collected across all patients.
-                </li>
-              </ul>
-            </Col>
+      <section className="home-body">
+        <Container className="text-center">
+          <Row className="home-counts justify-content-center g-3">
+            {TOTAL_COUNTS.map((count) => (
+              <Col key={count.label} xs={6} md={3}>
+                <div className="home-count-value">{count.value}</div>
+                <div className="home-count-label">{count.label}</div>
+              </Col>
+            ))}
           </Row>
-          <Row>
-            <Col className="mb-3" xl={4}>
-              <Link to="/nci-clarity" rel="noreferrer">
-                <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img
-                    height="368px"
-                    variant="top"
-                    src={"/images/nci_clarity_HD.svg"}
-                    alt="NCI-CLARITY Image"
-                  />
-                  <Card.Body>
-                    <Card.Text className="d-flex text-center justify-content-center">
-                      <div>
-                        <h2 className="h3">NCI-CLARITY</h2>
-                        <div>52,789 cells</div>
-                      </div>
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Link>
-            </Col>
-            <Col className="mb-3" xl={4}>
-              <Link to="/multi-regional" rel="noreferrer">
-                <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img
-                    height="368px"
-                    variant="top"
-                    src={"/images/multiregional_HD.svg"}
-                    alt="Multi-Regional Image"
-                  />
-                  <Card.Body>
-                    <Card.Text className="d-flex text-center justify-content-center">
-                      <div>
-                        <h2 className="h3">Multi-Regional</h2>
-                        <div>112,506 cells</div>
-                      </div>
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Link>
-            </Col>
-            <Col className="mb-3" xl={4}>
-              <Link to="/sequential" rel="noreferrer">
-                <Card className="shadow" style={{ cursor: "pointer" }}>
-                  <Card.Img
-                    height="368px"
-                    variant="top"
-                    src={"/images/sequential_nci_clarity_HD.svg"}
-                    alt="Sequential NCI-CLARITY Image"
-                  />
-                  <Card.Body>
-                    <Card.Text className="d-flex text-center justify-content-center">
-                      <div>
-                        <h2 className="h3">Sequential NCI-CLARITY</h2>
-                        <div>57,567 cells</div>
-                      </div>
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Link>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-    </Container>
+
+          <div className="home-explore">
+            {EXPLORE_LINKS.map((link) => (
+              <Button
+                key={link.to}
+                as={Link}
+                to={link.to}
+                variant="primary"
+                size="lg">
+                {link.label}
+              </Button>
+            ))}
+          </div>
+
+          {/* credit + disclaimer — moved here from the site footer's References
+              section; the Home page is the only place these display */}
+          <div className="home-credit">
+            <p className="mb-3">
+              The scAtlasLC was developed by the{" "}
+              <a
+                href="https://ccr.cancer.gov/staff-directory/lichun-ma"
+                target="_blank"
+                rel="noopener noreferrer">
+                MA Lab
+              </a>{" "}
+              at the{" "}
+              <a
+                href="https://ccr.cancer.gov/cancer-data-science-laboratory"
+                target="_blank"
+                rel="noopener noreferrer">
+                Cancer Data Science Laboratory
+              </a>{" "}
+              and the{" "}
+              <a
+                href="https://ccr.cancer.gov/liver-cancer-program"
+                target="_blank"
+                rel="noopener noreferrer">
+                Liver Cancer Program
+              </a>
+              , Center for Cancer Research, National Cancer Institute, in
+              collaboration with the NCI's Center for Biomedical Informatics &amp;
+              Information Technology (CBIIT).
+            </p>
+            <h2 className="h5 mb-1">Disclaimer</h2>
+            <p className="mb-0">
+              scAtlasLC data and results are provided for research use only.
+              Datasets were normalized independently; gene expression levels may
+              not be directly comparable across datasets. All data and resources
+              are provided “as is.” Users are responsible for validating findings.
+              Use of the portal and its contents is at the user’s own risk. Please
+              acknowledge scAtlasLC as the source when using figures downloaded
+              from or generated through the portal.
+            </p>
+          </div>
+        </Container>
+      </section>
+    </div>
   );
 }

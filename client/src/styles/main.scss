@@ -7,3 +7,672 @@
 .highlighted-row {
     background-color: yellow !important;
   }
+
+/* 3-level main menu — nested submenus open to the side. Top-level toggles are styled
+   by the existing `.navbar-dark .navbar-nav .dropdown .nav-link` theme rules (white
+   text, transparent bg, teal active/hover underline); we only add the nested-submenu
+   chevron affordance here. */
+.main-nav .dropdown-item .bi-chevron-right {
+  opacity: 0.6;
+}
+
+/* the menu sits in one row from sm up; on small tablets (576–767px) the four
+   top-level items are wider than the window, so tighten their side padding */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .main-nav > .nav-link,
+  .main-nav > .dropdown > .nav-link {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+/* the navbar is static, so its open dropdown menus (z-index ~1000) would slip
+   under the pinned spatial plot controls (1020) — give the whole navbar a
+   stacking context above them */
+.navbar {
+  position: relative;
+  z-index: 1030;
+}
+
+/* Spatial cohort pages — the plot controls (gene/set pickers, samples filter,
+   size/opacity) stay pinned to the viewport top while the per-sample plot rows
+   scroll beneath them. Bleeds over the card body's padding so scrolling rows
+   can't peek through the gutters; z-index clears Plotly's modebar (~1000). */
+.spatial-controls {
+  max-width: 60rem; // both filter rows fill this, so their edges align
+}
+
+// gene-set list rows use the .form-control vertical padding (0.375rem) so a
+// collapsed row's 1.5rem content line lands at the same 38px as the Gene input
+.gene-set-row {
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+// Reset sits just outside the centered filter box (its right edge is at
+// 50% + half the box's 60rem width), level with the second row's Gene input:
+// past row 1 (2rem label + 2.375rem input + 1rem margin) plus row 2's label
+// line; min() keeps it on-card when the viewport is too narrow for box + gap
+.spatial-controls-sticky .spatial-reset {
+  top: calc(var(--bs-card-spacer-y) + 7.375rem);
+  left: min(calc(50% + 32.5rem), calc(100% - 6rem));
+}
+
+// the single-cell cohort pages share the centered filter box and this Reset
+// placement, but have no sticky wrapper (nothing scrolls under their
+// controls) — same offsets, anchored to the card body instead
+.single-cell-reset {
+  top: calc(var(--bs-card-spacer-y) + 7.375rem);
+  left: min(calc(50% + 32.5rem), calc(100% - 6rem));
+}
+
+// Below xl the viewport can no longer fit the centered box plus the button:
+// the left anchor drifts into the gene-sets column, and once the filter
+// columns stack (md) the fixed top lands it on Cell Opacity. Fall back into
+// normal flow, right-aligned under the filter rows. The !importants override
+// the .position-absolute / .w-auto utility classes on the elements.
+@media (max-width: 1199.98px) {
+  .spatial-controls-sticky .spatial-reset,
+  .single-cell-reset {
+    position: static !important;
+    width: 100% !important;
+    text-align: end;
+  }
+}
+
+.spatial-controls-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  background-color: var(--bs-card-bg, #fff);
+  margin: calc(-1 * var(--bs-card-spacer-y)) calc(-1 * var(--bs-card-spacer-x)) 0;
+  padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x) 0;
+}
+
+/* Spatial cohort statistics table — many value columns squeeze the
+   range-filter inputs, so give them enough minimum width that the
+   "Enter min/max" placeholders stay readable; the surrounding
+   .table-responsive wrapper turns the extra width into horizontal scroll. */
+.spatial-stats-table {
+  overflow-x: auto; // the min-widths push the table wider than the card — scroll it
+
+  // macOS overlay scrollbars stay invisible until scrolled; the ::-webkit-*
+  // rules force a persistent classic scrollbar so the horizontal overflow is
+  // discoverable without a trackpad. NOTE: do not add the standard
+  // scrollbar-width/scrollbar-color properties here — Chrome 121+ treats them
+  // as opting into the standard styling path and then ignores ::-webkit-*,
+  // reverting to hidden overlay scrollbars.
+  .table-responsive {
+    &::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f3f5;
+      border-radius: 5px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #adb5bd;
+      border-radius: 5px;
+
+      &:hover {
+        background-color: #868e96;
+      }
+    }
+  }
+
+  th,
+  td {
+    min-width: 360px;
+  }
+
+  th:first-child,
+  td:first-child {
+    min-width: 140px;
+  }
+}
+
+/* Cohort widget (atlas summary pages) — the image region flips on hover/focus
+   to reveal the description; the bottom gray segment never flips and is the
+   only click-to-navigate target. Shared by both summary pages. */
+.cohort-widget {
+  display: block;
+  position: relative; // anchor the flip-zone overlay
+  perspective: 1200px;
+  border-radius: 0.375rem;
+
+  // the flipping region — image on the front, description on the back; the
+  // footer below is outside it and stays put
+  .cohort-widget-inner {
+    position: relative;
+    height: 240px; // matches .cohort-widget-img
+    transition: transform 1s ease;
+    transform-style: preserve-3d;
+  }
+
+  // transparent hover target over the flip region. Sits above the card faces
+  // so it receives the hover that triggers the flip (state-driven in
+  // cohort-widget.js).
+  .cohort-widget-flip-zone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 240px;
+    z-index: 2;
+  }
+
+  // once flipped, the zone goes pointer-transparent so links in the back-face
+  // description are clickable; the widget unflips on mouseleave of the card
+  &.cohort-widget-flipped .cohort-widget-flip-zone {
+    pointer-events: none;
+  }
+
+  // flip when the image zone was hovered (state class), or while keyboard
+  // focus is inside the widget (the footer link, or a back-face description
+  // link mid-tab) so the revealed side is always the one being read
+  &.cohort-widget-flipped .cohort-widget-inner,
+  &:focus-within .cohort-widget-inner {
+    transform: rotateY(180deg);
+  }
+
+  .cohort-widget-face {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    overflow: hidden; // clip the (now-colored) back to the rounded top corners
+    border-radius: 0.375rem 0.375rem 0 0; // the footer carries the bottom corners
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .cohort-widget-back {
+    transform: rotateY(180deg);
+
+    // the body and description are flex items inside the fixed-height face;
+    // without min-height: 0 they refuse to shrink below their content, so the
+    // description's overflow-auto never engages and long text just clips
+    .card-body {
+      min-height: 0;
+    }
+  }
+
+  .cohort-widget-img {
+    height: 240px;
+    object-fit: contain;
+    padding: 0.5rem;
+  }
+
+  // placeholder shown when a cohort has no image yet — white image area
+  // (the muted gray lives on the footer below)
+  .cohort-widget-img-placeholder {
+    background-color: #fff;
+  }
+
+  // non-flipping bottom gray segment: title + count, and the navigation target
+  .cohort-widget-footer {
+    background-color: #f1f3f5;
+    border-radius: 0 0 0.375rem 0.375rem;
+    cursor: pointer;
+  }
+
+  // description text on the back face — larger than Bootstrap's `small`
+  .cohort-widget-desc {
+    flex: 1 1 auto;
+    min-height: 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+
+    // slim translucent-white scrollbar so it blends with the primary-blue
+    // back face (scrollbar-color for Chrome/Firefox, ::-webkit-* for Safari)
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.45);
+      border-radius: 3px;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.7);
+      }
+    }
+  }
+}
+
+/* Atlas summary page — modality section header. The icon highlights when the
+   section is the page's active (latched) section; see SummarySection. */
+.summary-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  outline: none;
+
+  .summary-icon {
+    font-size: 1.75rem;
+    color: #adb5bd;
+    transition: color 0.15s ease;
+  }
+
+  &.active .summary-icon {
+    color: $primary;
+  }
+}
+
+/* Home portal — a navy hero (title + description on the left, the tissue image
+   on the right fading into the navy, a curved bottom edge) above a white section
+   with the counts, the Explore buttons and the credit. */
+$home-navy: $primary-darker;
+
+// While the home page is shown, the hero continues the navbar's navy so the two
+// read as one band (the class is set by the Home component).
+body.route-home {
+  // the page ends at its content: the footer sits right under the white
+  // section, and any spare height on a tall window falls below the footer
+  main.flex-grow-1 {
+    flex-grow: 0 !important;
+  }
+  // from sm up the navbar floats on the hero, so the image runs up behind it as
+  // in the design; below sm (toggler menu, which grows in place when opened) it
+  // keeps its solid navy and the hero starts beneath it
+  .navbar.bg-primary-darker {
+    @media (min-width: 576px) {
+      background-color: transparent !important;
+    }
+  }
+}
+$home-navbar-height: 54px; // the navbar's rendered height (link padding + borders)
+
+.home {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+.home-hero {
+  position: relative;
+  overflow: hidden;
+  background-color: $home-navy;
+  color: #fff;
+  // room under the text for the curve, which scales with the width
+  // pull up under the transparent navbar; room under the text for the curve,
+  // which scales with the width
+  margin-top: -$home-navbar-height;
+  padding: calc(#{$home-navbar-height} + 2.5rem) 0 calc(6vw + 3rem);
+
+  @media (max-width: 575.98px) {
+    margin-top: 0;
+    padding-top: 1.5rem;
+  }
+
+  // the image covers the right part and fades into the navy toward the text
+  .home-hero-image {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 58%;
+    // the figure is a round tissue section: zoom past its dark rim into the
+    // dense middle (the hero is always much wider than tall here)
+    background-size: 140% auto;
+    background-position: center;
+    background-repeat: no-repeat;
+    // a long, eased fade whose midpoint sits right of the page center
+    $home-hero-fade: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(0, 0, 0, 0.08) 15%,
+      rgba(0, 0, 0, 0.25) 30%,
+      rgba(0, 0, 0, 0.5) 45%,
+      rgba(0, 0, 0, 0.75) 60%,
+      rgba(0, 0, 0, 0.92) 72%,
+      #000 82%
+    );
+    -webkit-mask-image: $home-hero-fade;
+    mask-image: $home-hero-fade;
+  }
+
+  .home-hero-content {
+    position: relative; // above the image
+    z-index: 1;
+  }
+
+  .home-title {
+    font-size: calc(1.35rem + 0.8vw);
+    margin-bottom: 1rem;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .home-description {
+    max-width: 50rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  }
+
+  .home-hero-curve {
+    position: absolute;
+    left: 0;
+    bottom: -1px; // no hairline gap above the white section
+    width: 100%;
+    height: 6vw;
+    min-height: 2.5rem;
+  }
+  .home-hero-curve-rim {
+    fill: rgba(200, 214, 232, 0.8); // the pale band along the edge, translucent so the image shows through
+  }
+  .home-hero-curve-fill {
+    fill: #fff;
+  }
+
+  // mid widths: narrower image and text column so the description stays on the
+  // navy rather than running onto the bright part of the image
+  @media (min-width: 992px) and (max-width: 1399.98px) {
+    .home-hero-image {
+      width: 52%;
+    }
+    .home-description {
+      max-width: 34rem;
+    }
+  }
+
+  // narrow screens: the text spans the full width, so the image sits behind it,
+  // dimmed, instead of beside it
+  @media (max-width: 991.98px) {
+    .home-hero-image {
+      width: 100%;
+      background-size: cover; // the hero can be taller than wide here
+      opacity: 0.35;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+}
+
+.home-body {
+  flex: 1 0 auto;
+  padding: 0 0 1.25rem;
+  background-color: #fff;
+  color: $home-navy;
+
+  .home-count-value {
+    font-size: calc(1.85rem + 1.1vw);
+    font-weight: 800;
+    line-height: 1.05;
+  }
+
+  .home-counts {
+    max-width: 64rem;
+    margin-left: auto;
+    margin-right: auto;
+    // rise into the white part of the hero's curve, above the hero
+    position: relative;
+    z-index: 1;
+    margin-top: -3.25vw;
+  }
+
+  .home-count-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  // auto-width grid with equal (1fr) columns: both buttons take the widest
+  // label's width, so the gap between them lands on the center line
+  .home-explore {
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 1rem;
+    margin: 2.25rem 0;
+
+    .btn {
+      padding: 0.6rem 3rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      white-space: nowrap;
+      background-color: $home-navy;
+      border-color: $home-navy;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+
+      &:hover,
+      &:focus {
+        background-color: $primary;
+        border-color: $primary;
+      }
+    }
+
+    @media (max-width: 991.98px) {
+      .btn {
+        padding: 0.55rem 1.75rem;
+        font-size: 1.25rem;
+      }
+    }
+
+    // two one-line labels no longer fit side by side: stack them
+    @media (max-width: 767.98px) {
+      grid-auto-flow: row;
+    }
+  }
+
+  .home-credit {
+    max-width: 66rem;
+    margin: 0 auto;
+    color: $body-color;
+
+    // body text matches the footer's link text (1rem, medium weight)
+    p {
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    a {
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: $body-color;
+    }
+  }
+}
+// Plotly's toolbar, enlarged, on every figure (all of them are cohort plots). Plotly has no size option for it: the icons are
+// drawn 1em square, so the button's font-size IS the icon size (16px stock,
+// in a 22px-tall button). Plotly injects its own rules at runtime under
+// `.js-plotly-plot .plotly`, so these carry one more class to win on
+// specificity rather than on load order.
+$modebar-icon-size: 22px;
+.js-plotly-plot .plotly .modebar {
+  .modebar-btn {
+    font-size: $modebar-icon-size;
+    height: $modebar-icon-size + 8px;
+    padding: 4px 6px;
+  }
+  .modebar-group {
+    padding-left: 10px;
+  }
+  // reachable by keyboard (zoom-mode-bar.js) — show where the focus is
+  .modebar-btn:focus-visible {
+    outline: 2px solid #027bbd;
+    outline-offset: -2px;
+  }
+}
+
+// Square Zoom / Rectangle Zoom: Plotly lights a toolbar button by matching
+// it to the drag mode, and both of these are the same drag mode to it — so
+// the live one is lit from here, off the class the figure's wrapper carries
+// (components/zoom-mode-bar.js), in the color that wrapper hands over.
+// !important: Plotly colors the icons with a rule keyed to each toolbar's id.
+.zoom-mode-square .modebar-btn[data-title="Square Zoom"] .icon path,
+.zoom-mode-rectangle .modebar-btn[data-title="Rectangle Zoom"] .icon path {
+  fill: var(--modebar-active-color) !important;
+}
+
+// spatial plot pairs render as ONE figure per row, so there is a single
+// modebar — center it over the figure instead of Plotly's default top-right.
+// Its own width, not the half of the figure that `left: 50%` leaves it: sized
+// by the space to its right, the toolbar broke onto a second row on narrower
+// windows and ran down into the subplot titles and the legend.
+.spatial-pair .modebar {
+  right: auto !important;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 100%;
+}
+
+/* Back to Top — the NCI-standard quarter-circle pinned to the viewport's
+   bottom-right corner, revealed once the page is scrollable and scrolled past
+   the threshold (components/back-to-top.js). It fades rather than unmounting,
+   so the hidden state must ALSO drop visibility + pointer-events — opacity
+   alone leaves an invisible control in the tab order for keyboard and
+   screen-reader users. */
+.back-to-top {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 85px;
+  height: 85px;
+  background-color: #027bbd;
+  border-top-left-radius: 100%;
+  overflow: hidden;
+  // above the Plotly modebars (~1000) the corner can overlap while plots
+  // scroll by; below the sticky spatial controls (1020) and navbar (1030)
+  z-index: 1010;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  button {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+    // uneven padding centers the label in the visible wedge, not the square
+    padding: 25px 5px 5px 30px;
+
+    &:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: -2px;
+    }
+  }
+
+  .back-to-top-icon {
+    display: none;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  @media (max-width: 768px) {
+    .back-to-top-text {
+      display: none;
+    }
+
+    .back-to-top-icon {
+      display: inline;
+    }
+  }
+}
+
+@media print {
+  .back-to-top {
+    display: none;
+  }
+}
+
+// citation links (PMID, BioRxiv) read at the weight of the citation around
+// them — the theme's medium weight for every link made them look bold
+.references a {
+  font-weight: normal;
+}
+
+// The handles laid over a figure's colorbar (components/color-range-handles.js)
+// — a grip to the left of the bar and a line across it, at the value where the
+// gradient starts or ends. The layer itself lets the pointer through to the
+// figure; only the handles take it.
+.color-range {
+  position: absolute;
+  pointer-events: none;
+}
+
+.color-range-handle {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  cursor: ns-resize;
+  touch-action: none;
+
+  // the grip
+  &::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    border-style: solid;
+    border-width: 6px 0 6px 10px;
+    border-color: transparent transparent transparent #333;
+  }
+
+  // the line across the bar
+  &::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 0;
+    top: 7px;
+    height: 2px;
+    background: #333;
+    box-shadow: 0 0 0 1px #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 1px;
+  }
+}
+
+// the handle's value, shown beside the grip while it is being moved
+.color-range-value {
+  display: none;
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 2px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 16px;
+  white-space: nowrap;
+  color: #fff;
+  background: #333;
+  border-radius: 2px;
+}
+
+.color-range-handle.dragging .color-range-value,
+.color-range-handle:focus-visible .color-range-value {
+  display: block;
+}

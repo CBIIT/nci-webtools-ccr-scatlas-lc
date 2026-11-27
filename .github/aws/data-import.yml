@@ -8,7 +8,9 @@ requiresCompatibilities:
   - FARGATE
 # the delta download and DuckDB's disk spill both land on task-local storage
 ephemeralStorage:
-  sizeInGiB: 40
+  # delta (14GB) + the live DB copy growing to ~27GB as the European tables
+  # merge in + DuckDB spill: 40GiB ran out of disk mid-merge
+  sizeInGiB: 120
 runtimePlatform:
   cpuArchitecture: X86_64
   operatingSystemFamily: LINUX
